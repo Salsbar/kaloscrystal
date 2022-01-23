@@ -1,9 +1,9 @@
-BillsGrandfather:
+BillsGrandfather: ; 73f7
 	farcall SelectMonFromParty
 	jr c, .cancel
 	ld a, [wCurPartySpecies]
 	ld [wScriptVar], a
-	ld [wNamedObjectIndex], a
+	ld [wNamedObjectIndexBuffer], a
 	call GetPokemonName
 	jp CopyPokemonName_Buffer1_Buffer3
 
@@ -12,19 +12,19 @@ BillsGrandfather:
 	ld [wScriptVar], a
 	ret
 
-OlderHaircutBrother:
-	ld hl, HappinessData_OlderHaircutBrother
-	jr HaircutOrGrooming
-
-YoungerHaircutBrother:
+YoungerHaircutBrother: ; 7413
 	ld hl, HappinessData_YoungerHaircutBrother
 	jr HaircutOrGrooming
 
-DaisysGrooming:
+OlderHaircutBrother: ; 7418
+	ld hl, HappinessData_OlderHaircutBrother
+	jr HaircutOrGrooming
+
+DaisysGrooming: ; 741d
 	ld hl, HappinessData_DaisysGrooming
 	; fallthrough
 
-HaircutOrGrooming:
+HaircutOrGrooming: ; 7420
 	push hl
 	farcall SelectMonFromParty
 	pop hl
@@ -33,7 +33,7 @@ HaircutOrGrooming:
 	cp EGG
 	jr z, .egg
 	push hl
-	call GetCurNickname
+	call GetCurNick
 	call CopyPokemonName_Buffer1_Buffer3
 	pop hl
 	call Random
@@ -72,11 +72,11 @@ HaircutOrGrooming:
 
 INCLUDE "data/events/happiness_probabilities.asm"
 
-CopyPokemonName_Buffer1_Buffer3:
+CopyPokemonName_Buffer1_Buffer3: ; 746e
 	ld hl, wStringBuffer1
 	ld de, wStringBuffer3
 	ld bc, MON_NAME_LENGTH
 	jp CopyBytes
 
-DummyPredef1:
+DummyPredef1: ; 747a
 	ret

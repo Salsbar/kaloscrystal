@@ -1,4 +1,4 @@
-PrintMonTypes:
+PrintMonTypes: ; 5090d
 ; Print one or both types of [wCurSpecies]
 ; on the stats screen at hl.
 
@@ -37,8 +37,10 @@ PrintMonTypes:
 	add hl, bc
 	ld bc, NAME_LENGTH_JAPANESE - 1
 	jp ByteFill
+; 5093a
 
-PrintMoveType:
+
+PrintMoveType: ; 5093a
 ; Print the type of move b at hl.
 
 	push hl
@@ -55,7 +57,8 @@ PrintMoveType:
 
 	ld b, a
 
-PrintType:
+
+PrintType: ; 50953
 ; Print type b at hl.
 
 	ld a, b
@@ -72,11 +75,13 @@ PrintType:
 	pop hl
 
 	jp PlaceString
+; 50964
 
-GetTypeName:
-; Copy the name of type [wNamedObjectIndex] to wStringBuffer1.
 
-	ld a, [wNamedObjectIndex]
+GetTypeName: ; 50964
+; Copy the name of type [wd265] to wStringBuffer1.
+
+	ld a, [wd265]
 	ld hl, TypeNames
 	ld e, a
 	ld d, 0
@@ -88,5 +93,7 @@ GetTypeName:
 	ld de, wStringBuffer1
 	ld bc, MOVE_NAME_LENGTH
 	jp CopyBytes
+; 5097b
+
 
 INCLUDE "data/types/names.asm"

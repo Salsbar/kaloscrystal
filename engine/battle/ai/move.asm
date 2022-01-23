@@ -1,5 +1,5 @@
-AIChooseMove:
-; Score each move of wEnemyMonMoves in wEnemyAIMoveScores. Lower is better.
+AIChooseMove: ; 440ce
+; Score each move in wEnemyMonMoves starting from wBuffer1. Lower is better.
 ; Pick the move with the lowest score.
 
 ; Wildmons attack at random.
@@ -15,9 +15,10 @@ AIChooseMove:
 	farcall CheckEnemyLockedIn
 	ret nz
 
+
 ; The default score is 20. Unusable moves are given a score of 80.
 	ld a, 20
-	ld hl, wEnemyAIMoveScores
+	ld hl, wBuffer1
 	ld [hli], a
 	ld [hli], a
 	ld [hli], a
@@ -37,20 +38,20 @@ AIChooseMove:
 	inc hl
 	jr .CheckDisabledMove
 .ScoreDisabledMove:
-	ld hl, wEnemyAIMoveScores
+	ld hl, wBuffer1
 	ld b, 0
 	add hl, bc
 	ld [hl], 80
 
 ; Don't pick moves with 0 PP.
 .CheckPP:
-	ld hl, wEnemyAIMoveScores - 1
+	ld hl, wBuffer1 - 1
 	ld de, wEnemyMonPP
 	ld b, 0
 .CheckMovePP:
 	inc b
 	ld a, b
-	cp NUM_MOVES + 1
+	cp wEnemyMonMovesEnd - wEnemyMonMoves + 1
 	jr z, .ApplyLayers
 	inc hl
 	ld a, [de]
@@ -59,6 +60,7 @@ AIChooseMove:
 	jr nz, .CheckMovePP
 	ld [hl], 80
 	jr .CheckMovePP
+
 
 ; Apply AI scoring layers depending on the trainer class.
 .ApplyLayers:
@@ -117,9 +119,9 @@ AIChooseMove:
 
 ; Decrement the scores of all moves one by one until one reaches 0.
 .DecrementScores:
-	ld hl, wEnemyAIMoveScores
+	ld hl, wBuffer1
 	ld de, wEnemyMonMoves
-	ld c, NUM_MOVES
+	ld c, wEnemyMonMovesEnd - wEnemyMonMoves
 
 .DecrementNextScore:
 	; If the enemy has no moves, this will infinite.
@@ -152,7 +154,7 @@ AIChooseMove:
 	cp NUM_MOVES + 1
 	jr nz, .move_loop
 
-	ld hl, wEnemyAIMoveScores
+	ld hl, wBuffer1
 	ld de, wEnemyMonMoves
 	ld c, NUM_MOVES
 
@@ -182,7 +184,7 @@ AIChooseMove:
 
 ; Randomly choose one of the moves with a score of 1
 .ChooseMove:
-	ld hl, wEnemyAIMoveScores
+	ld hl, wBuffer1
 	call Random
 	maskbits NUM_MOVES
 	ld c, a
@@ -196,8 +198,10 @@ AIChooseMove:
 	ld a, c
 	ld [wCurEnemyMoveNum], a
 	ret
+; 441af
 
-AIScoringPointers:
+
+AIScoringPointers: ; 441af
 ; entries correspond to AI_* constants
 	dw AI_Basic
 	dw AI_Setup
@@ -215,3 +219,4 @@ AIScoringPointers:
 	dw AI_None
 	dw AI_None
 	dw AI_None
+; 441cf

@@ -1,16 +1,12 @@
-; wSlotMatched values
-	const_def 0, 4
-	const SLOTS_SEVEN    ; $00
-	const SLOTS_POKEBALL ; $04
-	const SLOTS_CHERRY   ; $08
-	const SLOTS_PIKACHU  ; $0c
-	const SLOTS_SQUIRTLE ; $10
-	const SLOTS_STARYU   ; $14
-NUM_SLOT_REELS EQU const_value / 4 ; 6
+SLOTS_NO_BIAS  EQU -1
 SLOTS_NO_MATCH EQU -1
 
-; wSlotBias values
-SLOTS_NO_BIAS  EQU -1
+SLOTS_SEVEN    EQU $00
+SLOTS_POKEBALL EQU $04
+SLOTS_CHERRY   EQU $08
+SLOTS_PIKACHU  EQU $0c
+SLOTS_SQUIRTLE EQU $10
+SLOTS_STARYU   EQU $14
 
 REEL_SIZE EQU 15
 
@@ -98,9 +94,9 @@ _SlotMachine:
 	res rLCDC_SPRITE_SIZE, [hl] ; 8x8
 	ret
 
-.InitGFX:
+.InitGFX: ; 926f7 (24:66f7)
 	call ClearBGPalettes
-	call ClearTilemap
+	call ClearTileMap
 	call ClearSprites
 	ld de, MUSIC_NONE
 	call PlayMusic
@@ -148,7 +144,7 @@ _SlotMachine:
 	call ByteFill
 	call Slots_InitReelTiles
 	call Slots_GetPals
-	ld a, SPRITE_ANIM_DICT_SLOTS
+	ld a, $7
 	ld hl, wSpriteAnimDict
 	ld [hli], a
 	ld [hl], $40
@@ -163,15 +159,15 @@ _SlotMachine:
 	call Random
 	and %00101010
 	ret nz
-	ld a, TRUE
+	ld a, 1
 	ld [wKeepSevenBiasChance], a ; 12.5% chance
 	ret
 
-Slots_GetPals:
+Slots_GetPals: ; 9279b (24:679b)
 	ld a, %11100100
 	call DmgToCgbBGPals
 	lb de, %11100100, %11100100
-	ldh a, [hCGB]
+	ld a, [hCGB]
 	and a
 	jr nz, .cgb
 	lb de, %11000000, %11100100
@@ -179,17 +175,17 @@ Slots_GetPals:
 	call DmgToCgbObjPals
 	ret
 
-SlotsLoop:
+SlotsLoop: ; 927af (24:67af)
 	ld a, [wJumptableIndex]
 	bit SLOTS_END_LOOP_F, a
 	jr nz, .stop
 	call SlotsJumptable
 	call Slots_SpinReels
 	xor a
-	ld [wCurSpriteOAMAddr], a
+	ld [wCurrSpriteOAMAddr], a
 	callfar DoNextFrameForFirst16Sprites
 	call .PrintCoinsAndPayout
-	call .Stubbed_AlternateMatchingSevensPalette
+	call .Stubbed_Function927d3
 	call DelayFrame
 	and a
 	ret
@@ -198,7 +194,7 @@ SlotsLoop:
 	scf
 	ret
 
-.Stubbed_AlternateMatchingSevensPalette:
+.Stubbed_Function927d3: ; 927d3 (24:67d3)
 ; dummied out
 	ret
 	ld a, [wReel1ReelAction]
@@ -218,12 +214,14 @@ SlotsLoop:
 	ld a, [wTextDelayFrames]
 	and $7
 	ret nz
-	ldh a, [rBGP]
-	xor %00001100 ; alternates two palettes
+	ld a, [rBGP]
+	xor %00001100
 	call DmgToCgbBGPals
 	ret
 
-.PrintCoinsAndPayout:
+; 927f8
+
+.PrintCoinsAndPayout: ; 927f8 (24:67f8)
 	hlcoord 5, 1
 	ld de, wCoins
 	lb bc, PRINTNUM_LEADINGZEROS | 2, 4
@@ -234,7 +232,10 @@ SlotsLoop:
 	call PrintNum
 	ret
 
-DebugPrintSlotBias: ; unreferenced
+; 92811 (24:6811)
+
+Unreferenced_Function92811: ; 92811
+; debug function?
 	ld a, [wSlotBias]
 	add 0
 	daa
@@ -251,9 +252,11 @@ DebugPrintSlotBias: ; unreferenced
 	ld [hl], a
 	ret
 
-AnimateSlotReelIcons: ; unreferenced
-; This animation was present in pokegold-spaceworld.
-	ld hl, wUnusedSlotReelIconDelay
+; 9282c
+
+Unreferenced_Function9282c: ; 9282c
+; animate OAM tiles?
+	ld hl, wcf66
 	ld a, [hl]
 	inc [hl]
 	and $7
@@ -262,16 +265,18 @@ AnimateSlotReelIcons: ; unreferenced
 	ld c, NUM_SPRITE_OAM_STRUCTS - 16
 .loop
 	ld a, [hl]
-	xor $20 ; alternate between $00-$1f and $20-$3f
+	xor %00100000
 	ld [hli], a ; tile id
-rept SPRITEOAMSTRUCT_LENGTH - 1
+rept SPRITEOAMSTRUCT_LENGTH + -1
 	inc hl
 endr
 	dec c
 	jr nz, .loop
 	ret
 
-SlotsJumptable:
+; 92844
+
+SlotsJumptable: ; 92844 (24:6844)
 	jumptable .Jumptable, wJumptableIndex
 
 .Jumptable:
@@ -295,12 +300,12 @@ SlotsJumptable:
 	dw SlotsAction_RestartOrQuit     ; 11
 	dw SlotsAction_Quit              ; 12
 
-SlotsAction_Next:
+SlotsAction_Next: ; 92879 (24:6879)
 	ld hl, wJumptableIndex
 	inc [hl]
 	ret
 
-SlotsAction_Init:
+SlotsAction_Init: ; 9287e (24:687e)
 	call SlotsAction_Next
 	xor a
 	ld [wFirstTwoReelsMatching], a
@@ -309,7 +314,7 @@ SlotsAction_Init:
 	ld [wSlotMatched], a
 	ret
 
-SlotsAction_BetAndStart:
+SlotsAction_BetAndStart: ; 9288e (24:688e)
 	call Slots_AskBet
 	jr nc, .proceed
 	ld a, SLOTS_QUIT
@@ -335,7 +340,7 @@ SlotsAction_BetAndStart:
 	call Slots_PlaySFX
 	ret
 
-SlotsAction_WaitStart:
+SlotsAction_WaitStart: ; 928c6 (24:68c6)
 	ld hl, wSlotsDelay
 	ld a, [hl]
 	and a
@@ -346,10 +351,10 @@ SlotsAction_WaitStart:
 .proceed
 	call SlotsAction_Next
 	xor a
-	ldh [hJoypadSum], a
+	ld [hJoypadSum], a
 	ret
 
-SlotsAction_WaitReel1:
+SlotsAction_WaitReel1: ; 928d6 (24:68d6)
 	ld hl, hJoypadSum
 	ld a, [hl]
 	and A_BUTTON
@@ -357,7 +362,7 @@ SlotsAction_WaitReel1:
 	call SlotsAction_Next
 	call Slots_StopReel1
 	ld [wReel1ReelAction], a
-SlotsAction_WaitStopReel1:
+SlotsAction_WaitStopReel1: ; 928e6 (24:68e6)
 	ld a, [wReel1ReelAction]
 	cp REEL_ACTION_DO_NOTHING
 	ret nz
@@ -368,8 +373,8 @@ SlotsAction_WaitStopReel1:
 	call Slots_LoadReelState
 	call SlotsAction_Next
 	xor a
-	ldh [hJoypadSum], a
-SlotsAction_WaitReel2:
+	ld [hJoypadSum], a
+SlotsAction_WaitReel2: ; 92900 (24:6900)
 	ld hl, hJoypadSum
 	ld a, [hl]
 	and A_BUTTON
@@ -377,7 +382,7 @@ SlotsAction_WaitReel2:
 	call SlotsAction_Next
 	call Slots_StopReel2
 	ld [wReel2ReelAction], a
-SlotsAction_WaitStopReel2:
+SlotsAction_WaitStopReel2: ; 92910 (24:6910)
 	ld a, [wReel2ReelAction]
 	cp REEL_ACTION_DO_NOTHING
 	ret nz
@@ -388,8 +393,8 @@ SlotsAction_WaitStopReel2:
 	call Slots_LoadReelState
 	call SlotsAction_Next
 	xor a
-	ldh [hJoypadSum], a
-SlotsAction_WaitReel3:
+	ld [hJoypadSum], a
+SlotsAction_WaitReel3: ; 9292a (24:692a)
 	ld hl, hJoypadSum
 	ld a, [hl]
 	and A_BUTTON
@@ -397,7 +402,7 @@ SlotsAction_WaitReel3:
 	call SlotsAction_Next
 	call Slots_StopReel3
 	ld [wReel3ReelAction], a
-SlotsAction_WaitStopReel3:
+SlotsAction_WaitStopReel3: ; 9293a (24:693a)
 	ld a, [wReel3ReelAction]
 	cp REEL_ACTION_DO_NOTHING
 	ret nz
@@ -408,10 +413,10 @@ SlotsAction_WaitStopReel3:
 	call Slots_LoadReelState
 	call SlotsAction_Next
 	xor a
-	ldh [hJoypadSum], a
+	ld [hJoypadSum], a
 	ret
 
-SlotsAction_FlashIfWin:
+SlotsAction_FlashIfWin: ; 92955 (24:6955)
 	ld a, [wSlotMatched]
 	cp SLOTS_NO_MATCH
 	jr nz, .GotIt
@@ -423,7 +428,7 @@ SlotsAction_FlashIfWin:
 	call SlotsAction_Next
 	ld a, 16
 	ld [wSlotsDelay], a
-SlotsAction_FlashScreen:
+SlotsAction_FlashScreen: ; 9296b (24:696b)
 	ld hl, wSlotsDelay
 	ld a, [hl]
 	and a
@@ -432,7 +437,7 @@ SlotsAction_FlashScreen:
 	srl a
 	ret z
 
-	ldh a, [rOBP0]
+	ld a, [rOBP0]
 	xor $ff
 	ld e, a
 	ld d, a
@@ -444,7 +449,7 @@ SlotsAction_FlashScreen:
 	call SlotsAction_Next
 	ret
 
-SlotsAction_GiveEarnedCoins:
+SlotsAction_GiveEarnedCoins: ; 92987 (24:6987)
 	xor a
 	ld [wFirstTwoReelsMatching], a
 	ld [wFirstTwoReelsMatchingSevens], a
@@ -456,10 +461,10 @@ SlotsAction_GiveEarnedCoins:
 	call SlotsAction_Next
 	ret
 
-SlotsAction_PayoutTextAndAnim:
+SlotsAction_PayoutTextAndAnim: ; 9299e (24:699e)
 	call Slots_PayoutText
 	call SlotsAction_Next
-SlotsAction_PayoutAnim:
+SlotsAction_PayoutAnim: ; 929a4 (24:69a4)
 	ld hl, wSlotsDelay
 	ld a, [hl]
 	inc [hl]
@@ -497,7 +502,7 @@ SlotsAction_PayoutAnim:
 	call SlotsAction_Next
 	ret
 
-SlotsAction_RestartOrQuit:
+SlotsAction_RestartOrQuit: ; 929d9 (24:69d9)
 	call Slots_DeilluminateBetLights
 	call WaitPressAorB_BlinkCursor
 	call Slots_AskPlayAgain
@@ -511,12 +516,12 @@ SlotsAction_RestartOrQuit:
 	ld [wJumptableIndex], a
 	ret
 
-SlotsAction_Quit:
+SlotsAction_Quit: ; 929f0 (24:69f0)
 	ld hl, wJumptableIndex
 	set SLOTS_END_LOOP_F, [hl]
 	ret
 
-Slots_LoadReelState:
+Slots_LoadReelState: ; 929f6 (24:69f6)
 	push de
 	call Slots_GetCurrentReelState
 	pop de
@@ -530,7 +535,7 @@ Slots_LoadReelState:
 	ld [de], a
 	ret
 
-Slots_CheckCoinCaseFull:
+Slots_CheckCoinCaseFull: ; 92a04 (24:6a04)
 	ld a, d
 	cp HIGH(MAX_COINS)
 	jr c, .not_full
@@ -544,7 +549,7 @@ Slots_CheckCoinCaseFull:
 	and a
 	ret
 
-Slots_GetCurrentReelState:
+Slots_GetCurrentReelState: ; 92a12 (24:6a12)
 	ld hl, REEL_POSITION
 	add hl, bc
 	ld a, [hl]
@@ -555,7 +560,7 @@ Slots_GetCurrentReelState:
 	dec a
 	and $f
 	ld e, a
-	ld d, 0
+	ld d, $0
 	ld hl, REEL_TILEMAP_ADDR
 	add hl, bc
 	ld a, [hli]
@@ -564,12 +569,12 @@ Slots_GetCurrentReelState:
 	add hl, de
 	ret
 
-Slots_StopReel1:
+Slots_StopReel1: ; 92a2b (24:6a2b)
 ; Always set the REEL_ACTION_STOP_REEL1 action.
 	ld a, REEL_ACTION_STOP_REEL1
 	ret
 
-Slots_StopReel2:
+Slots_StopReel2: ; 92a2e (24:6a2e)
 ; As long as, the following three meet, there's a 31.25% chance
 ; to set action REEL_ACTION_SET_UP_REEL2_SKIP_TO_7:
 ; - Bet is >= 2 coins
@@ -589,7 +594,7 @@ Slots_StopReel2:
 	call .CheckReel1ForASeven
 	jr nz, .dont_jump
 	call Random
-	cp 31 percent + 1
+	cp $50 ; 32%
 	jr nc, .dont_jump
 	ld a, REEL_ACTION_SET_UP_REEL2_SKIP_TO_7
 	ret
@@ -598,7 +603,7 @@ Slots_StopReel2:
 	ld a, REEL_ACTION_STOP_REEL2
 	ret
 
-.CheckReel1ForASeven:
+.CheckReel1ForASeven: ; 92a51 (24:6a51)
 	ld a, [wReel1Stopped]
 	and a
 	ret z
@@ -609,7 +614,7 @@ Slots_StopReel2:
 	and a
 	ret
 
-Slots_StopReel3:
+Slots_StopReel3: ; 92a60 (24:6a60)
 ; If no matching SEVEN symbols in reels #1 and #2:
 ; - REEL_ACTION_STOP_REEL3, 100%
 
@@ -635,20 +640,20 @@ Slots_StopReel3:
 	and a
 	jr nz, .biased
 	call Random
-	cp 71 percent - 1
+	cp 180
 	jr nc, .stop
-	cp 47 percent + 1
+	cp 120
 	jr nc, .slow_advance
-	cp 24 percent - 1
+	cp 60
 	jr nc, .golem
 	ld a, REEL_ACTION_INIT_CHANSEY
 	ret
 
 .biased
 	call Random
-	cp 63 percent
+	cp 160
 	jr nc, .stop
-	cp 31 percent + 1
+	cp 80
 	jr nc, .slow_advance
 .golem
 	ld a, REEL_ACTION_INIT_GOLEM
@@ -662,7 +667,7 @@ Slots_StopReel3:
 	ld a, REEL_ACTION_STOP_REEL3
 	ret
 
-Slots_InitReelTiles:
+Slots_InitReelTiles: ; 92a98 (24:6a98)
 	ld bc, wReel1
 	ld hl, REEL_OAM_ADDR
 	add hl, bc
@@ -718,7 +723,7 @@ Slots_InitReelTiles:
 	call .OAM
 	ret
 
-.OAM:
+.OAM: ; 92af9 (24:6af9)
 	ld hl, REEL_ACTION
 	add hl, bc
 	ld [hl], REEL_ACTION_DO_NOTHING
@@ -731,7 +736,7 @@ Slots_InitReelTiles:
 	call Slots_UpdateReelPositionAndOAM
 	ret
 
-Slots_SpinReels:
+Slots_SpinReels: ; 92b0f (24:6b0f)
 	ld bc, wReel1
 	call .SpinReel
 	ld bc, wReel2
@@ -740,7 +745,7 @@ Slots_SpinReels:
 	call .SpinReel
 	ret
 
-.SpinReel:
+.SpinReel: ; 92b22 (24:6b22)
 	ld hl, REEL_SPIN_DISTANCE
 	add hl, bc
 	ld a, [hl]
@@ -777,13 +782,13 @@ Slots_SpinReels:
 	jr nz, .loop
 	ret
 
-Slots_UpdateReelPositionAndOAM:
+Slots_UpdateReelPositionAndOAM: ; 92b53 (24:6b53)
 	ld hl, REEL_X_COORD
 	add hl, bc
 	ld a, [hl]
-	ld [wCurReelXCoord], a
+	ld [wCurrReelXCoord], a
 	ld a, 10 * 8
-	ld [wCurReelYCoord], a
+	ld [wCurrReelYCoord], a
 	ld hl, REEL_POSITION
 	add hl, bc
 	ld e, [hl]
@@ -809,16 +814,16 @@ Slots_UpdateReelPositionAndOAM:
 	ld [hl], a
 	ret
 
-.LoadOAM:
+.LoadOAM: ; 92b83 (24:6b83)
 	ld hl, REEL_OAM_ADDR
 	add hl, bc
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
 .loop
-	ld a, [wCurReelYCoord]
+	ld a, [wCurrReelYCoord]
 	ld [hli], a ; y
-	ld a, [wCurReelXCoord]
+	ld a, [wCurrReelXCoord]
 	ld [hli], a ; x
 	ld a, [de]
 	ld [hli], a ; tile id
@@ -827,9 +832,9 @@ Slots_UpdateReelPositionAndOAM:
 	set OAM_PRIORITY, a
 	ld [hli], a ; attributes
 
-	ld a, [wCurReelYCoord]
+	ld a, [wCurrReelYCoord]
 	ld [hli], a ; y
-	ld a, [wCurReelXCoord]
+	ld a, [wCurrReelXCoord]
 	add 1 * TILE_WIDTH
 	ld [hli], a ; x
 	ld a, [de]
@@ -841,39 +846,35 @@ Slots_UpdateReelPositionAndOAM:
 	set OAM_PRIORITY, a
 	ld [hli], a ; attributes
 	inc de
-	ld a, [wCurReelYCoord]
+	ld a, [wCurrReelYCoord]
 	sub 2 * TILE_WIDTH
-	ld [wCurReelYCoord], a
+	ld [wCurrReelYCoord], a
 	cp 2 * TILE_WIDTH
 	jr nz, .loop
 	ret
 
-GetUnknownSlotReelData: ; unreferenced
-; Used to get OAM attribute values for slot reels?
-; (final Slots_UpdateReelPositionAndOAM above reuses tile IDs as OAM palettes)
+; 92bbe (24:6bbe)
+
+Unreferenced_Function92bbe: ; 92bbe
 	push hl
 	srl a
 	srl a
-	add LOW(.data)
+	add LOW(.Unknown_92bce)
 	ld l, a
 	ld a, 0
-	adc HIGH(.data)
+	adc HIGH(.Unknown_92bce)
 	ld h, a
 	ld a, [hl]
 	pop hl
 	ret
 
-.data:
-	table_width 1, GetUnknownSlotReelData.data
-	db 0 ; SLOTS_SEVEN
-	db 1 ; SLOTS_POKEBALL
-	db 2 ; SLOTS_CHERRY
-	db 3 ; SLOTS_PIKACHU
-	db 4 ; SLOTS_SQUIRTLE
-	db 5 ; SLOTS_STARYU
-	assert_table_length NUM_SLOT_REELS
+; 92bce
 
-ReelActionJumptable:
+.Unknown_92bce: ; 92bce
+	db 0, 1, 2, 3, 4, 5
+; 92bd4
+
+ReelActionJumptable: ; 92bd4 (24:6bd4)
 	ld hl, REEL_ACTION
 	add hl, bc
 	ld e, [hl]
@@ -886,7 +887,9 @@ ReelActionJumptable:
 	ld l, a
 	jp hl
 
-.Jumptable:
+; 92be4 (24:6be4)
+
+.Jumptable: ; 92be4
 	dw ReelAction_DoNothing                   ; 00
 	dw ReelAction_StopReelIgnoreJoypad        ; 01
 	dw ReelAction_QuadrupleRate               ; 02
@@ -912,41 +915,54 @@ ReelActionJumptable:
 	dw ReelAction_WaitChansey                 ; 16
 	dw ReelAction_WaitEgg                     ; 17
 	dw ReelAction_DropReel                    ; 18
+; 92c16
 
-ReelAction_DoNothing:
+ReelAction_DoNothing: ; 92c16
 	ret
 
-ReelAction_QuadrupleRate:
+; 92c17
+
+ReelAction_QuadrupleRate: ; 92c17
 	ld hl, REEL_SPIN_RATE
 	add hl, bc
 	ld [hl], 16
 	ret
 
-ReelAction_DoubleRate:
+; 92c1e
+
+ReelAction_DoubleRate: ; 92c1e
 	ld hl, REEL_SPIN_RATE
 	add hl, bc
 	ld [hl], 8
 	ret
 
-ReelAction_NormalRate:
+; 92c25
+
+ReelAction_NormalRate: ; 92c25
 	ld hl, REEL_SPIN_RATE
 	add hl, bc
 	ld [hl], 4
 	ret
 
-ReelAction_HalfRate:
+; 92c2c
+
+ReelAction_HalfRate: ; 92c2c
 	ld hl, REEL_SPIN_RATE
 	add hl, bc
 	ld [hl], 2
 	ret
 
-ReelAction_QuarterRate:
+; 92c33
+
+ReelAction_QuarterRate: ; 92c33
 	ld hl, REEL_SPIN_RATE
 	add hl, bc
 	ld [hl], 1
 	ret
 
-Slots_StopReel:
+; 92c3a
+
+Slots_StopReel: ; 92c3a
 	ld hl, REEL_SPIN_RATE
 	add hl, bc
 	ld [hl], 0
@@ -956,7 +972,7 @@ Slots_StopReel:
 	ld hl, REEL_STOP_DELAY
 	add hl, bc
 	ld [hl], 3
-ReelAction_StopReelIgnoreJoypad:
+ReelAction_StopReelIgnoreJoypad: ; 92c4c
 	ld hl, REEL_STOP_DELAY
 	add hl, bc
 	ld a, [hl]
@@ -972,7 +988,9 @@ ReelAction_StopReelIgnoreJoypad:
 	ld [hl], a
 	ret
 
-ReelAction_StopReel1:
+; 92c5e
+
+ReelAction_StopReel1: ; 92c5e
 ; If no bias: don't manipulate reel.
 ; If bias: manipulate reel up to wReel1ManipCounter (i.e. 4) slots,
 ; stoping early if the biased symbol shows up anywhere in reel #1,
@@ -993,7 +1011,9 @@ ReelAction_StopReel1:
 	call Slots_StopReel
 	ret
 
-.CheckForBias:
+; 92c76
+
+.CheckForBias: ; 92c76
 	call Slots_GetCurrentReelState
 	ld a, [wSlotBias]
 	ld e, a
@@ -1007,7 +1027,9 @@ ReelAction_StopReel1:
 	cp e
 	ret
 
-ReelAction_StopReel2:
+; 92c86
+
+ReelAction_StopReel2: ; 92c86
 ; If no bias: don't manipulate reel.
 ; If bias: manipulate reel up to wReel2ManipCounter (i.e. 4) slots,
 ; stoping early if the biased symbol is lined up in the first two
@@ -1035,7 +1057,9 @@ ReelAction_StopReel2:
 	call Slots_StopReel
 	ret
 
-ReelAction_StopReel3:
+; 92ca9
+
+ReelAction_StopReel3: ; 92ca9
 ; Manipulate the reel up to wReel3ManipCounter (i.e. 4) slots,
 ; stopping early if the bias symbol is lined up for a win.
 ; If not biased to any symbols, stop as soon as nothing is lined up.
@@ -1069,7 +1093,9 @@ ReelAction_StopReel3:
 	call Slots_StopReel
 	ret
 
-ReelAction_SetUpReel2SkipTo7:
+; 92cd2
+
+ReelAction_SetUpReel2SkipTo7: ; 92cd2
 ; Unique reel 2 action (see Slots_StopReel2)
 ; Ensures that 7 symbols become lined up in the first two reels,
 ; but more often than not, this is only a way to get our hopes up, as
@@ -1097,16 +1123,18 @@ ReelAction_SetUpReel2SkipTo7:
 	ld [hl], 0
 	ret
 
-ReelAction_WaitReel2SkipTo7:
+; 92cf8
+
+ReelAction_WaitReel2SkipTo7: ; 92cf8
 	ld hl, REEL_MANIP_DELAY
 	add hl, bc
 	ld a, [hl]
 	and a
-	jr z, .ready
+	jr z, .asm_92d02
 	dec [hl]
 	ret
 
-.ready
+.asm_92d02
 	ld a, SFX_THROW_BALL
 	call Slots_PlaySFX
 	ld hl, REEL_ACTION
@@ -1117,7 +1145,9 @@ ReelAction_WaitReel2SkipTo7:
 	ld [hl], 8
 	ret
 
-ReelAction_FastSpinReel2UntilLinedUp7s:
+; 92d13
+
+ReelAction_FastSpinReel2UntilLinedUp7s: ; 92d13
 	call Slots_CheckMatchedFirstTwoReels
 	ret nc
 	ld a, [wFirstTwoReelsMatchingSevens]
@@ -1126,7 +1156,9 @@ ReelAction_FastSpinReel2UntilLinedUp7s:
 	call Slots_StopReel
 	ret
 
-ReelAction_InitGolem:
+; 92d20
+
+ReelAction_InitGolem: ; 92d20
 ; Ensures SEVENs are lined up if there's bias to SEVEN.
 ; Ensures nothing is lined up if there's no bias symbols.
 ; No other bias symbols are compatible with this mode.
@@ -1151,15 +1183,15 @@ ReelAction_InitGolem:
 	push af
 	depixel 12, 13
 	ld a, SPRITE_ANIM_INDEX_SLOTS_GOLEM
-	call InitSpriteAnimStruct
-	ld hl, SPRITEANIMSTRUCT_VAR3
+	call _InitSpriteAnimStruct
+	ld hl, SPRITEANIMSTRUCT_0E
 	add hl, bc
 	pop af
 	ld [hl], a
 	pop bc
 	xor a
 	ld [wSlotsDelay], a
-ReelAction_WaitGolem:
+ReelAction_WaitGolem: ; 92d4f
 	ld a, [wSlotsDelay]
 	cp 2
 	jr z, .two
@@ -1181,7 +1213,9 @@ ReelAction_WaitGolem:
 	ld [hl], 8
 	ret
 
-ReelAction_EndGolem:
+; 92d6e
+
+ReelAction_EndGolem: ; 92d6e
 	xor a
 	ld [wSlotsDelay], a
 	ld hl, REEL_ACTION
@@ -1192,7 +1226,9 @@ ReelAction_EndGolem:
 	ld [hl], 0
 	ret
 
-ReelAction_InitChansey:
+; 92d7e
+
+ReelAction_InitChansey: ; 92d7e
 ; Ensures the lining up of SEVEN symbols, but this mode is only possible
 ; when there is bias to SEVEN symbols (and even then, it's still rare).
 ; Chansey releases and egg and reel #3 is made to advance 17 slots very
@@ -1212,13 +1248,15 @@ ReelAction_InitChansey:
 	push bc
 	depixel 12, 0
 	ld a, SPRITE_ANIM_INDEX_SLOTS_CHANSEY
-	call InitSpriteAnimStruct
+	call _InitSpriteAnimStruct
 	pop bc
 	xor a
 	ld [wSlotsDelay], a
 	ret
 
-ReelAction_WaitChansey:
+; 92da4
+
+ReelAction_WaitChansey: ; 92da4
 	ld a, [wSlotsDelay]
 	and a
 	ret z
@@ -1227,7 +1265,7 @@ ReelAction_WaitChansey:
 	inc [hl] ; REEL_ACTION_WAIT_EGG
 	ld a, 2
 	ld [wSlotsDelay], a
-ReelAction_WaitEgg:
+ReelAction_WaitEgg: ; 92db3
 	ld a, [wSlotsDelay]
 	cp $4
 	ret c
@@ -1240,7 +1278,7 @@ ReelAction_WaitEgg:
 	ld hl, REEL_MANIP_DELAY
 	add hl, bc
 	ld [hl], 17
-ReelAction_DropReel:
+ReelAction_DropReel: ; 92dca
 	ld hl, REEL_MANIP_DELAY
 	add hl, bc
 	ld a, [hl]
@@ -1271,7 +1309,9 @@ ReelAction_DropReel:
 	ld [wSlotsDelay], a
 	ret
 
-ReelAction_Unused:
+; 92df7
+
+ReelAction_Unused: ; 92df7
 	call Slots_CheckMatchedAllThreeReels
 	ret c
 	ld a, SFX_STOP_SLOT
@@ -1284,7 +1324,7 @@ ReelAction_Unused:
 	ld hl, REEL_MANIP_DELAY
 	add hl, bc
 	ld [hl], a
-ReelAction_CheckDropReel:
+ReelAction_CheckDropReel: ; 92e10
 	ld hl, REEL_MANIP_DELAY
 	add hl, bc
 	ld a, [hl]
@@ -1305,7 +1345,7 @@ ReelAction_CheckDropReel:
 	ld hl, REEL_SPIN_RATE
 	add hl, bc
 	ld [hl], 0
-ReelAction_WaitDropReel:
+ReelAction_WaitDropReel: ; 92e31
 	ld hl, REEL_FIELD_0B
 	add hl, bc
 	ld a, [hl]
@@ -1323,7 +1363,9 @@ ReelAction_WaitDropReel:
 	ld [hl], 8
 	ret
 
-ReelAction_StartSlowAdvanceReel3:
+; 92e47
+
+ReelAction_StartSlowAdvanceReel3: ; 92e47
 ; Ensures SEVENs are lined up if there's bias to SEVEN.
 ; Ensures nothing is lined up if there's no bias symbols.
 ; No other bias symbols are compatible with this mode.
@@ -1345,7 +1387,7 @@ ReelAction_StartSlowAdvanceReel3:
 	ld hl, REEL_MANIP_DELAY
 	add hl, bc
 	ld [hl], 16
-ReelAction_WaitSlowAdvanceReel3:
+ReelAction_WaitSlowAdvanceReel3: ; 92e64
 	ld hl, REEL_MANIP_DELAY
 	add hl, bc
 	ld a, [hl]
@@ -1376,7 +1418,9 @@ ReelAction_WaitSlowAdvanceReel3:
 	call WaitSFX
 	ret
 
-Slots_CheckMatchedFirstTwoReels:
+; 92e94
+
+Slots_CheckMatchedFirstTwoReels: ; 92e94
 	xor a
 	ld [wFirstTwoReelsMatching], a
 	ld [wFirstTwoReelsMatchingSevens], a
@@ -1403,62 +1447,77 @@ Slots_CheckMatchedFirstTwoReels:
 	scf
 	ret
 
-.Jumptable:
+; 92ebd
+
+.Jumptable: ; 92ebd
 	dw .zero
 	dw .one
 	dw .two
 	dw .three
+; 92ec5
 
-.three
+.three ; 92ec5
 	call .CheckUpwardsDiag
 	call .CheckDownwardsDiag
 
-.two
+.two ; 92ecb
 	call .CheckBottomRow
 	call .CheckTopRow
 
-.one
+.one ; 92ed1
 	call .CheckMiddleRow
 
-.zero
+.zero ; 92ed4
 	ret
 
-.CheckBottomRow:
-	ld hl, wCurReelStopped
+; 92ed5
+
+.CheckBottomRow: ; 92ed5
+	ld hl, wCurrReelStopped
 	ld a, [wReel1Stopped]
 	cp [hl]
 	call z, .StoreResult
 	ret
 
-.CheckUpwardsDiag:
-	ld hl, wCurReelStopped + 1
+; 92ee0
+
+.CheckUpwardsDiag: ; 92ee0
+	ld hl, wCurrReelStopped + 1
 	ld a, [wReel1Stopped]
 	cp [hl]
 	call z, .StoreResult
 	ret
 
-.CheckMiddleRow:
-	ld hl, wCurReelStopped + 1
+; 92eeb
+
+.CheckMiddleRow: ; 92eeb
+	ld hl, wCurrReelStopped + 1
 	ld a, [wReel1Stopped + 1]
 	cp [hl]
 	call z, .StoreResult
 	ret
 
-.CheckDownwardsDiag:
-	ld hl, wCurReelStopped + 1
+; 92ef6
+
+.CheckDownwardsDiag: ; 92ef6
+	ld hl, wCurrReelStopped + 1
 	ld a, [wReel1Stopped + 2]
 	cp [hl]
 	call z, .StoreResult
 	ret
 
-.CheckTopRow:
-	ld hl, wCurReelStopped + 2
+; 92f01
+
+.CheckTopRow: ; 92f01
+	ld hl, wCurrReelStopped + 2
 	ld a, [wReel1Stopped + 2]
 	cp [hl]
 	call z, .StoreResult
 	ret
 
-.StoreResult:
+; 92f0c
+
+.StoreResult: ; 92f0c
 	ld [wSlotBuildingMatch], a
 	and a
 	jr nz, .matching_sevens
@@ -1470,7 +1529,9 @@ Slots_CheckMatchedFirstTwoReels:
 	ld [wFirstTwoReelsMatching], a
 	ret
 
-Slots_CheckMatchedAllThreeReels:
+; 92f1d
+
+Slots_CheckMatchedAllThreeReels: ; 92f1d
 	ld a, SLOTS_NO_MATCH
 	ld [wSlotMatched], a
 	call Slots_GetCurrentReelState
@@ -1500,28 +1561,33 @@ Slots_CheckMatchedAllThreeReels:
 	scf
 	ret
 
-.Jumptable:
+; 92f48
+
+.Jumptable: ; 92f48
 	dw .zero
 	dw .one
 	dw .two
 	dw .three
+; 92f50
 
-.three
+.three ; 92f50
 	call .CheckUpwardsDiag
 	call .CheckDownwardsDiag
 
-.two
+.two ; 92f56
 	call .CheckBottomRow
 	call .CheckTopRow
 
-.one
+.one ; 92f5c
 	call .CheckMiddleRow
 
-.zero
+.zero ; 92f5f
 	ret
 
-.CheckBottomRow:
-	ld hl, wCurReelStopped
+; 92f60
+
+.CheckBottomRow: ; 92f60
+	ld hl, wCurrReelStopped
 	ld a, [wReel1Stopped]
 	cp [hl]
 	ret nz
@@ -1530,8 +1596,10 @@ Slots_CheckMatchedAllThreeReels:
 	call z, .StoreResult
 	ret
 
-.CheckUpwardsDiag:
-	ld hl, wCurReelStopped + 2
+; 92f70
+
+.CheckUpwardsDiag: ; 92f70
+	ld hl, wCurrReelStopped + 2
 	ld a, [wReel1Stopped]
 	cp [hl]
 	ret nz
@@ -1540,8 +1608,10 @@ Slots_CheckMatchedAllThreeReels:
 	call z, .StoreResult
 	ret
 
-.CheckMiddleRow:
-	ld hl, wCurReelStopped + 1
+; 92f80
+
+.CheckMiddleRow: ; 92f80
+	ld hl, wCurrReelStopped + 1
 	ld a, [wReel1Stopped + 1]
 	cp [hl]
 	ret nz
@@ -1550,8 +1620,10 @@ Slots_CheckMatchedAllThreeReels:
 	call z, .StoreResult
 	ret
 
-.CheckDownwardsDiag:
-	ld hl, wCurReelStopped
+; 92f90
+
+.CheckDownwardsDiag: ; 92f90
+	ld hl, wCurrReelStopped
 	ld a, [wReel1Stopped + 2]
 	cp [hl]
 	ret nz
@@ -1560,8 +1632,10 @@ Slots_CheckMatchedAllThreeReels:
 	call z, .StoreResult
 	ret
 
-.CheckTopRow:
-	ld hl, wCurReelStopped + 2
+; 92fa0
+
+.CheckTopRow: ; 92fa0
+	ld hl, wCurrReelStopped + 2
 	ld a, [wReel1Stopped + 2]
 	cp [hl]
 	ret nz
@@ -1570,12 +1644,16 @@ Slots_CheckMatchedAllThreeReels:
 	call z, .StoreResult
 	ret
 
-.StoreResult:
+; 92fb0
+
+.StoreResult: ; 92fb0
 	ld [wSlotMatched], a
 	ret
 
-Slots_CopyReelState:
-	ld de, wCurReelStopped
+; 92fb4
+
+Slots_CopyReelState: ; 92fb4
+	ld de, wCurrReelStopped
 	ld a, [hli]
 	ld [de], a
 	inc de
@@ -1586,7 +1664,9 @@ Slots_CopyReelState:
 	ld [de], a
 	ret
 
-Slots_GetNumberOfGolems:
+; 92fc0
+
+Slots_GetNumberOfGolems: ; 92fc0
 	ld hl, REEL_POSITION
 	add hl, bc
 	ld a, [hl]
@@ -1599,7 +1679,9 @@ Slots_GetNumberOfGolems:
 	ld a, e
 	ret
 
-.Check7Bias:
+; 92fcf
+
+.Check7Bias: ; 92fcf
 	ld a, [wSlotBias]
 	and a
 	jr nz, .not_biased_to_seven
@@ -1620,7 +1702,7 @@ Slots_GetNumberOfGolems:
 .not_biased_to_seven
 	call Random
 	and $7
-	cp $8 / 2 ; 50%
+	cp $4 ; ((50 percent) & 7) + 1
 	jr c, .not_biased_to_seven
 	ld e, a
 .loop2
@@ -1636,7 +1718,9 @@ Slots_GetNumberOfGolems:
 	jr c, .loop2
 	ret
 
-Slots_InitBias:
+; 93002
+
+Slots_InitBias: ; 93002 (24:7002)
 	ld a, [wSlotBias]
 	and a
 	ret z
@@ -1660,25 +1744,29 @@ Slots_InitBias:
 	ld [wSlotBias], a
 	ret
 
-.Normal:
-	db   1 percent - 1, SLOTS_SEVEN
-	db   1 percent + 1, SLOTS_POKEBALL
-	db   4 percent,     SLOTS_STARYU
-	db   8 percent,     SLOTS_SQUIRTLE
-	db  16 percent,     SLOTS_PIKACHU
-	db  19 percent,     SLOTS_CHERRY
-	db 100 percent,     SLOTS_NO_BIAS
+; 93023 (24:7023)
 
-.Lucky:
-	db   1 percent,     SLOTS_SEVEN
-	db   1 percent + 1, SLOTS_POKEBALL
-	db   3 percent + 1, SLOTS_STARYU
-	db   6 percent + 1, SLOTS_SQUIRTLE
-	db  12 percent,     SLOTS_PIKACHU
-	db  31 percent + 1, SLOTS_CHERRY
-	db 100 percent,     SLOTS_NO_BIAS
+.Normal: ; 93023
+	db $01, SLOTS_SEVEN    ; 1/256
+	db $03, SLOTS_POKEBALL ; 1/128
+	db $0a, SLOTS_STARYU   ; 7/256
+	db $14, SLOTS_SQUIRTLE ; 5/128
+	db $28, SLOTS_PIKACHU  ; 5/64
+	db $30, SLOTS_CHERRY   ; 1/32
+	db $ff, SLOTS_NO_BIAS   ; everything else
+; 93031
 
-Slots_IlluminateBetLights:
+.Lucky: ; 93031
+	db $02, SLOTS_SEVEN    ;  1/128
+	db $03, SLOTS_POKEBALL ;  1/256
+	db $08, SLOTS_STARYU   ;  5/256
+	db $10, SLOTS_SQUIRTLE ;  1/32
+	db $1e, SLOTS_PIKACHU  ;  7/128
+	db $50, SLOTS_CHERRY   ; 25/128
+	db $ff, SLOTS_NO_BIAS   ; everything else
+; 9303f
+
+Slots_IlluminateBetLights: ; 9303f (24:703f)
 	ld b, $14 ; turned on
 	ld a, [wSlotBet]
 	dec a
@@ -1687,22 +1775,22 @@ Slots_IlluminateBetLights:
 	jr z, Slots_Lights2OnOff
 	jr Slots_Lights3OnOff
 
-Slots_DeilluminateBetLights:
+Slots_DeilluminateBetLights: ; 9304c (24:704c)
 	ld b, $23 ; turned off
-Slots_Lights3OnOff:
+Slots_Lights3OnOff: ; 9304e (24:704e)
 	hlcoord 3, 2
 	call Slots_TurnLightsOnOrOff
 	hlcoord 3, 10
 	call Slots_TurnLightsOnOrOff
-Slots_Lights2OnOff:
+Slots_Lights2OnOff: ; 9305a (24:705a)
 	hlcoord 3, 4
 	call Slots_TurnLightsOnOrOff
 	hlcoord 3, 8
 	call Slots_TurnLightsOnOrOff
-Slots_Lights1OnOff:
+Slots_Lights1OnOff: ; 93066 (24:7066)
 	hlcoord 3, 6
 
-Slots_TurnLightsOnOrOff:
+Slots_TurnLightsOnOrOff: ; 93069 (24:7069)
 	ld a, b
 	ld [hl], a
 	ld de, SCREEN_WIDTH / 2 + 3
@@ -1717,9 +1805,9 @@ Slots_TurnLightsOnOrOff:
 	ld [hl], a
 	ret
 
-Slots_AskBet:
+Slots_AskBet: ; 9307c (24:707c)
 .loop
-	ld hl, .SlotsBetHowManyCoinsText
+	ld hl, .Text_BetHowManyCoins
 	call PrintText
 	ld hl, .MenuHeader
 	call LoadMenuHeader
@@ -1739,7 +1827,7 @@ Slots_AskBet:
 	ld a, [hl]
 	cp c
 	jr nc, .Start
-	ld hl, .SlotsNotEnoughCoinsText
+	ld hl, .Text_NotEnoughCoins
 	call PrintText
 	jr .loop
 
@@ -1754,51 +1842,61 @@ Slots_AskBet:
 	call WaitSFX
 	ld de, SFX_PAY_DAY
 	call PlaySFX
-	ld hl, .SlotsStartText
+	ld hl, .Text_Start
 	call PrintText
 	and a
 	ret
 
-.SlotsBetHowManyCoinsText:
-	text_far _SlotsBetHowManyCoinsText
-	text_end
+; 930c7 (24:70c7)
 
-.SlotsStartText:
-	text_far _SlotsStartText
-	text_end
+.Text_BetHowManyCoins: ; 0x930c7
+	; Bet how many coins?
+	text_jump UnknownText_0x1c5049
+	db "@"
+; 0x930cc
 
-.SlotsNotEnoughCoinsText:
-	text_far _SlotsNotEnoughCoinsText
-	text_end
+.Text_Start: ; 0x930cc
+	; Start!
+	text_jump UnknownText_0x1c505e
+	db "@"
+; 0x930d1
 
-.MenuHeader:
+.Text_NotEnoughCoins: ; 0x930d1
+	; Not enough coins.
+	text_jump UnknownText_0x1c5066
+	db "@"
+; 0x930d6
+
+.MenuHeader: ; 0x930d6
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 14, 10, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1
 	dw .MenuData
 	db 1 ; default option
+; 0x930de
 
-.MenuData:
+.MenuData: ; 0x930de
 	db STATICMENU_CURSOR ; flags
 	db 3 ; items
 	db " 3@"
 	db " 2@"
 	db " 1@"
+; 0x930e9
 
-Slots_AskPlayAgain:
+Slots_AskPlayAgain: ; 930e9 (24:70e9)
 	ld hl, wCoins
 	ld a, [hli]
 	or [hl]
 	jr nz, .you_have_coins
-	ld hl, .SlotsRanOutOfCoinsText
+	ld hl, .Text_OutOfCoins
 	call PrintText
 	ld c, 60
 	call DelayFrames
 	jr .exit_slots
 
 .you_have_coins
-	ld hl, .SlotsPlayAgainText
+	ld hl, .Text_PlayAgain
 	call PrintText
-	call LoadMenuTextbox
+	call LoadMenuTextBox
 	lb bc, 14, 12
 	call PlaceYesNoBox
 	ld a, [wMenuCursorY]
@@ -1813,15 +1911,17 @@ Slots_AskPlayAgain:
 	scf
 	ret
 
-.SlotsRanOutOfCoinsText:
-	text_far _SlotsRanOutOfCoinsText
-	text_end
+; 9311a (24:711a)
 
-.SlotsPlayAgainText:
-	text_far _SlotsPlayAgainText
-	text_end
+.Text_OutOfCoins: ; 9311a
+	text_jump UnknownText_0x1c5079
+	db "@"
 
-Slots_GetPayout:
+.Text_PlayAgain: ; 9311f
+	text_jump UnknownText_0x1c5092
+	db "@"
+
+Slots_GetPayout: ; 93124 (24:7124)
 	ld a, [wSlotMatched]
 	cp SLOTS_NO_MATCH
 	jr z, .no_win
@@ -1840,14 +1940,12 @@ Slots_GetPayout:
 	ret
 
 .PayoutTable:
-	table_width 2, Slots_GetPayout.PayoutTable
-	dw 300 ; SLOTS_SEVEN
-	dw  50 ; SLOTS_POKEBALL
-	dw   6 ; SLOTS_CHERRY
-	dw   8 ; SLOTS_PIKACHU
-	dw  10 ; SLOTS_SQUIRTLE
-	dw  15 ; SLOTS_STARYU
-	assert_table_length NUM_SLOT_REELS
+	dw 300
+	dw  50
+	dw   6
+	dw   8
+	dw  10
+	dw  15
 
 .no_win
 	ld hl, wPayout
@@ -1856,11 +1954,11 @@ Slots_GetPayout:
 	ld [hl], a
 	ret
 
-Slots_PayoutText:
+Slots_PayoutText: ; 93158 (24:7158)
 	ld a, [wSlotMatched]
 	cp SLOTS_NO_MATCH
 	jr nz, .MatchedSomething
-	ld hl, .SlotsDarnText
+	ld hl, .Text_Darn
 	call PrintText
 	farcall StubbedTrainerRankings_EndSlotsWinStreak
 	ret
@@ -1889,18 +1987,19 @@ Slots_PayoutText:
 	farcall StubbedTrainerRankings_AddToSlotsWinStreak
 	ret
 
-.PayoutStrings:
-	table_width 6, Slots_PayoutText.PayoutStrings
-	dbw "300@", .LinedUpSevens      ; SLOTS_SEVEN
-	dbw "50@@", .LinedUpPokeballs   ; SLOTS_POKEBALL
-	dbw "6@@@", .LinedUpMonOrCherry ; SLOTS_CHERRY
-	dbw "8@@@", .LinedUpMonOrCherry ; SLOTS_PIKACHU
-	dbw "10@@", .LinedUpMonOrCherry ; SLOTS_SQUIRTLE
-	dbw "15@@", .LinedUpMonOrCherry ; SLOTS_STARYU
-	assert_table_length NUM_SLOT_REELS
+; 93195 (24:7195)
 
-.Text_PrintPayout:
-	text_asm
+.PayoutStrings: ; 93195
+	dbw "300@", .LinedUpSevens
+	dbw "50@@", .LinedUpPokeballs
+	dbw "6@@@", .LinedUpMonOrCherry
+	dbw "8@@@", .LinedUpMonOrCherry
+	dbw "10@@", .LinedUpMonOrCherry
+	dbw "15@@", .LinedUpMonOrCherry
+; 931b9
+
+.Text_PrintPayout: ; 0x931b9
+	start_asm
 	ld a, [wSlotMatched]
 	add $25
 	ldcoord_a 2, 13
@@ -1912,21 +2011,27 @@ Slots_PayoutText:
 	ldcoord_a 3, 14
 	hlcoord 18, 17
 	ld [hl], "▼"
-	ld hl, .SlotsLinedUpText
+	ld hl, .Text_LinedUpWonCoins
 rept 4
 	inc bc
 endr
 	ret
 
-.SlotsLinedUpText:
-	text_far _SlotsLinedUpText
-	text_end
+; 931db
 
-.SlotsDarnText:
-	text_far _SlotsDarnText
-	text_end
+.Text_LinedUpWonCoins: ; 0x931db
+	; lined up! Won @  coins!
+	text_jump UnknownText_0x1c509f
+	db "@"
+; 0x931e0
 
-.LinedUpSevens:
+.Text_Darn: ; 0x931e0
+	; Darn!
+	text_jump UnknownText_0x1c50bb
+	db "@"
+; 0x931e5
+
+.LinedUpSevens: ; 931e5
 	ld a, SFX_2ND_PLACE
 	call Slots_PlaySFX
 	call WaitSFX
@@ -1953,19 +2058,25 @@ endr
 	ld [wSlotBias], a
 	ret
 
-.LinedUpPokeballs:
+; 9320b
+
+.LinedUpPokeballs: ; 9320b
 	ld a, SFX_3RD_PLACE
 	call Slots_PlaySFX
 	call WaitSFX
 	ret
 
-.LinedUpMonOrCherry:
+; 93214
+
+.LinedUpMonOrCherry: ; 93214
 	ld a, SFX_PRESENT
 	call Slots_PlaySFX
 	call WaitSFX
 	ret
 
-Slots_AnimateGolem:
+; 9321d
+
+Slots_AnimateGolem: ; 9321d (24:721d)
 	ld hl, SPRITEANIMSTRUCT_JUMPTABLE_INDEX
 	add hl, bc
 	ld e, [hl]
@@ -1978,13 +2089,13 @@ Slots_AnimateGolem:
 	ld l, a
 	jp hl
 
-.Jumptable:
+.Jumptable: ; 9322d (24:722d)
 	dw .init
 	dw .fall
 	dw .roll
 
-.init
-	ld hl, SPRITEANIMSTRUCT_VAR3
+.init ; 93233 (24:7233)
+	ld hl, SPRITEANIMSTRUCT_0E
 	add hl, bc
 	ld a, [hl]
 	and a
@@ -2001,15 +2112,15 @@ Slots_AnimateGolem:
 	ld hl, SPRITEANIMSTRUCT_JUMPTABLE_INDEX
 	add hl, bc
 	inc [hl]
-	ld hl, SPRITEANIMSTRUCT_VAR1
+	ld hl, SPRITEANIMSTRUCT_0C
 	add hl, bc
 	ld [hl], $30
 	ld hl, SPRITEANIMSTRUCT_XOFFSET
 	add hl, bc
 	ld [hl], $0
 
-.fall
-	ld hl, SPRITEANIMSTRUCT_VAR1
+.fall ; 93259 (24:7259)
+	ld hl, SPRITEANIMSTRUCT_0C
 	add hl, bc
 	ld a, [hl]
 	cp $20
@@ -2028,7 +2139,7 @@ Slots_AnimateGolem:
 	ld hl, SPRITEANIMSTRUCT_JUMPTABLE_INDEX
 	add hl, bc
 	inc [hl]
-	ld hl, SPRITEANIMSTRUCT_VAR2
+	ld hl, SPRITEANIMSTRUCT_0D
 	add hl, bc
 	ld [hl], $2
 	ld a, 1
@@ -2037,7 +2148,7 @@ Slots_AnimateGolem:
 	call Slots_PlaySFX
 	ret
 
-.roll
+.roll ; 93289 (24:7289)
 	ld hl, SPRITEANIMSTRUCT_XOFFSET
 	add hl, bc
 	ld a, [hl]
@@ -2047,13 +2158,13 @@ Slots_AnimateGolem:
 	jr nc, .restart
 	and $3
 	ret nz
-	ld hl, SPRITEANIMSTRUCT_VAR2
+	ld hl, SPRITEANIMSTRUCT_0D
 	add hl, bc
 	ld a, [hl]
 	xor $ff
 	inc a
 	ld [hl], a
-	ldh [hSCY], a
+	ld [hSCY], a
 	ret
 
 .restart
@@ -2061,10 +2172,10 @@ Slots_AnimateGolem:
 	add hl, bc
 	xor a
 	ld [hl], a
-	ldh [hSCY], a
+	ld [hSCY], a
 	ret
 
-Slots_AnimateChansey:
+Slots_AnimateChansey: ; 932ac (24:72ac)
 	ld hl, SPRITEANIMSTRUCT_JUMPTABLE_INDEX
 	add hl, bc
 	ld e, [hl]
@@ -2077,12 +2188,12 @@ Slots_AnimateChansey:
 	ld l, a
 	jp hl
 
-.Jumptable:
+.Jumptable: ; 932bc (24:72bc)
 	dw .walk
 	dw .one
 	dw .two
 
-.walk
+.walk ; 932c2 (24:72c2)
 	ld hl, SPRITEANIMSTRUCT_XCOORD
 	add hl, bc
 	ld a, [hl]
@@ -2102,7 +2213,7 @@ Slots_AnimateChansey:
 	ld a, 1
 	ld [wSlotsDelay], a
 
-.one
+.one ; 932e0 (24:72e0)
 	ld a, [wSlotsDelay]
 	cp $2
 	jr z, .retain
@@ -2117,11 +2228,11 @@ Slots_AnimateChansey:
 	ld hl, SPRITEANIMSTRUCT_JUMPTABLE_INDEX
 	add hl, bc
 	inc [hl]
-	ld hl, SPRITEANIMSTRUCT_VAR1
+	ld hl, SPRITEANIMSTRUCT_0C
 	add hl, bc
 	ld [hl], $8
-.two
-	ld hl, SPRITEANIMSTRUCT_VAR1
+.two ; 932fc (24:72fc)
+	ld hl, SPRITEANIMSTRUCT_0C
 	add hl, bc
 	ld a, [hl]
 	and a
@@ -2136,18 +2247,22 @@ Slots_AnimateChansey:
 	push bc
 	depixel 12, 13, 0, 4
 	ld a, SPRITE_ANIM_INDEX_SLOTS_EGG
-	call InitSpriteAnimStruct
+	call _InitSpriteAnimStruct
 	pop bc
 	ret
 
-Slots_WaitSFX:
+; 93316 (24:7316)
+
+Slots_WaitSFX: ; 93316
 	push bc
 	ld c, 16
 	call DelayFrames
 	pop bc
 	ret
 
-Slots_PlaySFX:
+; 9331e
+
+Slots_PlaySFX: ; 9331e (24:731e)
 	push de
 	ld e, a
 	ld d, 0
@@ -2155,9 +2270,11 @@ Slots_PlaySFX:
 	pop de
 	ret
 
+; 93327 (24:7327)
+
 ; The first three positions are repeated to
 ; avoid needing to check indices when copying.
-Reel1Tilemap:
+Reel1Tilemap: ; 93327
 	db SLOTS_SEVEN    ;  0
 	db SLOTS_CHERRY   ;  1
 	db SLOTS_STARYU   ;  2
@@ -2177,7 +2294,7 @@ Reel1Tilemap:
 	db SLOTS_CHERRY   ;  1
 	db SLOTS_STARYU   ;  2
 
-Reel2Tilemap:
+Reel2Tilemap: ; 93339
 	db SLOTS_SEVEN    ;  0
 	db SLOTS_PIKACHU  ;  1
 	db SLOTS_CHERRY   ;  2
@@ -2197,7 +2314,7 @@ Reel2Tilemap:
 	db SLOTS_PIKACHU  ;  1
 	db SLOTS_CHERRY   ;  2
 
-Reel3Tilemap:
+Reel3Tilemap: ; 9334b
 	db SLOTS_SEVEN    ;  0
 	db SLOTS_PIKACHU  ;  1
 	db SLOTS_CHERRY   ;  2
@@ -2216,15 +2333,20 @@ Reel3Tilemap:
 	db SLOTS_SEVEN    ;  0
 	db SLOTS_PIKACHU  ;  1
 	db SLOTS_CHERRY   ;  2
+; 9335d
 
-SlotsTilemap:
+SlotsTilemap: ; 9335d
 INCBIN "gfx/slots/slots.tilemap"
+; 9344d
 
-Slots1LZ:
+Slots1LZ: ; 9344d
 INCBIN "gfx/slots/slots_1.2bpp.lz"
+; 935cd
 
-Slots2LZ:
+Slots2LZ: ; 935cd
 INCBIN "gfx/slots/slots_2.2bpp.lz"
+; 9382d
 
-Slots3LZ:
+Slots3LZ: ; 9382d
 INCBIN "gfx/slots/slots_3.2bpp.lz"
+; 93a3d

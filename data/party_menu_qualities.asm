@@ -1,4 +1,4 @@
-; WritePartyMenuTilemap.Jumptable indexes (see engine/pokemon/party_menu.asm)
+; WritePartyMenuTilemap.Jumptable indexes (see engine/party_menu.asm)
 	const_def
 	const PARTYMENUQUALITY_NICKNAMES
 	const PARTYMENUQUALITY_HP_BAR
@@ -18,9 +18,9 @@ endr
 	db -1 ; end
 ENDM
 
-PartyMenuQualityPointers:
+
+PartyMenuQualityPointers: ; 503b2
 ; entries correspond to PARTYMENUACTION_* constants
-	table_width 2, PartyMenuQualityPointers
 	dw .Default  ; PARTYMENUACTION_CHOOSE_POKEMON
 	dw .Default  ; PARTYMENUACTION_HEALING_ITEM
 	dw .Default  ; PARTYMENUACTION_SWITCH
@@ -31,10 +31,11 @@ PartyMenuQualityPointers:
 	dw .Gender   ; PARTYMENUACTION_GIVE_MON_FEMALE
 	dw .Default  ; PARTYMENUACTION_GIVE_ITEM
 	dw .Mobile   ; PARTYMENUACTION_MOBILE
-	assert_table_length NUM_PARTYMENUACTIONS
+; 503c6
 
 .Default:  partymenuqualities NICKNAMES, HP_BAR, HP_DIGITS, LEVEL, STATUS
 .TMHM:     partymenuqualities NICKNAMES, TMHM_COMPAT,       LEVEL, STATUS
 .EvoStone: partymenuqualities NICKNAMES, EVO_STONE_COMPAT,  LEVEL, STATUS
 .Gender:   partymenuqualities NICKNAMES, GENDER,            LEVEL, STATUS
 .Mobile:   partymenuqualities NICKNAMES, MOBILE_SELECTION,  LEVEL, STATUS
+; 503e0

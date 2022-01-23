@@ -1,17 +1,17 @@
-BattleCommand_Metronome:
+BattleCommand_Metronome: ; 37418
 ; metronome
 
 	call ClearLastMove
 	call CheckUserIsCharging
-	jr nz, .charging
+	jr nz, .asm_3742b
 
-	ld a, [wBattleAnimParam]
+	ld a, [wKickCounter]
 	push af
 	call BattleCommand_LowerSub
 	pop af
-	ld [wBattleAnimParam], a
+	ld [wKickCounter], a
 
-.charging
+.asm_3742b
 	call LoadMoveAnim
 
 .GetMove:
@@ -34,10 +34,13 @@ BattleCommand_Metronome:
 	call CheckUserMove
 	jr z, .GetMove
 
+
 	ld a, BATTLE_VARS_MOVE
 	call GetBattleVarAddr
 	ld [hl], b
 	call UpdateMoveData
 	jp ResetTurn
+; 37454
 
-INCLUDE "data/moves/metronome_exception_moves.asm"
+
+INCLUDE "data/battle/metronome_exception_moves.asm"

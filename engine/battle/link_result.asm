@@ -1,4 +1,4 @@
-DetermineLinkBattleResult:
+DetermineLinkBattleResult: ; 2b930
 	farcall UpdateEnemyMonInParty
 	ld hl, wPartyMon1HP
 	call .CountMonsRemaining
@@ -58,7 +58,7 @@ DetermineLinkBattleResult:
 	ld [wBattleResult], a
 	ret
 
-.CountMonsRemaining:
+.CountMonsRemaining: ; 2b995
 	ld c, 0
 	ld b, 3
 	ld de, PARTYMON_STRUCT_LENGTH - 1
@@ -74,7 +74,7 @@ DetermineLinkBattleResult:
 	jr nz, .loop
 	ret
 
-.CalcPercentHPRemaining:
+.CalcPercentHPRemaining: ; 2b9a6
 	ld de, 0
 	ld c, $3
 .loop2
@@ -83,13 +83,13 @@ DetermineLinkBattleResult:
 	jr z, .next
 	dec hl
 	xor a
-	ldh [hDividend + 0], a
+	ld [hDividend + 0], a
 	ld a, [hli]
-	ldh [hDividend + 1], a
+	ld [hDividend + 1], a
 	ld a, [hli]
-	ldh [hDividend + 2], a
+	ld [hDividend + 2], a
 	xor a
-	ldh [hDividend + 3], a
+	ld [hDividend + 3], a
 	ld a, [hli]
 	ld b, a
 	ld a, [hld]
@@ -97,13 +97,13 @@ DetermineLinkBattleResult:
 	rr a
 	srl b
 	rr a
-	ldh [hDivisor], a
+	ld [hDivisor], a
 	ld b, $4
 	call Divide
-	ldh a, [hQuotient + 3]
+	ld a, [hQuotient + 2]
 	add e
 	ld e, a
-	ldh a, [hQuotient + 2]
+	ld a, [hQuotient + 1]
 	adc d
 	ld d, a
 	dec hl
@@ -117,7 +117,7 @@ DetermineLinkBattleResult:
 	jr nz, .loop2
 	ret
 
-.BothSides_CheckNumberMonsAtFullHealth:
+.BothSides_CheckNumberMonsAtFullHealth: ; 2b9e1
 	ld hl, wPartyMon1HP
 	call .CheckFaintedOrFullHealth
 	jr nz, .finish ; we have a pokemon that's neither fainted nor at full health
@@ -136,7 +136,7 @@ DetermineLinkBattleResult:
 	and a
 	ret
 
-.CheckFaintedOrFullHealth:
+.CheckFaintedOrFullHealth: ; 2ba01
 	ld d, 3
 .loop3
 	ld a, [hli]

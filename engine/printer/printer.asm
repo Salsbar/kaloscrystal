@@ -1,4 +1,6 @@
-SendScreenToPrinter:
+INCLUDE "engine/printer/printer_serial.asm"
+
+SendScreenToPrinter: ; 843f0
 .loop
 	call JoyTextDelay
 	call CheckCancelPrint
@@ -19,27 +21,31 @@ SendScreenToPrinter:
 .cancel
 	scf
 	ret
+; 84411
 
-Printer_CleanUpAfterSend:
+Printer_CleanUpAfterSend: ; 84411
 	xor a
 	ld [wPrinterConnectionOpen], a
 	ld [wPrinterOpcode], a
 	ret
+; 84419
 
-Printer_PrepareTilemapForPrint:
+Printer_PrepareTileMapForPrint: ; 84419
 	push af
 	call Printer_StartTransmission
 	pop af
-	ld [wPrinterMargins], a
-	call Printer_CopyTilemapToBuffer
+	ld [wcbfa], a
+	call Printer_CopyTileMapToBuffer
 	ret
+; 84425
 
-Printer_ExitPrinter:
+Printer_ExitPrinter: ; 84425
 	call ReturnToMapFromSubmenu
 	call Printer_RestartMapMusic
 	ret
+; 8442c
 
-PrintDexEntry:
+PrintDexEntry: ; 8442c
 	ld a, [wPrinterQueueLength]
 	push af
 
@@ -49,21 +55,21 @@ PrintDexEntry:
 	call Request1bpp
 
 	xor a
-	ldh [hPrinter], a
+	ld [hPrinter], a
 	call Printer_PlayMusic
 
-	ldh a, [rIE]
+	ld a, [rIE]
 	push af
 	xor a
-	ldh [rIF], a
-	ld a, (1 << SERIAL) | (1 << VBLANK)
-	ldh [rIE], a
+	ld [rIF], a
+	ld a, $9
+	ld [rIE], a
 
 	call Printer_StartTransmission
-	ln a, 1, 0
-	ld [wPrinterMargins], a
+	ld a, $10
+	ld [wcbfa], a
 	farcall PrintPage1
-	call ClearTilemap
+	call ClearTileMap
 	ld a, %11100100
 	call DmgToCgbBGPals
 	call DelayFrame
@@ -71,7 +77,7 @@ PrintDexEntry:
 	ld hl, hVBlank
 	ld a, [hl]
 	push af
-	ld [hl], 4 ; vblank mode that calls AskSerial
+	ld [hl], $4
 
 	ld a, 8 ; 16 rows
 	ld [wPrinterQueueLength], a
@@ -83,11 +89,11 @@ PrintDexEntry:
 	ld c, 12
 	call DelayFrames
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 
 	call Printer_StartTransmission
-	ln a, 0, 3
-	ld [wPrinterMargins], a
+	ld a, $3
+	ld [wcbfa], a
 	farcall PrintPage2
 	call Printer_ResetJoypadRegisters
 	ld a, 4
@@ -96,13 +102,13 @@ PrintDexEntry:
 
 .skip_second_page
 	pop af
-	ldh [hVBlank], a
+	ld [hVBlank], a
 	call Printer_CleanUpAfterSend
 
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	pop af
-	ldh [rIE], a
+	ld [rIE], a
 
 	call Printer_ExitPrinter
 	ld c, 8
@@ -115,8 +121,9 @@ PrintDexEntry:
 	pop af
 	ld [wPrinterQueueLength], a
 	ret
+; 844bc
 
-PrintPCBox:
+PrintPCBox: ; 844bc (21:44bc)
 	ld a, [wPrinterQueueLength]
 	push af
 	ld a, 18 / 2
@@ -132,27 +139,27 @@ PrintPCBox:
 	ld [wWhichBoxToPrint], a
 
 	xor a
-	ldh [hPrinter], a
+	ld [hPrinter], a
 	ld [wFinishedPrintingBox], a
 	call Printer_PlayMusic
 
-	ldh a, [rIE]
+	ld a, [rIE]
 	push af
 	xor a
-	ldh [rIF], a
-	ld a, (1 << SERIAL) | (1 << VBLANK)
-	ldh [rIE], a
+	ld [rIF], a
+	ld a, %1001
+	ld [rIE], a
 
 	ld hl, hVBlank
 	ld a, [hl]
 	push af
-	ld [hl], 4 ; vblank mode that calls AskSerial
+	ld [hl], %0100
 
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call PrintPCBox_Page1
-	ln a, 1, 0 ; to be loaded to wPrinterMargins
-	call Printer_PrepareTilemapForPrint
+	ld a, $10 ; to be loaded to wcbfa
+	call Printer_PrepareTileMapForPrint
 	call Printer_ResetRegistersAndStartDataSend
 	jr c, .cancel
 
@@ -160,10 +167,10 @@ PrintPCBox:
 	ld c, 12
 	call DelayFrames
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call PrintPCBox_Page2
-	ln a, 0, 0 ; to be loaded to wPrinterMargins
-	call Printer_PrepareTilemapForPrint
+	ld a, $0 ; to be loaded to wcbfa
+	call Printer_PrepareTileMapForPrint
 	call Printer_ResetRegistersAndStartDataSend
 	jr c, .cancel
 
@@ -172,10 +179,10 @@ PrintPCBox:
 	call DelayFrames
 
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call PrintPCBox_Page3
-	ln a, 0, 0 ; to be loaded to wPrinterMargins
-	call Printer_PrepareTilemapForPrint
+	ld a, $0 ; to be loaded to wcbfa
+	call Printer_PrepareTileMapForPrint
 	call Printer_ResetRegistersAndStartDataSend
 	jr c, .cancel
 
@@ -184,60 +191,55 @@ PrintPCBox:
 	call DelayFrames
 
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call PrintPCBox_Page4
-	ln a, 0, 3 ; to be loaded to wPrinterMargins
-	call Printer_PrepareTilemapForPrint
+	ld a, $3 ; to be loaded to wcbfa
+	call Printer_PrepareTileMapForPrint
 	call Printer_ResetRegistersAndStartDataSend
 .cancel
 	pop af
-	ldh [hVBlank], a
+	ld [hVBlank], a
 	call Printer_CleanUpAfterSend
 
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	pop af
-	ldh [rIE], a
+	ld [rIE], a
 	call Printer_ExitPrinter
 
 	pop af
 	ld [wPrinterQueueLength], a
 	ret
 
-Printer_ResetRegistersAndStartDataSend:
+Printer_ResetRegistersAndStartDataSend: ; 84559 (21:4559)
 	call Printer_ResetJoypadRegisters
 	call SendScreenToPrinter
 	ret
 
-PrintUnownStamp:
+PrintUnownStamp: ; 84560
 	ld a, [wPrinterQueueLength]
 	push af
-
 	xor a
-	ldh [hPrinter], a
+	ld [hPrinter], a
 	call Printer_PlayMusic
-
-	ldh a, [rIE]
+	ld a, [rIE]
 	push af
 	xor a
-	ldh [rIF], a
-	ld a, (1 << SERIAL) | (1 << VBLANK)
-	ldh [rIE], a
-
+	ld [rIF], a
+	ld a, $9
+	ld [rIE], a
 	ld hl, hVBlank
 	ld a, [hl]
 	push af
-	ld [hl], 4 ; vblank mode that calls AskSerial
-
+	ld [hl], $4
 	xor a
-	ldh [hBGMapMode], a
-	call LoadTilemapToTempTilemap
+	ld [hBGMapMode], a
+	call LoadTileMapToTempTileMap
 	farcall PlaceUnownPrinterFrontpic
-	ln a, 0, 0 ; to be loaded to wPrinterMargins
-	call Printer_PrepareTilemapForPrint
-	call SafeLoadTempTilemapToTilemap
+	ld a, $0 ; to be loaded to wcbfa
+	call Printer_PrepareTileMapForPrint
+	call Call_LoadTempTileMapToTileMap
 	call Printer_ResetJoypadRegisters
-
 	ld a, 18 / 2
 	ld [wPrinterQueueLength], a
 .loop
@@ -262,90 +264,91 @@ PrintUnownStamp:
 
 .done
 	pop af
-	ldh [hVBlank], a
+	ld [hVBlank], a
 	call Printer_CleanUpAfterSend
-	call SafeLoadTempTilemapToTilemap
-
+	call Call_LoadTempTileMapToTileMap
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	pop af
-	ldh [rIE], a
-
+	ld [rIE], a
 	pop af
 	ld [wPrinterQueueLength], a
 	ret
+; 845d4
 
-PrintMailAndExit:
-	call PrintMail
+PrintMail: ; 845d4
+	call PrintMail_
 	call Printer_ExitPrinter
 	ret
+; 845db
 
-PrintMail:
+PrintMail_: ; 845db
 	ld a, [wPrinterQueueLength]
 	push af
 	xor a
-	ldh [hPrinter], a
+	ld [hPrinter], a
 	call Printer_PlayMusic
 
-	ldh a, [rIE]
+	ld a, [rIE]
 	push af
 	xor a
-	ldh [rIF], a
-	ld a, (1 << SERIAL) | (1 << VBLANK)
-	ldh [rIE], a
+	ld [rIF], a
+	ld a, %1001
+	ld [rIE], a
 
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 
-	ln a, 1, 3 ; to be loaded to wPrinterMargins
-	call Printer_PrepareTilemapForPrint
+	ld a, $13 ; to be loaded to wcbfa
+	call Printer_PrepareTileMapForPrint
 	ld hl, hVBlank
 	ld a, [hl]
 	push af
-	ld [hl], 4 ; vblank mode that calls AskSerial
+	ld [hl], %0100
 
 	ld a, 18 / 2
 	ld [wPrinterQueueLength], a
 	call SendScreenToPrinter
 
 	pop af
-	ldh [hVBlank], a
+	ld [hVBlank], a
 	call Printer_CleanUpAfterSend
-	call Printer_CopyBufferToTilemap
+	call Printer_CopyBufferToTileMap
 
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	pop af
-	ldh [rIE], a
+	ld [rIE], a
 
 	pop af
 	ld [wPrinterQueueLength], a
 	ret
+; 8461a
 
-PrintPartymon:
+PrintPartymon: ; 8461a
 	ld a, [wPrinterQueueLength]
 	push af
 	xor a
-	ldh [hPrinter], a
+	ld [hPrinter], a
 	call Printer_PlayMusic
 
-	ldh a, [rIE]
+	ld a, [rIE]
 	push af
 	xor a
-	ldh [rIF], a
-	ld a, (1 << SERIAL) | (1 << VBLANK)
-	ldh [rIE], a
+	ld [rIF], a
+	ld a, %1001
+	ld [rIE], a
 
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	farcall PrintPartyMonPage1
-	ln a, 1, 0 ; to be loaded to wPrinterMargins
-	call Printer_PrepareTilemapForPrint
+	ld a, $10 ; to be loaded to wcbfa
+	call Printer_PrepareTileMapForPrint
 
 	ld hl, hVBlank
 	ld a, [hl]
 	push af
-	ld [hl], 4 ; vblank mode that calls AskSerial
+	ld [hl], %0100
 
 	ld a, 16 / 2
 	ld [wPrinterQueueLength], a
@@ -358,10 +361,10 @@ PrintPartymon:
 	call DelayFrames
 
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	farcall PrintPartyMonPage2
-	ln a, 0, 3 ; to be loaded to wPrinterMargins
-	call Printer_PrepareTilemapForPrint
+	ld a, $3 ; to be loaded to wcbfa
+	call Printer_PrepareTileMapForPrint
 
 	ld a, 18 / 2
 	ld [wPrinterQueueLength], a
@@ -369,44 +372,45 @@ PrintPartymon:
 	call SendScreenToPrinter
 .cancel
 	pop af
-	ldh [hVBlank], a
+	ld [hVBlank], a
 	call Printer_CleanUpAfterSend
 
-	call Printer_CopyBufferToTilemap
+	call Printer_CopyBufferToTileMap
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	pop af
-	ldh [rIE], a
+	ld [rIE], a
 	call Printer_ExitPrinter
 
 	pop af
 	ld [wPrinterQueueLength], a
 	ret
+; 84688
 
-_PrintDiploma:
+_PrintDiploma: ; 84688
 	ld a, [wPrinterQueueLength]
 	push af
 
 	farcall PlaceDiplomaOnScreen
 
 	xor a
-	ldh [hPrinter], a
+	ld [hPrinter], a
 	call Printer_PlayMusic
 
-	ldh a, [rIE]
+	ld a, [rIE]
 	push af
 	xor a
-	ldh [rIF], a
-	ld a, (1 << SERIAL) | (1 << VBLANK)
-	ldh [rIE], a
+	ld [rIF], a
+	ld a, %1001
+	ld [rIE], a
 
 	ld hl, hVBlank
 	ld a, [hl]
 	push af
-	ld [hl], 4 ; vblank mode that calls AskSerial
+	ld [hl], %0100
 
-	ln a, 1, 0 ; to be loaded to wPrinterMargins
-	call Printer_PrepareTilemapForPrint
+	ld a, $10 ; to be loaded to wcbfa
+	call Printer_PrepareTileMapForPrint
 	call Printer_ResetJoypadRegisters
 
 	ld a, 18 / 2
@@ -417,15 +421,15 @@ _PrintDiploma:
 	ld c, 12
 	call DelayFrames
 
-	call LoadTilemapToTempTilemap
+	call LoadTileMapToTempTileMap
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 
 	farcall PrintDiplomaPage2
 
-	ln a, 0, 3 ; to be loaded to wPrinterMargins
-	call Printer_PrepareTilemapForPrint
-	call SafeLoadTempTilemapToTilemap
+	ld a, $3 ; to be loaded to wcbfa
+	call Printer_PrepareTileMapForPrint
+	call Call_LoadTempTileMapToTileMap
 	call Printer_ResetJoypadRegisters
 
 	ld a, 18 / 2
@@ -433,32 +437,31 @@ _PrintDiploma:
 	call SendScreenToPrinter
 .cancel
 	pop af
-	ldh [hVBlank], a
+	ld [hVBlank], a
 	call Printer_CleanUpAfterSend
 
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	pop af
-	ldh [rIE], a
+	ld [rIE], a
 	call Printer_ExitPrinter
 
 	pop af
 	ld [wPrinterQueueLength], a
 	ret
+; 846f6
 
-CheckCancelPrint:
-	ldh a, [hJoyDown]
+CheckCancelPrint: ; 846f6
+	ld a, [hJoyDown]
 	and B_BUTTON
 	jr nz, .pressed_b
 	and a
 	ret
 
 .pressed_b
-	ld a, [wUnusedGameboyPrinterSafeCancelFlag]
-	cp $0c
+	ld a, [wca80]
+	cp $c
 	jr nz, .cancel
-
-; wait for printer activity to finish before canceling?
 .loop
 	ld a, [wPrinterOpcode]
 	and a
@@ -466,11 +469,11 @@ CheckCancelPrint:
 	ld a, $16 ; cancel
 	ld [wPrinterOpcode], a
 	ld a, $88
-	ldh [rSB], a
-	ld a, (0 << rSC_ON) | (1 << rSC_CLOCK)
-	ldh [rSC], a
-	ld a, (1 << rSC_ON) | (1 << rSC_CLOCK)
-	ldh [rSC], a
+	ld [rSB], a
+	ld a, $1
+	ld [rSC], a
+	ld a, $81
+	ld [rSC], a
 .loop2
 	ld a, [wPrinterOpcode]
 	and a
@@ -478,44 +481,50 @@ CheckCancelPrint:
 
 .cancel
 	ld a, $1
-	ldh [hPrinter], a
+	ld [hPrinter], a
 	scf
 	ret
+; 84728
 
-Printer_CopyTilemapToBuffer:
+Printer_CopyTileMapToBuffer: ; 84728
 	hlcoord 0, 0
-	ld de, wPrinterTilemapBuffer
+	ld de, wPrinterTileMapBuffer
 	ld bc, SCREEN_WIDTH * SCREEN_HEIGHT
 	call CopyBytes
 	ret
+; 84735
 
-Printer_CopyBufferToTilemap:
-	ld hl, wPrinterTilemapBuffer
+Printer_CopyBufferToTileMap: ; 84735
+	ld hl, wPrinterTileMapBuffer
 	decoord 0, 0
 	ld bc, SCREEN_WIDTH * SCREEN_HEIGHT
 	call CopyBytes
 	ret
+; 84742
 
-Printer_ResetJoypadRegisters:
+Printer_ResetJoypadRegisters: ; 84742
 	xor a
-	ldh [hJoyReleased], a
-	ldh [hJoyPressed], a
-	ldh [hJoyDown], a
-	ldh [hJoyLast], a
+	ld [hJoyReleased], a
+	ld [hJoyPressed], a
+	ld [hJoyDown], a
+	ld [hJoyLast], a
 	ret
+; 8474c
 
-Printer_PlayMusic:
+Printer_PlayMusic: ; 8474c
 	ld de, MUSIC_PRINTER
 	call PlayMusic2
 	ret
+; 84753
 
-Printer_RestartMapMusic:
+Printer_RestartMapMusic: ; 84753
 	call RestartMapMusic
 	ret
+; 84757
 
-CheckPrinterStatus:
+CheckPrinterStatus: ; 84757
 ; Check for printer errors
-; If [wPrinterHandshake] == -1, we're disconnected
+; If [ca88] == -1, we're disconnected
 	ld a, [wPrinterHandshake]
 	cp -1
 	jr nz, .printer_connected
@@ -523,6 +532,7 @@ CheckPrinterStatus:
 	cp -1
 	jr z, .error_2
 .printer_connected
+; ca89 contains printer status flags
 	ld a, [wPrinterStatusFlags]
 	and %11100000
 	ret z ; no error
@@ -551,18 +561,19 @@ CheckPrinterStatus:
 .load_text_index
 	ld [wPrinterStatus], a
 	ret
+; 84785
 
-PlacePrinterStatusString:
+PlacePrinterStatusString: ; 84785
 ; Print nonzero printer status
 	ld a, [wPrinterStatus]
 	and a
 	ret z
 	push af
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	hlcoord 0, 5
 	lb bc, 10, 18
-	call Textbox
+	call TextBox
 	pop af
 	ld e, a
 	ld d, 0
@@ -574,25 +585,24 @@ PlacePrinterStatusString:
 	ld d, [hl]
 	hlcoord 1, 7
 	ld a, BANK(GBPrinterStrings)
-	call PlaceFarString
+	call FarString
 	hlcoord 2, 15
 	ld de, String_PressBToCancel
 	call PlaceString
 	ld a, $1
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	xor a
 	ld [wPrinterStatus], a
 	ret
+; 847bd
 
-PlacePrinterStatusStringBorderless: ; unreferenced
-; Similar to PlacePrinterStatusString, but with different hlcoords
-; and ClearBox instead of TextBox.
+Unreferenced_Function847bd: ; 847bd
 	ld a, [wPrinterStatus]
 	and a
 	ret z
 	push af
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	hlcoord 2, 4
 	lb bc, 13, 16
 	call ClearBox
@@ -607,20 +617,22 @@ PlacePrinterStatusStringBorderless: ; unreferenced
 	ld d, [hl]
 	hlcoord 4, 7
 	ld a, BANK(GBPrinterStrings)
-	call PlaceFarString
+	call FarString
 	hlcoord 4, 15
 	ld de, String_PressBToCancel
 	call PlaceString
 	ld a, $1
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	xor a
 	ld [wPrinterStatus], a
 	ret
+; 847f5
 
 String_PressBToCancel:
 	db "Press B to Cancel@"
+; 84807
 
-PrinterStatusStringPointers:
+PrinterStatusStringPointers: ; 84807
 	dw GBPrinterString_Null ; @
 	dw GBPrinterString_CheckingLink ; CHECKING LINK
 	dw GBPrinterString_Transmitting ; TRANSMITTING
@@ -629,8 +641,9 @@ PrinterStatusStringPointers:
 	dw GBPrinterString_PrinterError2 ; error 2
 	dw GBPrinterString_PrinterError3 ; error 3
 	dw GBPrinterString_PrinterError4 ; error 4
+; 84817
 
-PrintPCBox_Page1:
+PrintPCBox_Page1: ; 84817 (21:4817)
 	xor a
 	ld [wWhichBoxMonToPrint], a
 	hlcoord 0, 0
@@ -665,11 +678,13 @@ PrintPCBox_Page1:
 	ld c, 3
 	call Printer_PrintBoxListSegment
 	ret
+; 84865 (21:4865)
 
 .String_PokemonList:
 	db "#MON LIST@"
+; 8486f
 
-PrintPCBox_Page2:
+PrintPCBox_Page2: ; 8486f (21:486f)
 	hlcoord 0, 0
 	ld bc, SCREEN_HEIGHT * SCREEN_WIDTH
 	ld a, " "
@@ -686,7 +701,7 @@ PrintPCBox_Page2:
 	call Printer_PrintBoxListSegment
 	ret
 
-PrintPCBox_Page3:
+PrintPCBox_Page3: ; 84893 (21:4893)
 	hlcoord 0, 0
 	ld bc, SCREEN_HEIGHT * SCREEN_WIDTH
 	ld a, " "
@@ -703,7 +718,7 @@ PrintPCBox_Page3:
 	call Printer_PrintBoxListSegment
 	ret
 
-PrintPCBox_Page4:
+PrintPCBox_Page4: ; 848b7 (21:48b7)
 	hlcoord 0, 0
 	ld bc, SCREEN_HEIGHT * SCREEN_WIDTH
 	ld a, " "
@@ -724,9 +739,9 @@ PrintPCBox_Page4:
 	call Printer_PrintBoxListSegment
 	ret
 
-Printer_PrintBoxListSegment:
+Printer_PrintBoxListSegment: ; 848e7 (21:48e7)
 	ld a, [wBankOfBoxToPrint]
-	call OpenSRAM
+	call GetSRAMBank
 .loop
 	ld a, c
 	and a
@@ -735,7 +750,7 @@ Printer_PrintBoxListSegment:
 	ld a, [de]
 	cp $ff
 	jp z, .finish
-	ld [wNamedObjectIndex], a
+	ld [wd265], a
 	ld [wCurPartySpecies], a
 
 	push bc
@@ -824,13 +839,13 @@ Printer_PrintBoxListSegment:
 	call CloseSRAM
 	ret
 
-Printer_GetMonGender:
+Printer_GetMonGender: ; 8498a (21:498a)
 	push hl
 	ld a, [wAddrOfBoxToPrint]
 	ld l, a
 	ld a, [wAddrOfBoxToPrint + 1]
 	ld h, a
-	ld bc, 2 + MONS_PER_BOX + MON_DVS
+	ld bc, $2b
 	add hl, bc
 	ld bc, BOXMON_STRUCT_LENGTH
 	ld a, [wWhichBoxMonToPrint]
@@ -856,10 +871,10 @@ Printer_GetMonGender:
 	ld [hli], a
 	ret
 
-Printer_GetBoxMonSpecies:
+Printer_GetBoxMonSpecies: ; 849c6 (21:49c6)
 	push hl
 	ld e, a
-	ld d, 0
+	ld d, $0
 	ld a, [wAddrOfBoxToPrint]
 	ld l, a
 	ld a, [wAddrOfBoxToPrint + 1]
@@ -870,7 +885,7 @@ Printer_GetBoxMonSpecies:
 	pop hl
 	ret
 
-Printer_PlaceTopBorder:
+Printer_PlaceTopBorder: ; 849d7 (21:49d7)
 	hlcoord 0, 0
 	ld a, "┌"
 	ld [hli], a
@@ -884,7 +899,7 @@ Printer_PlaceTopBorder:
 	ld [hl], a
 	ret
 
-Printer_PlaceSideBorders:
+Printer_PlaceSideBorders: ; 849e9 (21:49e9)
 	hlcoord 0, 0
 	ld de, SCREEN_WIDTH - 1
 	ld c, SCREEN_HEIGHT
@@ -898,7 +913,7 @@ Printer_PlaceSideBorders:
 	jr nz, .loop
 	ret
 
-Printer_PlaceBottomBorders:
+Printer_PlaceBottomBorders: ; 849fc (21:49fc)
 	hlcoord 0, 17
 	ld a, "└"
 	ld [hli], a
@@ -912,13 +927,13 @@ Printer_PlaceBottomBorders:
 	ld [hl], a
 	ret
 
-Printer_PlaceEmptyBoxSlotString:
+Printer_PlaceEmptyBoxSlotString: ; 84a0e (21:4a0e)
 	hlcoord 2, 0
-	ld c, 6
+	ld c, $6
 .loop
 	push bc
 	push hl
-	ld de, .EmptyBoxSlotString
+	ld de, String84a25
 	call PlaceString
 	pop hl
 	ld bc, 3 * SCREEN_WIDTH
@@ -927,6 +942,8 @@ Printer_PlaceEmptyBoxSlotString:
 	dec c
 	jr nz, .loop
 	ret
+; 84a25 (21:4a25)
 
-.EmptyBoxSlotString:
+String84a25: ; 84a25
 	db "  ------@"
+; 84a2e

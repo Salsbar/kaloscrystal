@@ -1,4 +1,4 @@
-	object_const_def
+	const_def 2 ; object constants
 	const ROUTE42_FISHER
 	const ROUTE42_POKEFAN_M
 	const ROUTE42_SUPER_NERD
@@ -10,11 +10,11 @@
 	const ROUTE42_SUICUNE
 
 Route42_MapScripts:
-	def_scene_scripts
+	db 2 ; scene scripts
 	scene_script .DummyScene0 ; SCENE_ROUTE42_NOTHING
 	scene_script .DummyScene1 ; SCENE_ROUTE42_SUICUNE
 
-	def_callbacks
+	db 0 ; callbacks
 
 .DummyScene0:
 	end
@@ -38,10 +38,10 @@ TrainerFisherTully:
 	trainer FISHER, TULLY1, EVENT_BEAT_FISHER_TULLY, FisherTullySeenText, FisherTullyBeatenText, 0, .Script
 
 .Script:
-	loadvar VAR_CALLERID, PHONE_FISHER_TULLY
+	writecode VAR_CALLERID, PHONE_FISHER_TULLY
 	endifjustbattled
 	opentext
-	checkflag ENGINE_TULLY_READY_FOR_REMATCH
+	checkflag ENGINE_TULLY
 	iftrue .WantsBattle
 	checkflag ENGINE_TULLY_HAS_WATER_STONE
 	iftrue .HasWaterStone
@@ -50,10 +50,10 @@ TrainerFisherTully:
 	checkevent EVENT_TULLY_ASKED_FOR_PHONE_NUMBER
 	iftrue .AskedAlready
 	writetext FisherTullyAfterBattleText
-	promptbutton
+	buttonsound
 	setevent EVENT_TULLY_ASKED_FOR_PHONE_NUMBER
 	scall .AskNumber1
-	sjump .AskForNumber
+	jump .AskForNumber
 
 .AskedAlready:
 	scall .AskNumber2
@@ -61,14 +61,14 @@ TrainerFisherTully:
 	askforphonenumber PHONE_FISHER_TULLY
 	ifequal PHONE_CONTACTS_FULL, .PhoneFull
 	ifequal PHONE_CONTACT_REFUSED, .NumberDeclined
-	gettrainername STRING_BUFFER_3, FISHER, TULLY1
+	trainertotext FISHER, TULLY1, MEM_BUFFER_0
 	scall .RegisteredNumber
-	sjump .NumberAccepted
+	jump .NumberAccepted
 
 .WantsBattle:
 	scall .Rematch
 	winlosstext FisherTullyBeatenText, 0
-	readmem wTullyFightCount
+	copybytetovar wTullyFightCount
 	ifequal 3, .Fight3
 	ifequal 2, .Fight2
 	ifequal 1, .Fight1
@@ -86,31 +86,31 @@ TrainerFisherTully:
 	loadtrainer FISHER, TULLY1
 	startbattle
 	reloadmapafterbattle
-	loadmem wTullyFightCount, 1
-	clearflag ENGINE_TULLY_READY_FOR_REMATCH
+	loadvar wTullyFightCount, 1
+	clearflag ENGINE_TULLY
 	end
 
 .LoadFight1:
 	loadtrainer FISHER, TULLY2
 	startbattle
 	reloadmapafterbattle
-	loadmem wTullyFightCount, 2
-	clearflag ENGINE_TULLY_READY_FOR_REMATCH
+	loadvar wTullyFightCount, 2
+	clearflag ENGINE_TULLY
 	end
 
 .LoadFight2:
 	loadtrainer FISHER, TULLY3
 	startbattle
 	reloadmapafterbattle
-	loadmem wTullyFightCount, 3
-	clearflag ENGINE_TULLY_READY_FOR_REMATCH
+	loadvar wTullyFightCount, 3
+	clearflag ENGINE_TULLY
 	end
 
 .LoadFight3:
 	loadtrainer FISHER, TULLY4
 	startbattle
 	reloadmapafterbattle
-	clearflag ENGINE_TULLY_READY_FOR_REMATCH
+	clearflag ENGINE_TULLY
 	end
 
 .HasWaterStone:
@@ -119,45 +119,45 @@ TrainerFisherTully:
 	iffalse .NoRoom
 	clearflag ENGINE_TULLY_HAS_WATER_STONE
 	setevent EVENT_TULLY_GAVE_WATER_STONE
-	sjump .NumberAccepted
+	jump .NumberAccepted
 
 .NoRoom:
-	sjump .PackFull
+	jump .PackFull
 
 .AskNumber1:
-	jumpstd AskNumber1MScript
+	jumpstd asknumber1m
 	end
 
 .AskNumber2:
-	jumpstd AskNumber2MScript
+	jumpstd asknumber2m
 	end
 
 .RegisteredNumber:
-	jumpstd RegisteredNumberMScript
+	jumpstd registerednumberm
 	end
 
 .NumberAccepted:
-	jumpstd NumberAcceptedMScript
+	jumpstd numberacceptedm
 	end
 
 .NumberDeclined:
-	jumpstd NumberDeclinedMScript
+	jumpstd numberdeclinedm
 	end
 
 .PhoneFull:
-	jumpstd PhoneFullMScript
+	jumpstd phonefullm
 	end
 
 .Rematch:
-	jumpstd RematchMScript
+	jumpstd rematchm
 	end
 
 .Gift:
-	jumpstd GiftMScript
+	jumpstd giftm
 	end
 
 .PackFull:
-	jumpstd PackFullMScript
+	jumpstd packfullm
 	end
 
 TrainerPokemaniacShane:
@@ -272,8 +272,8 @@ PokemaniacShaneSeenText:
 	done
 
 PokemaniacShaneBeatenText:
-	text "I should have used"
-	line "my MOON STONE…"
+	text "MY electric #-"
+	line "MON are done…"
 	done
 
 PokemaniacShaneAfterBattleText:
@@ -319,24 +319,24 @@ Route42Sign2Text:
 Route42_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 5 ; warp events
 	warp_event  0,  8, ROUTE_42_ECRUTEAK_GATE, 3
 	warp_event  0,  9, ROUTE_42_ECRUTEAK_GATE, 4
 	warp_event 10,  5, MOUNT_MORTAR_1F_OUTSIDE, 1
 	warp_event 28,  9, MOUNT_MORTAR_1F_OUTSIDE, 2
 	warp_event 46,  7, MOUNT_MORTAR_1F_OUTSIDE, 3
 
-	def_coord_events
+	db 1 ; coord events
 	coord_event 24, 14, SCENE_ROUTE42_SUICUNE, Route42SuicuneScript
 
-	def_bg_events
+	db 5 ; bg events
 	bg_event  4, 10, BGEVENT_READ, Route42Sign1
 	bg_event  7,  5, BGEVENT_READ, MtMortarSign1
 	bg_event 45,  9, BGEVENT_READ, MtMortarSign2
 	bg_event 54,  8, BGEVENT_READ, Route42Sign2
 	bg_event 16, 11, BGEVENT_ITEM, Route42HiddenMaxPotion
 
-	def_object_events
+	db 9 ; object events
 	object_event 40, 10, SPRITE_FISHER, SPRITEMOVEDATA_STANDING_LEFT, 0, 0, -1, -1, PAL_NPC_GREEN, OBJECTTYPE_TRAINER, 1, TrainerFisherTully, -1
 	object_event 51,  9, SPRITE_POKEFAN_M, SPRITEMOVEDATA_SPINRANDOM_FAST, 0, 0, -1, -1, PAL_NPC_BROWN, OBJECTTYPE_TRAINER, 3, TrainerHikerBenjamin, -1
 	object_event 47,  8, SPRITE_SUPER_NERD, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_TRAINER, 3, TrainerPokemaniacShane, -1
@@ -345,4 +345,4 @@ Route42_MapEvents:
 	object_event 29, 16, SPRITE_FRUIT_TREE, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, Route42FruitTree3, -1
 	object_event  6,  4, SPRITE_POKE_BALL, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_ITEMBALL, 0, Route42UltraBall, EVENT_ROUTE_42_ULTRA_BALL
 	object_event 33,  8, SPRITE_POKE_BALL, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_ITEMBALL, 0, Route42SuperPotion, EVENT_ROUTE_42_SUPER_POTION
-	object_event 26, 16, SPRITE_SUICUNE, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_SCRIPT, 0, ObjectEvent, EVENT_SAW_SUICUNE_ON_ROUTE_42
+	object_event 26, 16, SPRITE_SUICUNE, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, PAL_NPC_GREEN, OBJECTTYPE_SCRIPT, 0, ObjectEvent, EVENT_SAW_SUICUNE_ON_ROUTE_42

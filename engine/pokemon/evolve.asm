@@ -1,4 +1,4 @@
-EvolvePokemon:
+EvolvePokemon: ; 421d8
 	ld hl, wEvolvableFlags
 	xor a
 	ld [hl], a
@@ -6,7 +6,7 @@ EvolvePokemon:
 	ld c, a
 	ld b, SET_FLAG
 	call EvoFlagAction
-EvolveAfterBattle:
+EvolveAfterBattle: ; 421e6
 	xor a
 	ld [wMonTriedToEvolve], a
 	dec a
@@ -87,6 +87,7 @@ EvolveAfterBattle_MasterLoop:
 	cp EVOLVE_HAPPINESS
 	jr z, .happiness
 
+
 ; EVOLVE_STAT
 	ld a, [wTempMonLevel]
 	cp [hl]
@@ -99,7 +100,7 @@ EvolveAfterBattle_MasterLoop:
 	ld de, wTempMonAttack
 	ld hl, wTempMonDefense
 	ld c, 2
-	call CompareBytes
+	call StringCmp
 	ld a, ATK_EQ_DEF
 	jr z, .got_tyrogue_evo
 	ld a, ATK_LT_DEF
@@ -114,6 +115,7 @@ EvolveAfterBattle_MasterLoop:
 
 	inc hl
 	jr .proceed
+
 
 .happiness
 	ld a, [wTempMonHappiness]
@@ -141,6 +143,7 @@ EvolveAfterBattle_MasterLoop:
 	jp z, .dont_evolve_3
 	jr .proceed
 
+
 .trade
 	ld a, [wLinkMode]
 	and a
@@ -166,6 +169,7 @@ EvolveAfterBattle_MasterLoop:
 	ld [wTempMonItem], a
 	jr .proceed
 
+
 .item
 	ld a, [hli]
 	ld b, a
@@ -180,6 +184,7 @@ EvolveAfterBattle_MasterLoop:
 	and a
 	jp nz, .dont_evolve_3
 	jr .proceed
+
 
 .level
 	ld a, [hli]
@@ -202,22 +207,22 @@ EvolveAfterBattle_MasterLoop:
 	ld [wEvolutionNewSpecies], a
 	ld a, [wCurPartyMon]
 	ld hl, wPartyMonNicknames
-	call GetNickname
+	call GetNick
 	call CopyName1
-	ld hl, EvolvingText
+	ld hl, Text_WhatEvolving
 	call PrintText
 
 	ld c, 50
 	call DelayFrames
 
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	hlcoord 0, 0
 	lb bc, 12, 20
 	call ClearBox
 
 	ld a, $1
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call ClearSprites
 
 	farcall EvolutionAnimation
@@ -227,7 +232,7 @@ EvolveAfterBattle_MasterLoop:
 	pop af
 	jp c, CancelEvolution
 
-	ld hl, CongratulationsYourPokemonText
+	ld hl, Text_CongratulationsYourPokemon
 	call PrintText
 
 	pop hl
@@ -236,12 +241,12 @@ EvolveAfterBattle_MasterLoop:
 	ld [wCurSpecies], a
 	ld [wTempMonSpecies], a
 	ld [wEvolutionNewSpecies], a
-	ld [wNamedObjectIndex], a
+	ld [wd265], a
 	call GetPokemonName
 
 	push hl
-	ld hl, EvolvedIntoText
-	call PrintTextboxText
+	ld hl, Text_EvolvedIntoPKMN
+	call PrintTextBoxText
 	farcall StubbedTrainerRankings_MonsEvolved
 
 	ld de, MUSIC_NONE
@@ -253,7 +258,7 @@ EvolveAfterBattle_MasterLoop:
 	ld c, 40
 	call DelayFrames
 
-	call ClearTilemap
+	call ClearTileMap
 	call UpdateSpeciesNameIfNotNicknamed
 	call GetBaseData
 
@@ -293,17 +298,18 @@ EvolveAfterBattle_MasterLoop:
 	call CopyBytes
 
 	ld a, [wCurSpecies]
-	ld [wTempSpecies], a
+	ld [wd265], a
 	xor a
 	ld [wMonType], a
 	call LearnLevelMoves
-	ld a, [wTempSpecies]
+	ld a, [wd265]
 	dec a
 	call SetSeenAndCaughtMon
 
-	ld a, [wTempSpecies]
-	cp UNOWN
-	jr nz, .skip_unown
+	ld a, [wd265]
+	;cp UNOWN
+	;jr nz, .skip_unown
+	jr .skip_unown
 
 	ld hl, wTempMonDVs
 	predef GetUnownLetter
@@ -318,6 +324,7 @@ EvolveAfterBattle_MasterLoop:
 	ld l, e
 	ld h, d
 	jp EvolveAfterBattle_MasterLoop
+; 423f8
 
 .dont_evolve_1
 	inc hl
@@ -327,7 +334,7 @@ EvolveAfterBattle_MasterLoop:
 	inc hl
 	jp .loop
 
-.UnusedReturnToMap: ; unreferenced
+; unused
 	pop hl
 .ReturnToMap:
 	pop de
@@ -343,12 +350,13 @@ EvolveAfterBattle_MasterLoop:
 	and a
 	call nz, RestartMapMusic
 	ret
+; 42414
 
-UpdateSpeciesNameIfNotNicknamed:
+UpdateSpeciesNameIfNotNicknamed: ; 42414
 	ld a, [wCurSpecies]
 	push af
 	ld a, [wBaseDexNo]
-	ld [wNamedObjectIndex], a
+	ld [wd265], a
 	call GetPokemonName
 	pop af
 	ld [wCurSpecies], a
@@ -369,21 +377,23 @@ UpdateSpeciesNameIfNotNicknamed:
 	call AddNTimes
 	push hl
 	ld a, [wCurSpecies]
-	ld [wNamedObjectIndex], a
+	ld [wd265], a
 	call GetPokemonName
 	ld hl, wStringBuffer1
 	pop de
 	ld bc, MON_NAME_LENGTH
 	jp CopyBytes
+; 42454
 
-CancelEvolution:
-	ld hl, StoppedEvolvingText
+CancelEvolution: ; 42454
+	ld hl, Text_StoppedEvolving
 	call PrintText
-	call ClearTilemap
+	call ClearTileMap
 	pop hl
 	jp EvolveAfterBattle_MasterLoop
+; 42461
 
-IsMonHoldingEverstone:
+IsMonHoldingEverstone: ; 42461
 	push hl
 	ld a, [wCurPartyMon]
 	ld hl, wPartyMon1Item
@@ -393,25 +403,35 @@ IsMonHoldingEverstone:
 	cp EVERSTONE
 	pop hl
 	ret
+; 42473
 
-CongratulationsYourPokemonText:
-	text_far _CongratulationsYourPokemonText
-	text_end
+Text_CongratulationsYourPokemon: ; 0x42473
+	; Congratulations! Your @ @
+	text_jump UnknownText_0x1c4b92
+	db "@"
+; 0x42478
 
-EvolvedIntoText:
-	text_far _EvolvedIntoText
-	text_end
+Text_EvolvedIntoPKMN: ; 0x42478
+	; evolved into @ !
+	text_jump UnknownText_0x1c4baf
+	db "@"
+; 0x4247d
 
-StoppedEvolvingText:
-	text_far _StoppedEvolvingText
-	text_end
+Text_StoppedEvolving: ; 0x4247d
+	; Huh? @ stopped evolving!
+	text_jump UnknownText_0x1c4bc5
+	db "@"
+; 0x42482
 
-EvolvingText:
-	text_far _EvolvingText
-	text_end
+Text_WhatEvolving: ; 0x42482
+	; What? @ is evolving!
+	text_jump UnknownText_0x1c4be3
+	db "@"
+; 0x42487
 
-LearnLevelMoves:
-	ld a, [wTempSpecies]
+
+LearnLevelMoves: ; 42487
+	ld a, [wd265]
 	ld [wCurPartySpecies], a
 	dec a
 	ld b, 0
@@ -462,7 +482,7 @@ LearnLevelMoves:
 .learn
 	ld a, d
 	ld [wPutativeTMHMMove], a
-	ld [wNamedObjectIndex], a
+	ld [wd265], a
 	call GetMoveName
 	call CopyName1
 	predef LearnMove
@@ -471,10 +491,12 @@ LearnLevelMoves:
 
 .done
 	ld a, [wCurPartySpecies]
-	ld [wTempSpecies], a
+	ld [wd265], a
 	ret
+; 424e1
 
-FillMoves:
+
+FillMoves: ; 424e1
 ; Fill in moves at de for wCurPartySpecies at wCurPartyLevel
 
 	push hl
@@ -509,10 +531,10 @@ FillMoves:
 	ld a, [wCurPartyLevel]
 	cp b
 	jp c, .done
-	ld a, [wSkipMovesBeforeLevelUp]
+	ld a, [wEvolutionOldSpecies]
 	and a
 	jr z, .CheckMove
-	ld a, [wPrevPartyLevel]
+	ld a, [wd002]
 	cp b
 	jr nc, .GetMove
 
@@ -583,8 +605,9 @@ FillMoves:
 	pop de
 	pop hl
 	ret
+; 4256e
 
-ShiftMoves:
+ShiftMoves: ; 4256e
 	ld c, NUM_MOVES - 1
 .loop
 	inc de
@@ -593,15 +616,18 @@ ShiftMoves:
 	dec c
 	jr nz, .loop
 	ret
+; 42577
 
-EvoFlagAction:
+
+EvoFlagAction: ; 42577
 	push de
 	ld d, $0
 	predef SmallFarFlagAction
 	pop de
 	ret
+; 42581
 
-GetPreEvolution:
+GetPreEvolution: ; 42581
 ; Find the first mon to evolve into wCurPartySpecies.
 
 ; Return carry and the new species in wCurPartySpecies
@@ -648,3 +674,4 @@ GetPreEvolution:
 	ld [wCurPartySpecies], a
 	scf
 	ret
+; 425b1

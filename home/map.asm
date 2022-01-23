@@ -1,16 +1,17 @@
 ; Functions dealing with rendering and interacting with maps.
 
-ClearUnusedMapBuffer::
-	ld hl, wUnusedMapBuffer
-	ld bc, wUnusedMapBufferEnd - wUnusedMapBuffer
+Clearwc7e8:: ; 210f
+	ld hl, wc7e8
+	ld bc, wc7e8_End - wc7e8
 	ld a, 0
 	call ByteFill
 	ret
+; 211b
 
-CheckScenes::
-; Checks wCurMapSceneScriptPointer.  If it's empty, returns -1 in a.  Otherwise, returns the active scene ID in a.
+CheckScenes:: ; 211b
+; Checks wCurrMapSceneScriptPointer.  If it's empty, returns -1 in a.  Otherwise, returns the active scene ID in a.
 	push hl
-	ld hl, wCurMapSceneScriptPointer
+	ld hl, wCurrMapSceneScriptPointer
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -22,34 +23,36 @@ CheckScenes::
 .scene_exists
 	pop hl
 	ret
+; 212a
 
-GetCurrentMapSceneID::
-; Grabs the wram map scene script pointer for the current map and loads it into wCurMapSceneScriptPointer.
-; If there is no scene, both bytes of wCurMapSceneScriptPointer are wiped clean.
+GetCurrentMapSceneID:: ; 212a
+; Grabs the wram map scene script pointer for the current map and loads it into wCurrMapSceneScriptPointer.
+; If there is no scene, both bytes of wCurrMapSceneScriptPointer are wiped clean.
 ; Copy the current map group and number into bc.  This is needed for GetMapSceneID.
 	ld a, [wMapGroup]
 	ld b, a
 	ld a, [wMapNumber]
 	ld c, a
-; Blank out wCurMapSceneScriptPointer; this is the default scenario.
+; Blank out wCurrMapSceneScriptPointer; this is the default scenario.
 	xor a
-	ld [wCurMapSceneScriptPointer], a
-	ld [wCurMapSceneScriptPointer + 1], a
+	ld [wCurrMapSceneScriptPointer], a
+	ld [wCurrMapSceneScriptPointer + 1], a
 	call GetMapSceneID
 	ret c ; The map is not in the scene script table
-; Load the scene script pointer from de into wCurMapSceneScriptPointer
+; Load the scene script pointer from de into wCurrMapSceneScriptPointer
 	ld a, e
-	ld [wCurMapSceneScriptPointer], a
+	ld [wCurrMapSceneScriptPointer], a
 	ld a, d
-	ld [wCurMapSceneScriptPointer + 1], a
+	ld [wCurrMapSceneScriptPointer + 1], a
 	xor a
 	ret
+; 2147
 
-GetMapSceneID::
-; Searches the scene_var table for the map group and number loaded in bc, and returns the wram pointer in de.
-; If the map is not in the scene_var table, returns carry.
+GetMapSceneID:: ; 2147
+; Searches the scene script table for the map group and number loaded in bc, and returns the wram pointer in de.
+; If the map is not in the scene script table, returns carry.
 	push bc
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 	ld a, BANK(MapScenes)
 	rst Bankswitch
@@ -59,7 +62,7 @@ GetMapSceneID::
 	push hl
 	ld a, [hli] ; map group, or terminator
 	cp -1
-	jr z, .end ; the current map is not in the scene_var table
+	jr z, .end ; the current map is not in the scene script table
 	cp b
 	jr nz, .next ; map group did not match
 	ld a, [hli] ; map number
@@ -69,7 +72,7 @@ GetMapSceneID::
 
 .next
 	pop hl
-	ld de, 4 ; scene_var size
+	ld de, 4 ; scene_script size
 	add hl, de
 	jr .loop
 
@@ -90,20 +93,22 @@ GetMapSceneID::
 
 	pop bc
 	ret
+; 2173
 
-OverworldTextModeSwitch::
+OverworldTextModeSwitch:: ; 2173
 	call LoadMapPart
-	call SwapTextboxPalettes
+	call FarCallSwapTextboxPalettes
 	ret
+; 217a
 
-LoadMapPart::
-	ldh a, [hROMBank]
+LoadMapPart:: ; 217a
+	ld a, [hROMBank]
 	push af
 
 	ld a, [wTilesetBlocksBank]
 	rst Bankswitch
-	call LoadMetatiles
 
+	call LoadMetatiles
 	ld a, "■"
 	hlcoord 0, 0
 	ld bc, SCREEN_WIDTH * SCREEN_HEIGHT
@@ -116,20 +121,21 @@ LoadMapPart::
 	pop af
 	rst Bankswitch
 	ret
+; 2198
 
-LoadMetatiles::
+LoadMetatiles:: ; 2198
 	; de <- wOverworldMapAnchor
 	ld a, [wOverworldMapAnchor]
 	ld e, a
 	ld a, [wOverworldMapAnchor + 1]
 	ld d, a
 	ld hl, wSurroundingTiles
-	ld b, SCREEN_META_HEIGHT
+	ld b, SURROUNDING_HEIGHT / METATILE_WIDTH ; 5
 
 .row
 	push de
 	push hl
-	ld c, SCREEN_META_WIDTH
+	ld c, SURROUNDING_WIDTH / METATILE_WIDTH ; 6
 
 .col
 	push de
@@ -163,7 +169,7 @@ LoadMetatiles::
 	ld h, a
 
 	; copy the 4x4 metatile
-rept METATILE_WIDTH - 1
+rept METATILE_WIDTH + -1
 rept METATILE_WIDTH
 	ld a, [hli]
 	ld [de], a
@@ -195,7 +201,7 @@ endr
 	add hl, de
 	pop de
 	ld a, [wMapWidth]
-	add MAP_CONNECTION_PADDING_WIDTH * 2
+	add 6
 	add e
 	ld e, a
 	jr nc, .ok2
@@ -204,16 +210,18 @@ endr
 	dec b
 	jp nz, .row
 	ret
+; 222a
 
-ReturnToMapFromSubmenu::
+ReturnToMapFromSubmenu:: ; 222a
 	ld a, MAPSETUP_SUBMENU
-	ldh [hMapEntryMethod], a
+	ld [hMapEntryMethod], a
 	farcall RunMapSetupScript
 	xor a
-	ldh [hMapEntryMethod], a
+	ld [hMapEntryMethod], a
 	ret
+; 2238
 
-CheckWarpTile::
+CheckWarpTile:: ; 2238
 	call GetDestinationWarpNumber
 	ret nc
 
@@ -225,18 +233,20 @@ CheckWarpTile::
 	call CopyWarpData
 	scf
 	ret
+; 224a
 
-WarpCheck::
+WarpCheck:: ; 224a
 	call GetDestinationWarpNumber
 	ret nc
 	call CopyWarpData
 	ret
+; 2252
 
-GetDestinationWarpNumber::
+GetDestinationWarpNumber:: ; 2252
 	farcall CheckWarpCollision
 	ret nc
 
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 
 	call SwitchToMapScriptsBank
@@ -246,20 +256,21 @@ GetDestinationWarpNumber::
 	ld a, d
 	rst Bankswitch
 	ret
+; 2266
 
-.GetDestinationWarpNumber:
+.GetDestinationWarpNumber: ; 2266
 	ld a, [wPlayerStandingMapY]
 	sub 4
 	ld e, a
 	ld a, [wPlayerStandingMapX]
 	sub 4
 	ld d, a
-	ld a, [wCurMapWarpCount]
+	ld a, [wCurrMapWarpCount]
 	and a
 	ret z
 
 	ld c, a
-	ld hl, wCurMapWarpsPointer
+	ld hl, wCurrMapWarpsPointer
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -275,7 +286,7 @@ GetDestinationWarpNumber::
 
 .next
 	pop hl
-	ld a, WARP_EVENT_SIZE
+	ld a, 5
 	add l
 	ld l, a
 	jr nc, .okay
@@ -292,7 +303,7 @@ GetDestinationWarpNumber::
 	call .IncreaseHLTwice
 	ret nc ; never encountered
 
-	ld a, [wCurMapWarpCount]
+	ld a, [wCurrMapWarpCount]
 	inc a
 	sub c
 	ld c, a
@@ -304,9 +315,10 @@ GetDestinationWarpNumber::
 	inc hl
 	scf
 	ret
+; 22a7
 
-CopyWarpData::
-	ldh a, [hROMBank]
+CopyWarpData:: ; 22a7
+	ld a, [hROMBank]
 	push af
 
 	call SwitchToMapScriptsBank
@@ -316,21 +328,22 @@ CopyWarpData::
 	rst Bankswitch
 	scf
 	ret
+; 22b4
 
-.CopyWarpData:
+.CopyWarpData: ; 22b4
 	push bc
-	ld hl, wCurMapWarpsPointer
+	ld hl, wCurrMapWarpsPointer
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
 	ld a, c
 	dec a
-	ld bc, WARP_EVENT_SIZE
+	ld bc, 5 ; warp size
 	call AddNTimes
 	ld bc, 2 ; warp number
 	add hl, bc
 	ld a, [hli]
-	cp -1
+	cp $ff
 	jr nz, .skip
 	ld hl, wBackupWarpNumber
 	ld a, [hli]
@@ -351,14 +364,16 @@ CopyWarpData::
 	ld [wPrevMapNumber], a
 	scf
 	ret
+; 22ee
 
-CheckOutdoorMap::
+CheckOutdoorMap:: ; 22ee
 	cp ROUTE
 	ret z
 	cp TOWN
 	ret
+; 22f4
 
-CheckIndoorMap::
+CheckIndoorMap:: ; 22f4
 	cp INDOOR
 	ret z
 	cp CAVE
@@ -367,40 +382,45 @@ CheckIndoorMap::
 	ret z
 	cp GATE
 	ret
+; 2300
 
-CheckUnknownMap:: ; unreferenced
+; unused
 	cp INDOOR
 	ret z
 	cp GATE
 	ret z
 	cp ENVIRONMENT_5
 	ret
+; 2309
 
-LoadMapAttributes::
+LoadMapAttributes:: ; 2309
 	call CopyMapPartialAndAttributes
 	call SwitchToMapScriptsBank
 	call ReadMapScripts
-	xor a ; do not skip object events
+	xor a ; do not skip object_events
 	call ReadMapEvents
 	ret
+; 2317
 
-LoadMapAttributes_SkipObjects::
+LoadMapAttributes_SkipPeople:: ; 2317
 	call CopyMapPartialAndAttributes
 	call SwitchToMapScriptsBank
 	call ReadMapScripts
 	ld a, TRUE ; skip object events
 	call ReadMapEvents
 	ret
+; 2326
 
-CopyMapPartialAndAttributes::
+CopyMapPartialAndAttributes:: ; 2326
 	call CopyMapPartial
 	call SwitchToMapAttributesBank
 	call GetMapAttributesPointer
 	call CopyMapAttributes
 	call GetMapConnections
 	ret
+; 2336
 
-ReadMapEvents::
+ReadMapEvents:: ; 2336
 	push af
 	ld hl, wMapEventsPointer
 	ld a, [hli]
@@ -418,8 +438,9 @@ ReadMapEvents::
 
 	call ReadObjectEvents
 	ret
+; 234f
 
-ReadMapScripts::
+ReadMapScripts:: ; 234f
 	ld hl, wMapScriptsPointer
 	ld a, [hli]
 	ld h, [hl]
@@ -427,8 +448,9 @@ ReadMapScripts::
 	call ReadMapSceneScripts
 	call ReadMapCallbacks
 	ret
+; 235c
 
-CopyMapAttributes::
+CopyMapAttributes:: ; 235c
 	ld de, wMapAttributes
 	ld c, wMapAttributesEnd - wMapAttributes
 .loop
@@ -438,8 +460,9 @@ CopyMapAttributes::
 	dec c
 	jr nz, .loop
 	ret
+; 2368
 
-GetMapConnections::
+GetMapConnections:: ; 2368
 	ld a, $ff
 	ld [wNorthConnectedMapGroup], a
 	ld [wSouthConnectedMapGroup], a
@@ -474,8 +497,9 @@ GetMapConnections::
 .no_east
 
 	ret
+; 23a3
 
-GetMapConnection::
+GetMapConnection:: ; 23a3
 ; Load map connection struct at hl into de.
 	ld c, wSouthMapConnection - wNorthMapConnection
 .loop
@@ -485,118 +509,125 @@ GetMapConnection::
 	dec c
 	jr nz, .loop
 	ret
+; 23ac
 
-ReadMapSceneScripts::
-	ld a, [hli] ; scene_script count
+ReadMapSceneScripts:: ; 23ac
+	ld a, [hli] ; scene script count
 	ld c, a
-	ld [wCurMapSceneScriptCount], a
+	ld [wCurrMapSceneScriptCount], a ; current map scene script count
 	ld a, l
-	ld [wCurMapSceneScriptsPointer], a
+	ld [wCurrMapSceneScriptsPointer], a ; map scene script pointer
 	ld a, h
-	ld [wCurMapSceneScriptsPointer + 1], a
+	ld [wCurrMapSceneScriptsPointer + 1], a
 	ld a, c
 	and a
 	ret z
 
-	ld bc, SCENE_SCRIPT_SIZE
+	ld bc, 4 ; scene_script size
 	call AddNTimes
 	ret
+; 23c3
 
-ReadMapCallbacks::
+ReadMapCallbacks:: ; 23c3
 	ld a, [hli]
 	ld c, a
-	ld [wCurMapCallbackCount], a
+	ld [wCurrMapCallbackCount], a
 	ld a, l
-	ld [wCurMapCallbacksPointer], a
+	ld [wCurrMapCallbacksPointer], a
 	ld a, h
-	ld [wCurMapCallbacksPointer + 1], a
+	ld [wCurrMapCallbacksPointer + 1], a
 	ld a, c
 	and a
 	ret z
 
-	ld bc, CALLBACK_SIZE
+	ld bc, 3
 	call AddNTimes
 	ret
+; 23da
 
-ReadWarps::
+ReadWarps:: ; 23da
 	ld a, [hli]
 	ld c, a
-	ld [wCurMapWarpCount], a
+	ld [wCurrMapWarpCount], a
 	ld a, l
-	ld [wCurMapWarpsPointer], a
+	ld [wCurrMapWarpsPointer], a
 	ld a, h
-	ld [wCurMapWarpsPointer + 1], a
+	ld [wCurrMapWarpsPointer + 1], a
 	ld a, c
 	and a
 	ret z
-	ld bc, WARP_EVENT_SIZE
+	ld bc, 5
 	call AddNTimes
 	ret
+; 23f1
 
-ReadCoordEvents::
+ReadCoordEvents:: ; 23f1
 	ld a, [hli]
 	ld c, a
-	ld [wCurMapCoordEventCount], a
+	ld [wCurrMapCoordEventCount], a
 	ld a, l
-	ld [wCurMapCoordEventsPointer], a
+	ld [wCurrMapCoordEventsPointer], a
 	ld a, h
-	ld [wCurMapCoordEventsPointer + 1], a
+	ld [wCurrMapCoordEventsPointer + 1], a
 
 	ld a, c
 	and a
 	ret z
 
-	ld bc, COORD_EVENT_SIZE
+	ld bc, 8
 	call AddNTimes
 	ret
+; 2408
 
-ReadBGEvents::
+ReadBGEvents:: ; 2408
 	ld a, [hli]
 	ld c, a
-	ld [wCurMapBGEventCount], a
+	ld [wCurrMapBGEventCount], a
 	ld a, l
-	ld [wCurMapBGEventsPointer], a
+	ld [wCurrMapBGEventsPointer], a
 	ld a, h
-	ld [wCurMapBGEventsPointer + 1], a
+	ld [wCurrMapBGEventsPointer + 1], a
 
 	ld a, c
 	and a
 	ret z
 
-	ld bc, BG_EVENT_SIZE
+	ld bc, 5
 	call AddNTimes
 	ret
+; 241f
 
-ReadObjectEvents::
+ReadObjectEvents:: ; 241f
 	push hl
 	call ClearObjectStructs
 	pop de
 	ld hl, wMap1Object
 	ld a, [de]
 	inc de
-	ld [wCurMapObjectEventCount], a
+	ld [wCurrMapObjectEventCount], a
 	ld a, e
-	ld [wCurMapObjectEventsPointer], a
+	ld [wCurrMapObjectEventsPointer], a
 	ld a, d
-	ld [wCurMapObjectEventsPointer + 1], a
+	ld [wCurrMapObjectEventsPointer + 1], a
 
-	ld a, [wCurMapObjectEventCount]
+	ld a, [wCurrMapObjectEventCount]
 	call CopyMapObjectEvents
 
-; get NUM_OBJECTS - [wCurMapObjectEventCount]
-	ld a, [wCurMapObjectEventCount]
+; get NUM_OBJECTS - [wCurrMapObjectEventCount]
+	ld a, [wCurrMapObjectEventCount]
 	ld c, a
 	ld a, NUM_OBJECTS ; - 1
 	sub c
 	jr z, .skip
 	; jr c, .skip
 
-	; could have done "inc hl" instead
+; stupid waste of time and space
 	ld bc, 1
 	add hl, bc
 ; Fill the remaining sprite IDs and y coords with 0 and -1, respectively.
-; Bleeds into wObjectMasks due to a bug.  Uncomment the above code to fix.
-	ld bc, MAPOBJECT_LENGTH
+; Bleeds into wObjectMasks due to a bug.  Uncomment the above subtraction
+; to fix.
+	ld bc, OBJECT_LENGTH
 .loop
 	ld [hl],  0
 	inc hl
@@ -610,8 +641,9 @@ ReadObjectEvents::
 	ld h, d
 	ld l, e
 	ret
+; 2457
 
-CopyMapObjectEvents::
+CopyMapObjectEvents:: ; 2457
 	and a
 	ret z
 
@@ -621,7 +653,7 @@ CopyMapObjectEvents::
 	push hl
 	ld a, $ff
 	ld [hli], a
-	ld b, OBJECT_EVENT_SIZE
+	ld b, MAPOBJECT_E - MAPOBJECT_SPRITE
 .loop2
 	ld a, [de]
 	inc de
@@ -630,22 +662,23 @@ CopyMapObjectEvents::
 	jr nz, .loop2
 
 	pop hl
-	ld bc, MAPOBJECT_LENGTH
+	ld bc, OBJECT_LENGTH
 	add hl, bc
 	pop bc
 	dec c
 	jr nz, .loop
 	ret
+; 2471
 
-ClearObjectStructs::
+ClearObjectStructs:: ; 2471
 	ld hl, wObject1Struct
-	ld bc, OBJECT_LENGTH * (NUM_OBJECT_STRUCTS - 1)
+	ld bc, OBJECT_STRUCT_LENGTH * (NUM_OBJECT_STRUCTS - 1)
 	xor a
 	call ByteFill
 
 ; Just to make sure (this is rather pointless)
 	ld hl, wObject1Struct
-	ld de, OBJECT_LENGTH
+	ld de, OBJECT_STRUCT_LENGTH
 	ld c, NUM_OBJECT_STRUCTS - 1
 	xor a
 .loop
@@ -654,8 +687,9 @@ ClearObjectStructs::
 	dec c
 	jr nz, .loop
 	ret
+; 248a
 
-GetWarpDestCoords::
+RestoreFacingAfterWarp:: ; 248a
 	call GetMapScriptsBank
 	rst Bankswitch
 
@@ -663,14 +697,14 @@ GetWarpDestCoords::
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-rept 3 ; get to the warp coords
-	inc hl
-endr
+	inc hl ; get to the warp coords
+	inc hl ; get to the warp coords
+	inc hl ; get to the warp coords
 	ld a, [wWarpNumber]
 	dec a
 	ld c, a
 	ld b, 0
-	ld a, WARP_EVENT_SIZE
+	ld a, 5
 	call AddNTimes
 	ld a, [hli]
 	ld [wYCoord], a
@@ -678,13 +712,14 @@ endr
 	ld [wXCoord], a
 	; destination warp number
 	ld a, [hli]
-	cp -1
+	cp $ff
 	jr nz, .skip
 	call .backup
 
 .skip
-	farcall GetMapScreenCoords
+	farcall GetCoordOfUpperLeftCorner
 	ret
+; 24ba
 
 .backup
 	ld a, [wPrevWarp]
@@ -694,8 +729,9 @@ endr
 	ld a, [wPrevMapNumber]
 	ld [wBackupMapNumber], a
 	ret
+; 24cd
 
-LoadBlockData::
+LoadBlockData:: ; 24cd
 	ld hl, wOverworldMapBlocks
 	ld bc, wOverworldMapBlocksEnd - wOverworldMapBlocks
 	ld a, 0
@@ -705,16 +741,17 @@ LoadBlockData::
 	ld a, MAPCALLBACK_TILES
 	call RunMapCallback
 	ret
+; 24e4
 
-ChangeMap::
-	ldh a, [hROMBank]
+ChangeMap:: ; 24e4
+	ld a, [hROMBank]
 	push af
 
 	ld hl, wOverworldMapBlocks
 	ld a, [wMapWidth]
-	ldh [hConnectedMapWidth], a
+	ld [hConnectedMapWidth], a
 	add $6
-	ldh [hConnectionStripLength], a
+	ld [hConnectionStripLength], a
 	ld c, a
 	ld b, 0
 	add hl, bc
@@ -733,7 +770,7 @@ ChangeMap::
 	ld b, a
 .row
 	push hl
-	ldh a, [hConnectedMapWidth]
+	ld a, [hConnectedMapWidth]
 	ld c, a
 .col
 	ld a, [de]
@@ -742,7 +779,7 @@ ChangeMap::
 	dec c
 	jr nz, .col
 	pop hl
-	ldh a, [hConnectionStripLength]
+	ld a, [hConnectionStripLength]
 	add l
 	ld l, a
 	jr nc, .okay
@@ -754,8 +791,10 @@ ChangeMap::
 	pop af
 	rst Bankswitch
 	ret
+; 2524
 
-FillMapConnections::
+FillMapConnections:: ; 2524
+
 ; North
 	ld a, [wNorthConnectedMapGroup]
 	cp $ff
@@ -774,9 +813,9 @@ FillMapConnections::
 	ld a, [wNorthConnectionStripLocation + 1]
 	ld d, a
 	ld a, [wNorthConnectionStripLength]
-	ldh [hConnectionStripLength], a
+	ld [hConnectionStripLength], a
 	ld a, [wNorthConnectedMapWidth]
-	ldh [hConnectedMapWidth], a
+	ld [hConnectedMapWidth], a
 	call FillNorthConnectionStrip
 
 .South:
@@ -797,9 +836,9 @@ FillMapConnections::
 	ld a, [wSouthConnectionStripLocation + 1]
 	ld d, a
 	ld a, [wSouthConnectionStripLength]
-	ldh [hConnectionStripLength], a
+	ld [hConnectionStripLength], a
 	ld a, [wSouthConnectedMapWidth]
-	ldh [hConnectedMapWidth], a
+	ld [hConnectedMapWidth], a
 	call FillSouthConnectionStrip
 
 .West:
@@ -822,7 +861,7 @@ FillMapConnections::
 	ld a, [wWestConnectionStripLength]
 	ld b, a
 	ld a, [wWestConnectedMapWidth]
-	ldh [hConnectionStripLength], a
+	ld [hConnectionStripLength], a
 	call FillWestConnectionStrip
 
 .East:
@@ -845,20 +884,22 @@ FillMapConnections::
 	ld a, [wEastConnectionStripLength]
 	ld b, a
 	ld a, [wEastConnectedMapWidth]
-	ldh [hConnectionStripLength], a
+	ld [hConnectionStripLength], a
 	call FillEastConnectionStrip
 
 .Done:
 	ret
+; 25d3
 
 FillNorthConnectionStrip::
-FillSouthConnectionStrip::
+FillSouthConnectionStrip:: ; 25d3
+
 	ld c, 3
 .y
 	push de
 
 	push hl
-	ldh a, [hConnectionStripLength]
+	ld a, [hConnectionStripLength]
 	ld b, a
 .x
 	ld a, [hli]
@@ -868,7 +909,7 @@ FillSouthConnectionStrip::
 	jr nz, .x
 	pop hl
 
-	ldh a, [hConnectedMapWidth]
+	ld a, [hConnectedMapWidth]
 	ld e, a
 	ld d, 0
 	add hl, de
@@ -884,13 +925,15 @@ FillSouthConnectionStrip::
 	dec c
 	jr nz, .y
 	ret
+; 25f6
 
 FillWestConnectionStrip::
-FillEastConnectionStrip::
+FillEastConnectionStrip:: ; 25f6
+
 .loop
 	ld a, [wMapWidth]
 	add 6
-	ldh [hConnectedMapWidth], a
+	ld [hConnectedMapWidth], a
 
 	push de
 
@@ -906,13 +949,13 @@ FillEastConnectionStrip::
 	inc de
 	pop hl
 
-	ldh a, [hConnectionStripLength]
+	ld a, [hConnectionStripLength]
 	ld e, a
 	ld d, 0
 	add hl, de
 	pop de
 
-	ldh a, [hConnectedMapWidth]
+	ld a, [hConnectedMapWidth]
 	add e
 	ld e, a
 	jr nc, .okay
@@ -921,12 +964,14 @@ FillEastConnectionStrip::
 	dec b
 	jr nz, .loop
 	ret
+; 261b
 
-LoadMapStatus::
+LoadMapStatus:: ; 261b
 	ld [wMapStatus], a
 	ret
+; 261f
 
-CallScript::
+CallScript:: ; 261f
 ; Call a script at a:hl.
 
 	ld [wScriptBank], a
@@ -940,19 +985,21 @@ CallScript::
 
 	scf
 	ret
+; 2631
 
-CallMapScript::
+CallMapScript:: ; 2631
 ; Call a script at hl in the current bank if there isn't already a script running
 	ld a, [wScriptRunning]
 	and a
 	ret nz
 	call GetMapScriptsBank
 	jr CallScript
+; 263b
 
-RunMapCallback::
+RunMapCallback:: ; 263b
 ; Will run the first callback found with execution index equal to a.
 	ld b, a
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 	call SwitchToMapScriptsBank
 	call .FindCallback
@@ -968,19 +1015,20 @@ RunMapCallback::
 	pop af
 	rst Bankswitch
 	ret
+; 2653
 
-.FindCallback:
-	ld a, [wCurMapCallbackCount]
+.FindCallback: ; 2653
+	ld a, [wCurrMapCallbackCount]
 	ld c, a
 	and a
 	ret z
-	ld hl, wCurMapCallbacksPointer
+	ld hl, wCurrMapCallbacksPointer
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
 	or h
 	ret z
-	ld de, CALLBACK_SIZE
+	ld de, 3
 .loop
 	ld a, [hl]
 	cp b
@@ -998,8 +1046,9 @@ RunMapCallback::
 	ld l, a
 	scf
 	ret
+; 2674
 
-ExecuteCallbackScript::
+ExecuteCallbackScript:: ; 2674
 ; Do map callback de and return to script bank b.
 	farcall CallCallback
 	ld a, [wScriptMode]
@@ -1015,36 +1064,38 @@ ExecuteCallbackScript::
 	pop af
 	ld [wScriptMode], a
 	ret
+; 269a
 
-MapTextbox::
-	ldh a, [hROMBank]
+MapTextbox:: ; 269a
+	ld a, [hROMBank]
 	push af
 
 	ld a, b
 	rst Bankswitch
 
 	push hl
-	call SpeechTextbox
+	call SpeechTextBox
 	call SafeUpdateSprites
 	ld a, 1
-	ldh [hOAMUpdate], a
+	ld [hOAMUpdate], a
 	call ApplyTilemap
 	pop hl
-	call PrintTextboxText
+	call PrintTextBoxText
 	xor a
-	ldh [hOAMUpdate], a
+	ld [hOAMUpdate], a
 
 	pop af
 	rst Bankswitch
 	ret
+; 26b7
 
-Call_a_de::
+Call_a_de:: ; 26b7
 ; Call a:de.
 
-	ldh [hTempBank], a
-	ldh a, [hROMBank]
+	ld [hBuffer], a
+	ld a, [hROMBank]
 	push af
-	ldh a, [hTempBank]
+	ld a, [hBuffer]
 	rst Bankswitch
 
 	call .de
@@ -1056,10 +1107,11 @@ Call_a_de::
 .de
 	push de
 	ret
+; 26c7
 
-GetMovementData::
+GetMovementData:: ; 26c7
 ; Initialize the movement data for object c at b:hl
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 	ld a, b
 	rst Bankswitch
@@ -1071,13 +1123,14 @@ GetMovementData::
 	ld a, h
 	rst Bankswitch
 	ret
+; 26d4
 
-GetScriptByte::
+GetScriptByte:: ; 0x26d4
 ; Return byte at wScriptBank:wScriptPos in a.
 
 	push hl
 	push bc
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 	ld a, [wScriptBank]
 	rst Bankswitch
@@ -1101,103 +1154,92 @@ GetScriptByte::
 	pop bc
 	pop hl
 	ret
+; 0x26ef
 
-ObjectEvent::
+ObjectEvent:: ; 0x26ef
 	jumptextfaceplayer ObjectEventText
+; 0x26f2
 
 ObjectEventText::
-	text_far _ObjectEventText
-	text_end
+	text_jump _ObjectEventText
+	db "@"
+; 0x26f7
 
-BGEvent:: ; unreferenced
+BGEvent:: ; 26f7
 	jumptext BGEventText
+; 26fa
 
-BGEventText::
-	text_far _BGEventText
-	text_end
+BGEventText:: ; 26fa
+	text_jump UnknownText_0x1c46fc
+	db "@"
+; 26ff
 
-CoordinatesEvent:: ; unreferenced
+CoordinatesEvent:: ; 26ff
 	jumptext CoordinatesEventText
+; 2702
 
-CoordinatesEventText::
-	text_far _CoordinatesEventText
-	text_end
+CoordinatesEventText:: ; 2702
+	text_jump UnknownText_0x1c4706
+	db "@"
+; 2707
 
-CheckObjectMask::
-	ldh a, [hMapObjectIndex]
+CheckObjectMask:: ; 2707
+	ld a, [hMapObjectIndexBuffer]
 	ld e, a
-	ld d, 0
+	ld d, $0
 	ld hl, wObjectMasks
 	add hl, de
 	ld a, [hl]
 	ret
+; 2712
 
-MaskObject::
-	ldh a, [hMapObjectIndex]
+MaskObject:: ; 2712
+	ld a, [hMapObjectIndexBuffer]
 	ld e, a
-	ld d, 0
+	ld d, $0
 	ld hl, wObjectMasks
 	add hl, de
-	ld [hl], -1 ; masked
+	ld [hl], -1 ; , masked
 	ret
+; 271e
 
-UnmaskObject::
-	ldh a, [hMapObjectIndex]
+UnmaskObject:: ; 271e
+	ld a, [hMapObjectIndexBuffer]
 	ld e, a
-	ld d, 0
+	ld d, $0
 	ld hl, wObjectMasks
 	add hl, de
 	ld [hl], 0 ; unmasked
 	ret
+; 272a
 
-if DEF(_DEBUG)
-ComputeROMXChecksum::
-	ldh a, [hROMBank]
-	push af
-	ld a, c
-	rst Bankswitch
-	ld hl, $4000 ; ROMX start
-.loop
-	ld a, [hli]
-	add e
-	ld e, a
-	ld a, d
-	adc 0
-	ld d, a
-	ld a, h
-	cp $80 ; HIGH(ROMX end)
-	jr c, .loop
-	pop af
-	rst Bankswitch
-	ret
-endc
-
-ScrollMapUp::
+ScrollMapDown:: ; 272a
 	hlcoord 0, 0
 	ld de, wBGMapBuffer
 	call BackupBGMapRow
 	ld c, 2 * SCREEN_WIDTH
-	call ScrollBGMapPalettes
+	call FarCallScrollBGMapPalettes
 	ld a, [wBGMapAnchor]
 	ld e, a
 	ld a, [wBGMapAnchor + 1]
 	ld d, a
 	call UpdateBGMapRow
 	ld a, $1
-	ldh [hBGMapUpdate], a
+	ld [hBGMapUpdate], a
 	ret
+; 2748
 
-ScrollMapDown::
+ScrollMapUp:: ; 2748
 	hlcoord 0, SCREEN_HEIGHT - 2
 	ld de, wBGMapBuffer
 	call BackupBGMapRow
 	ld c, 2 * SCREEN_WIDTH
-	call ScrollBGMapPalettes
+	call FarCallScrollBGMapPalettes
 	ld a, [wBGMapAnchor]
 	ld l, a
 	ld a, [wBGMapAnchor + 1]
 	ld h, a
-	ld bc, BG_MAP_WIDTH tiles
+	ld bc, $0200
 	add hl, bc
 ; cap d at HIGH(vBGMap0)
 	ld a, h
@@ -1207,30 +1249,32 @@ ScrollMapDown::
 	ld d, a
 	call UpdateBGMapRow
 	ld a, $1
-	ldh [hBGMapUpdate], a
+	ld [hBGMapUpdate], a
 	ret
+; 2771
 
-ScrollMapLeft::
+ScrollMapRight:: ; 2771
 	hlcoord 0, 0
 	ld de, wBGMapBuffer
 	call BackupBGMapColumn
 	ld c, 2 * SCREEN_HEIGHT
-	call ScrollBGMapPalettes
+	call FarCallScrollBGMapPalettes
 	ld a, [wBGMapAnchor]
 	ld e, a
 	ld a, [wBGMapAnchor + 1]
 	ld d, a
 	call UpdateBGMapColumn
 	ld a, $1
-	ldh [hBGMapUpdate], a
+	ld [hBGMapUpdate], a
 	ret
+; 278f
 
-ScrollMapRight::
+ScrollMapLeft:: ; 278f
 	hlcoord SCREEN_WIDTH - 2, 0
 	ld de, wBGMapBuffer
 	call BackupBGMapColumn
 	ld c, 2 * SCREEN_HEIGHT
-	call ScrollBGMapPalettes
+	call FarCallScrollBGMapPalettes
 	ld a, [wBGMapAnchor]
 	ld e, a
 	and %11100000
@@ -1244,10 +1288,11 @@ ScrollMapRight::
 	ld d, a
 	call UpdateBGMapColumn
 	ld a, $1
-	ldh [hBGMapUpdate], a
+	ld [hBGMapUpdate], a
 	ret
+; 27b7
 
-BackupBGMapRow::
+BackupBGMapRow:: ; 27b7
 	ld c, 2 * SCREEN_WIDTH
 .loop
 	ld a, [hli]
@@ -1256,8 +1301,9 @@ BackupBGMapRow::
 	dec c
 	jr nz, .loop
 	ret
+; 27c0
 
-BackupBGMapColumn::
+BackupBGMapColumn:: ; 27c0
 	ld c, SCREEN_HEIGHT
 .loop
 	ld a, [hli]
@@ -1276,13 +1322,14 @@ BackupBGMapColumn::
 	dec c
 	jr nz, .loop
 	ret
+; 27d3
 
-UpdateBGMapRow::
-	ld hl, wBGMapBufferPointers
+UpdateBGMapRow:: ; 27d3
+	ld hl, wBGMapBufferPtrs
 	push de
 	call .iteration
 	pop de
-	ld a, BG_MAP_WIDTH
+	ld a, $20
 	add e
 	ld e, a
 
@@ -1305,18 +1352,19 @@ UpdateBGMapRow::
 	dec c
 	jr nz, .loop
 	ld a, SCREEN_WIDTH
-	ldh [hBGMapTileCount], a
+	ld [hBGMapTileCount], a
 	ret
+; 27f8
 
-UpdateBGMapColumn::
-	ld hl, wBGMapBufferPointers
+UpdateBGMapColumn:: ; 27f8
+	ld hl, wBGMapBufferPtrs
 	ld c, SCREEN_HEIGHT
 .loop
 	ld a, e
 	ld [hli], a
 	ld a, d
 	ld [hli], a
-	ld a, BG_MAP_WIDTH
+	ld a, $20
 	add e
 	ld e, a
 	jr nc, .skip
@@ -1331,17 +1379,19 @@ UpdateBGMapColumn::
 	dec c
 	jr nz, .loop
 	ld a, SCREEN_HEIGHT
-	ldh [hBGMapTileCount], a
+	ld [hBGMapTileCount], a
 	ret
+; 2816
 
-ClearBGMapBuffer:: ; unreferenced
+Unreferenced_Function2816::
 	ld hl, wBGMapBuffer
 	ld bc, wBGMapBufferEnd - wBGMapBuffer
 	xor a
 	call ByteFill
 	ret
+; 2821
 
-LoadTilesetGFX::
+LoadTilesetGFX:: ; 2821
 	ld hl, wTilesetAddress
 	ld a, [hli]
 	ld h, [hl]
@@ -1349,10 +1399,10 @@ LoadTilesetGFX::
 	ld a, [wTilesetBank]
 	ld e, a
 
-	ldh a, [rSVBK]
+	ld a, [rSVBK]
 	push af
 	ld a, BANK(wDecompressScratch)
-	ldh [rSVBK], a
+	ld [rSVBK], a
 
 	ld a, e
 	ld de, wDecompressScratch
@@ -1363,21 +1413,21 @@ LoadTilesetGFX::
 	ld bc, $60 tiles
 	call CopyBytes
 
-	ldh a, [rVBK]
+	ld a, [rVBK]
 	push af
-	ld a, BANK(vTiles5)
-	ldh [rVBK], a
+	ld a, $1
+	ld [rVBK], a
 
 	ld hl, wDecompressScratch + $60 tiles
-	ld de, vTiles5
+	ld de, vTiles2
 	ld bc, $60 tiles
 	call CopyBytes
 
 	pop af
-	ldh [rVBK], a
+	ld [rVBK], a
 
 	pop af
-	ldh [rSVBK], a
+	ld [rSVBK], a
 
 ; These tilesets support dynamic per-mapgroup roof tiles.
 	ld a, [wMapTileset]
@@ -1394,10 +1444,11 @@ LoadTilesetGFX::
 
 .skip_roof
 	xor a
-	ldh [hTileAnimFrame], a
+	ld [hTileAnimFrame], a
 	ret
+; 2879
 
-BufferScreen::
+BufferScreen:: ; 2879
 	ld hl, wOverworldMapAnchor
 	ld a, [hli]
 	ld h, [hl]
@@ -1424,8 +1475,9 @@ BufferScreen::
 	dec c
 	jr nz, .row
 	ret
+; 289d
 
-SaveScreen::
+SaveScreen:: ; 289d
 	ld hl, wOverworldMapAnchor
 	ld a, [hli]
 	ld h, [hl]
@@ -1433,7 +1485,7 @@ SaveScreen::
 	ld de, wScreenSave
 	ld a, [wMapWidth]
 	add 6
-	ldh [hMapObjectIndex], a
+	ld [hMapObjectIndexBuffer], a
 	ld a, [wPlayerStepDirection]
 	and a
 	jr z, .down
@@ -1447,7 +1499,7 @@ SaveScreen::
 
 .up
 	ld de, wScreenSave + SCREEN_META_WIDTH
-	ldh a, [hMapObjectIndex]
+	ld a, [hMapObjectIndexBuffer]
 	ld c, a
 	ld b, 0
 	add hl, bc
@@ -1458,7 +1510,7 @@ SaveScreen::
 .vertical
 	ld b, SCREEN_META_WIDTH
 	ld c, SCREEN_META_HEIGHT - 1
-	jr SaveScreen_LoadConnection
+	jr SaveScreen_LoadNeighbor
 
 .left
 	ld de, wScreenSave + 1
@@ -1470,21 +1522,21 @@ SaveScreen::
 .horizontal
 	ld b, SCREEN_META_WIDTH - 1
 	ld c, SCREEN_META_HEIGHT
-	jr SaveScreen_LoadConnection
+	jr SaveScreen_LoadNeighbor
 
-LoadConnectionBlockData::
+LoadNeighboringBlockData:: ; 28e3
 	ld hl, wOverworldMapAnchor
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
 	ld a, [wMapWidth]
 	add 6
-	ldh [hConnectionStripLength], a
+	ld [hConnectionStripLength], a
 	ld de, wScreenSave
 	ld b, SCREEN_META_WIDTH
 	ld c, SCREEN_META_HEIGHT
 
-SaveScreen_LoadConnection::
+SaveScreen_LoadNeighbor:: ; 28f7
 .row
 	push bc
 	push hl
@@ -1501,9 +1553,10 @@ SaveScreen_LoadConnection::
 	ld e, a
 	jr nc, .okay
 	inc d
+
 .okay
 	pop hl
-	ldh a, [hConnectionStripLength]
+	ld a, [hConnectionStripLength]
 	ld c, a
 	ld b, 0
 	add hl, bc
@@ -1511,8 +1564,9 @@ SaveScreen_LoadConnection::
 	dec c
 	jr nz, .row
 	ret
+; 2914
 
-GetMovementPermissions::
+GetMovementPermissions:: ; 2914
 	xor a
 	ld [wTilePermissions], a
 	call .LeftRight
@@ -1540,8 +1594,9 @@ GetMovementPermissions::
 	or [hl]
 	ld [hl], a
 	ret
+; 2945
 
-.MovementPermissionsData:
+.MovementPermissionsData: ; 2945
 	db DOWN_MASK
 	db UP_MASK
 	db LEFT_MASK
@@ -1550,6 +1605,7 @@ GetMovementPermissions::
 	db UP_MASK | RIGHT_MASK
 	db DOWN_MASK | LEFT_MASK
 	db UP_MASK | LEFT_MASK
+; 294d
 
 .UpDown:
 	ld a, [wPlayerStandingMapX]
@@ -1569,6 +1625,7 @@ GetMovementPermissions::
 	ld [wTileUp], a
 	call .Up
 	ret
+; 296c
 
 .LeftRight:
 	ld a, [wPlayerStandingMapX]
@@ -1588,17 +1645,18 @@ GetMovementPermissions::
 	ld [wTileRight], a
 	call .Right
 	ret
+; 298b
 
 .Down:
 	call .CheckHiNybble
 	ret nz
 	ld a, [wTileDown]
-	and %111
-	cp COLL_UP_WALL & %111 ; COLL_UP_BUOY & %111
+	and 7
+	cp $2
 	jr z, .ok_down
-	cp COLL_UP_RIGHT_WALL & %111 ; COLL_UP_RIGHT_BUOY & %111
+	cp $6
 	jr z, .ok_down
-	cp COLL_UP_LEFT_WALL & %111 ; COLL_UP_LEFT_BUOY & %111
+	cp $7
 	ret nz
 
 .ok_down
@@ -1606,17 +1664,18 @@ GetMovementPermissions::
 	or FACE_DOWN
 	ld [wTilePermissions], a
 	ret
+; 29a8
 
 .Up:
 	call .CheckHiNybble
 	ret nz
 	ld a, [wTileUp]
-	and %111
-	cp COLL_DOWN_WALL & %111 ; COLL_DOWN_BUOY & %111
+	and 7
+	cp $3
 	jr z, .ok_up
-	cp COLL_DOWN_RIGHT_WALL & %111 ; COLL_DOWN_RIGHT_BUOY & %111
+	cp $4
 	jr z, .ok_up
-	cp COLL_DOWN_LEFT_WALL & %111 ; COLL_DOWN_LEFT_BUOY & %111
+	cp $5
 	ret nz
 
 .ok_up
@@ -1624,17 +1683,18 @@ GetMovementPermissions::
 	or FACE_UP
 	ld [wTilePermissions], a
 	ret
+; 29c5
 
 .Right:
 	call .CheckHiNybble
 	ret nz
 	ld a, [wTileRight]
-	and %111
-	cp COLL_LEFT_WALL & %111 ; COLL_LEFT_BUOY & %111
+	and 7
+	cp $1
 	jr z, .ok_right
-	cp COLL_DOWN_LEFT_WALL & %111 ; COLL_DOWN_LEFT_BUOY & %111
+	cp $5
 	jr z, .ok_right
-	cp COLL_UP_LEFT_WALL & %111 ; COLL_UP_LEFT_BUOY & %111
+	cp $7
 	ret nz
 
 .ok_right
@@ -1642,17 +1702,18 @@ GetMovementPermissions::
 	or FACE_RIGHT
 	ld [wTilePermissions], a
 	ret
+; 29e2
 
 .Left:
 	call .CheckHiNybble
 	ret nz
 	ld a, [wTileLeft]
-	and %111
-	cp COLL_RIGHT_WALL & %111 ; COLL_RIGHT_BUOY & %111
+	and 7
+	cp $0
 	jr z, .ok_left
-	cp COLL_DOWN_RIGHT_WALL & %111 ; COLL_DOWN_RIGHT_BUOY & %111
+	cp $4
 	jr z, .ok_left
-	cp COLL_UP_RIGHT_WALL & %111 ; COLL_UP_RIGHT_BUOY & %111
+	cp $6
 	ret nz
 
 .ok_left
@@ -1660,15 +1721,17 @@ GetMovementPermissions::
 	or FACE_LEFT
 	ld [wTilePermissions], a
 	ret
+; 29ff
 
 .CheckHiNybble:
 	and $f0
-	cp HI_NYBBLE_SIDE_WALLS
+	cp $b0
 	ret z
-	cp HI_NYBBLE_SIDE_BUOYS
+	cp $c0
 	ret
+; 2a07
 
-GetFacingTileCoord::
+GetFacingTileCoord:: ; 2a07
 ; Return map coordinates in (d, e) and tile id in a
 ; of the tile the player is facing.
 
@@ -1711,15 +1774,16 @@ GetFacingTileCoord::
 	dw wTileLeft
 	db  1,  0
 	dw wTileRight
+; 2a3c
 
-GetCoordTile::
+GetCoordTile:: ; 2a3c
 ; Get the collision byte for tile d, e
 	call GetBlockLocation
 	ld a, [hl]
 	and a
 	jr z, .nope
 	ld l, a
-	ld h, 0
+	ld h, $0
 	add hl, hl
 	add hl, hl
 	ld a, [wTilesetCollisionAddress]
@@ -1745,8 +1809,9 @@ GetCoordTile::
 .nope
 	ld a, -1
 	ret
+; 2a66
 
-GetBlockLocation::
+GetBlockLocation:: ; 2a66
 	ld a, [wMapWidth]
 	add 6
 	ld c, a
@@ -1774,8 +1839,9 @@ GetBlockLocation::
 	ld b, 0
 	add hl, bc
 	ret
+; 2a8b
 
-CheckFacingBGEvent::
+CheckFacingBGEvent:: ; 2a8b
 	call GetFacingTileCoord
 ; Load facing into b.
 	ld b, a
@@ -1787,12 +1853,12 @@ CheckFacingBGEvent::
 	sub 4
 	ld e, a
 ; If there are no BG events, we don't need to be here.
-	ld a, [wCurMapBGEventCount]
+	ld a, [wCurrMapBGEventCount]
 	and a
 	ret z
 
 	ld c, a
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 	call SwitchToMapScriptsBank
 	call CheckIfFacingTileCoordIsBGEvent
@@ -1800,10 +1866,11 @@ CheckFacingBGEvent::
 	ld a, h
 	rst Bankswitch
 	ret
+; 2aaa
 
-CheckIfFacingTileCoordIsBGEvent::
-; Checks to see if you are facing a BG event.  If so, copies it into wCurBGEvent and sets carry.
-	ld hl, wCurMapBGEventsPointer
+CheckIfFacingTileCoordIsBGEvent:: ; 2aaa
+; Checks to see if you are facing a BG event.  If so, copies it into wEngineBuffer1 and sets carry.
+	ld hl, wCurrMapBGEventsPointer
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -1819,7 +1886,7 @@ CheckIfFacingTileCoordIsBGEvent::
 
 .next
 	pop hl
-	ld a, BG_EVENT_SIZE
+	ld a, 5 ; BG event event length
 	add l
 	ld l, a
 	jr nc, .nocarry
@@ -1833,20 +1900,21 @@ CheckIfFacingTileCoordIsBGEvent::
 
 .copysign
 	pop hl
-	ld de, wCurBGEvent
-	ld bc, BG_EVENT_SIZE
+	ld de, wCurBGEventYCoord
+	ld bc, 5 ; BG event event length
 	call CopyBytes
 	scf
 	ret
+; 2ad4
 
-CheckCurrentMapCoordEvents::
+CheckCurrentMapCoordEvents:: ; 2ad4
 ; If there are no coord events, we don't need to be here.
-	ld a, [wCurMapCoordEventCount]
+	ld a, [wCurrMapCoordEventCount]
 	and a
 	ret z
 ; Copy the coord event count into c.
 	ld c, a
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 	call SwitchToMapScriptsBank
 	call .CoordEventCheck
@@ -1856,8 +1924,8 @@ CheckCurrentMapCoordEvents::
 	ret
 
 .CoordEventCheck:
-; Checks to see if you are standing on a coord event.  If yes, copies the event to wCurCoordEvent and sets carry.
-	ld hl, wCurMapCoordEventsPointer
+; Checks to see if you are standing on a coord event.  If yes, copies the event to wEngineBuffer1 and sets carry.
+	ld hl, wCurrMapCoordEventsPointer
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -1891,7 +1959,7 @@ CheckCurrentMapCoordEvents::
 
 .next
 	pop hl
-	ld a, COORD_EVENT_SIZE
+	ld a, $8 ; coord event size
 	add l
 	ld l, a
 	jr nc, .nocarry
@@ -1905,36 +1973,39 @@ CheckCurrentMapCoordEvents::
 
 .copy_coord_event
 	pop hl
-	ld de, wCurCoordEvent
-	ld bc, COORD_EVENT_SIZE
+	ld de, wCurCoordEventSceneID
+	ld bc, 8 ; coord event size
 	call CopyBytes
 	scf
 	ret
+; 2b29
 
-FadeToMenu::
+FadeToMenu:: ; 2b29
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call LoadStandardMenuHeader
 	farcall FadeOutPalettes
 	call ClearSprites
 	call DisableSpriteUpdates
 	ret
+; 2b3c
 
-CloseSubmenu::
+CloseSubmenu:: ; 2b3c
 	call ClearBGPalettes
 	call ReloadTilesetAndPalettes
 	call UpdateSprites
 	call Call_ExitMenu
-	call GSReloadPalettes
+	call ret_d90
 	jr FinishExitMenu
+; 2b4d
 
-ExitAllMenus::
+ExitAllMenus:: ; 2b4d
 	call ClearBGPalettes
 	call Call_ExitMenu
 	call ReloadTilesetAndPalettes
 	call UpdateSprites
-	call GSReloadPalettes
-FinishExitMenu::
+	call ret_d90
+FinishExitMenu:: ; 2b5c
 	ld b, SCGB_MAPPALS
 	call GetSGBLayout
 	farcall LoadOW_BGPal7
@@ -1942,8 +2013,9 @@ FinishExitMenu::
 	farcall FadeInPalettes
 	call EnableSpriteUpdates
 	ret
+; 2b74
 
-ReturnToMapWithSpeechTextbox::
+ReturnToMapWithSpeechTextbox:: ; 0x2b74
 	push af
 	ld a, $1
 	ld [wSpriteUpdatesEnabled], a
@@ -1952,7 +2024,7 @@ ReturnToMapWithSpeechTextbox::
 	call ReloadTilesetAndPalettes
 	hlcoord 0, 12
 	lb bc, 4, 18
-	call Textbox
+	call TextBox
 	ld hl, wVramState
 	set 0, [hl]
 	call UpdateSprites
@@ -1963,17 +2035,18 @@ ReturnToMapWithSpeechTextbox::
 	call UpdateTimePals
 	call DelayFrame
 	ld a, $1
-	ldh [hMapAnims], a
+	ld [hMapAnims], a
 	pop af
 	ret
+; 0x2bae
 
-ReloadTilesetAndPalettes::
+ReloadTilesetAndPalettes:: ; 2bae
 	call DisableLCD
 	call ClearSprites
 	farcall RefreshSprites
 	call LoadStandardFont
 	call LoadFontsExtra
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 	ld a, [wMapGroup]
 	ld b, a
@@ -1990,13 +2063,14 @@ ReloadTilesetAndPalettes::
 
 	call EnableLCD
 	ret
+; 2be5
 
-GetMapPointer::
+GetMapPointer:: ; 2be5
 	ld a, [wMapGroup]
 	ld b, a
 	ld a, [wMapNumber]
 	ld c, a
-GetAnyMapPointer::
+GetAnyMapPointer:: ; 0x2bed
 ; Prior to calling this function, you must have switched banks so that
 ; MapGroupPointers is visible.
 
@@ -2023,11 +2097,12 @@ GetAnyMapPointer::
 	; find the cth map within the group
 	dec c
 	ld b, 0
-	ld a, MAP_LENGTH
+	ld a, 9
 	call AddNTimes
 	ret
+; 0x2c04
 
-GetMapField::
+GetMapField:: ; 0x2c04
 ; Extract data from the current map's group entry.
 
 ; inputs:
@@ -2041,9 +2116,9 @@ GetMapField::
 	ld b, a
 	ld a, [wMapNumber]
 	ld c, a
-GetAnyMapField::
+GetAnyMapField:: ; 0x2c0c
 	; bankswitch
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 	ld a, BANK(MapGroupPointers)
 	rst Bankswitch
@@ -2058,23 +2133,25 @@ GetAnyMapField::
 	pop af
 	rst Bankswitch
 	ret
+; 0x2c1c
 
-SwitchToMapAttributesBank::
+SwitchToMapAttributesBank:: ; 2c1c
 	ld a, [wMapGroup]
 	ld b, a
 	ld a, [wMapNumber]
 	ld c, a
-SwitchToAnyMapAttributesBank::
+SwitchToAnyMapAttributesBank:: ; 2c24
 	call GetAnyMapAttributesBank
 	rst Bankswitch
 	ret
+; 2c29
 
-GetMapAttributesBank:: ; unreferenced
+GetMapAttributesBank:: ; 2c29
 	ld a, [wMapGroup]
 	ld b, a
 	ld a, [wMapNumber]
 	ld c, a
-GetAnyMapAttributesBank::
+GetAnyMapAttributesBank:: ; 2c31
 	push hl
 	push de
 	ld de, MAP_MAPATTRIBUTES_BANK
@@ -2083,11 +2160,12 @@ GetAnyMapAttributesBank::
 	pop de
 	pop hl
 	ret
+; 2c3d
 
-CopyMapPartial::
+CopyMapPartial:: ; 2c3d
 ; Copy map data bank, tileset, environment, and map data address
 ; from the current map's entry within its group.
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 	ld a, BANK(MapGroupPointers)
 	rst Bankswitch
@@ -2100,17 +2178,20 @@ CopyMapPartial::
 	pop af
 	rst Bankswitch
 	ret
+; 2c52
 
-SwitchToMapScriptsBank::
+SwitchToMapScriptsBank:: ; 2c52
 	ld a, [wMapScriptsBank]
 	rst Bankswitch
 	ret
+; 2c57
 
-GetMapScriptsBank::
+GetMapScriptsBank:: ; 2c57
 	ld a, [wMapScriptsBank]
 	ret
+; 2c5b
 
-GetAnyMapBlocksBank::
+GetAnyMapBlocksBank:: ; 2c5b
 ; Return the blockdata bank for group b map c.
 	push hl
 	push de
@@ -2138,8 +2219,9 @@ GetAnyMapBlocksBank::
 	pop de
 	pop hl
 	ret
+; 2c7d
 
-GetMapAttributesPointer::
+GetMapAttributesPointer:: ; 0x2c7d
 ; returns the current map's data pointer in hl.
 	push bc
 	push de
@@ -2150,8 +2232,9 @@ GetMapAttributesPointer::
 	pop de
 	pop bc
 	ret
+; 2c8a
 
-GetMapEnvironment::
+GetMapEnvironment:: ; 2c8a
 	push hl
 	push de
 	push bc
@@ -2162,11 +2245,12 @@ GetMapEnvironment::
 	pop de
 	pop hl
 	ret
+; 2c98
 
-Map_DummyFunction:: ; unreferenced
-	ret
+	ret ; unused
+; 2c99
 
-GetAnyMapEnvironment::
+GetAnyMapEnvironment:: ; 2c99
 	push hl
 	push de
 	push bc
@@ -2177,14 +2261,16 @@ GetAnyMapEnvironment::
 	pop de
 	pop hl
 	ret
+; 2ca7
 
-GetAnyMapTileset::
+GetAnyMapTileset:: ; 2ca7
 	ld de, MAP_TILESET
 	call GetAnyMapField
 	ld a, c
 	ret
+; 2caf
 
-GetWorldMapLocation::
+GetWorldMapLocation:: ; 0x2caf
 ; given a map group/id in bc, return its location on the Pokégear map.
 	push hl
 	push de
@@ -2198,8 +2284,9 @@ GetWorldMapLocation::
 	pop de
 	pop hl
 	ret
+; 0x2cbd
 
-GetMapMusic::
+GetMapMusic:: ; 2cbd
 	push hl
 	push bc
 	ld de, MAP_MUSIC
@@ -2242,19 +2329,22 @@ GetMapMusic::
 .clearedmahogany
 	ld de, MUSIC_CHERRYGROVE_CITY
 	jr .done
+; 2cff
 
-GetMapTimeOfDay::
+GetMapTimeOfDay:: ; 2cff
 	call GetPhoneServiceTimeOfDayByte
 	and $f
 	ret
+; 2d05
 
-GetMapPhoneService::
+GetMapPhoneService:: ; 2d05
 	call GetPhoneServiceTimeOfDayByte
 	and $f0
 	swap a
 	ret
+; 2d0d
 
-GetPhoneServiceTimeOfDayByte::
+GetPhoneServiceTimeOfDayByte:: ; 2d0d
 	push hl
 	push bc
 
@@ -2265,8 +2355,9 @@ GetPhoneServiceTimeOfDayByte::
 	pop bc
 	pop hl
 	ret
+; 2d19
 
-GetFishingGroup::
+GetFishingGroup:: ; 2d19
 	push de
 	push hl
 	push bc
@@ -2279,18 +2370,19 @@ GetFishingGroup::
 	pop hl
 	pop de
 	ret
+; 2d27
 
-LoadMapTileset::
+LoadTileset:: ; 2d27
 	push hl
 	push bc
 
 	ld hl, Tilesets
-	ld bc, TILESET_LENGTH
+	ld bc, wTilesetEnd - wTileset
 	ld a, [wMapTileset]
 	call AddNTimes
 
 	ld de, wTilesetBank
-	ld bc, TILESET_LENGTH
+	ld bc, wTilesetEnd - wTileset
 
 	ld a, BANK(Tilesets)
 	call FarCopyBytes
@@ -2298,10 +2390,4 @@ LoadMapTileset::
 	pop bc
 	pop hl
 	ret
-
-DummyEndPredef::
-; Unused function at the end of PredefPointers.
-rept 16
-	nop
-endr
-	ret
+; 2d43

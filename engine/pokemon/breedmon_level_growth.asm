@@ -1,5 +1,5 @@
-GetBreedMon1LevelGrowth:
-	ld hl, wBreedMon1
+GetBreedMon1LevelGrowth: ; e698
+	ld hl, wBreedMon1Stats
 	ld de, wTempMon
 	ld bc, BOXMON_STRUCT_LENGTH
 	call CopyBytes
@@ -12,8 +12,8 @@ GetBreedMon1LevelGrowth:
 	ld d, a
 	ret
 
-GetBreedMon2LevelGrowth:
-	ld hl, wBreedMon2
+GetBreedMon2LevelGrowth: ; e6b3
+	ld hl, wBreedMon2Stats
 	ld de, wTempMon
 	ld bc, BOXMON_STRUCT_LENGTH
 	call CopyBytes

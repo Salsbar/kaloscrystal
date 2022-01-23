@@ -1,50 +1,50 @@
-	object_const_def
+	const_def 2 ; object constants
 	const BILLSFAMILYSHOUSE_BILL
 	const BILLSFAMILYSHOUSE_POKEFAN_F
 	const BILLSFAMILYSHOUSE_TWIN
 
 BillsFamilysHouse_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 0 ; callbacks
 
 BillScript:
 	faceplayer
 	opentext
 	checkevent EVENT_GOT_EEVEE
 	iftrue .GotEevee
-	writetext BillTakeThisEeveeText
+	writetext UnknownText_0x54c74
 	yesorno
 	iffalse .Refused
-	writetext BillImCountingOnYouText
-	promptbutton
+	writetext UnknownText_0x54d3f
+	buttonsound
 	waitsfx
-	readvar VAR_PARTYCOUNT
+	checkcode VAR_PARTYCOUNT
 	ifequal PARTY_LENGTH, .NoRoom
-	writetext ReceivedEeveeText
+	writetext UnknownText_0x54dae
 	playsound SFX_CAUGHT_MON
 	waitsfx
-	givepoke EEVEE, 20
+	givepoke MELOETTA, 15
 	setevent EVENT_GOT_EEVEE
-	writetext BillEeveeMayEvolveText
+	writetext UnknownText_0x54dc1
 	waitbutton
 	closetext
 	end
 
 .NoRoom:
-	writetext BillPartyFullText
+	writetext UnknownText_0x54e02
 	waitbutton
 	closetext
 	end
 
 .Refused:
-	writetext BillNoEeveeText
+	writetext UnknownText_0x54e2d
 	waitbutton
 	closetext
 	end
 
 .GotEevee:
-	writetext BillPopWontWorkText
+	writetext UnknownText_0x54e42
 	waitbutton
 	closetext
 	end
@@ -54,13 +54,13 @@ BillsMomScript:
 	opentext
 	checkevent EVENT_MET_BILL
 	iffalse .HaventMetBill
-	writetext BillsMomText_BeforeEcruteak
+	writetext UnknownText_0x54ea8
 	waitbutton
 	closetext
 	end
 
 .HaventMetBill:
-	writetext BillsMomText_AfterEcruteak
+	writetext UnknownText_0x54f4e
 	waitbutton
 	closetext
 	end
@@ -70,51 +70,55 @@ BillsSisterScript:
 	opentext
 	checkcellnum PHONE_BILL
 	iftrue .GotBillsNumber
-	writetext BillsSisterUsefulNumberText
+	writetext UnknownText_0x54f9e
 	askforphonenumber PHONE_BILL
 	ifequal PHONE_CONTACTS_FULL, .NoRoom
 	ifequal PHONE_CONTACT_REFUSED, .Refused
 	waitsfx
 	addcellnum PHONE_BILL
-	writetext RecordedBillsNumberText
+	writetext UnknownText_0x54fd9
 	playsound SFX_REGISTER_PHONE_NUMBER
 	waitsfx
-	promptbutton
+	buttonsound
 .GotBillsNumber:
-	writetext BillsSisterStorageSystemText
+	writetext UnknownText_0x55069
 	waitbutton
 	closetext
 	end
 
 .Refused:
-	writetext BillsSisterRefusedNumberText
+	writetext UnknownText_0x54ff3
 	waitbutton
 	closetext
 	end
 
 .NoRoom:
-	writetext BillsSisterPhoneFullText
-	promptbutton
-	sjump .Refused
+	writetext UnknownText_0x55046
+	buttonsound
+	jump .Refused
 
 BillsHouseBookshelf1:
-	jumpstd PictureBookshelfScript
+	jumpstd picturebookshelf
 
 BillsHouseBookshelf2:
-	jumpstd MagazineBookshelfScript
+	jumpstd magazinebookshelf
 
 BillsHouseRadio:
-	jumpstd Radio2Script
+	jumpstd radio2
 
-BillTakeThisEeveeText:
+UnknownText_0x54c74:
 	text "BILL: Hi, <PLAYER>!"
 	line "Do us a favor and"
-	cont "take this EEVEE."
+	cont "take this #MON."
 
 	para "It came over when"
 	line "I was adjusting"
 	cont "the TIME CAPSULE."
 
+	para "It seems to be a"
+	line "very rare species"
+	cont "of #MON."
+	
 	para "Someone has to"
 	line "take care of it,"
 
@@ -126,7 +130,7 @@ BillTakeThisEeveeText:
 	cont "<PLAYER>?"
 	done
 
-BillImCountingOnYouText:
+UnknownText_0x54d3f:
 	text "BILL: I knew you'd"
 	line "come through!"
 
@@ -140,31 +144,31 @@ BillImCountingOnYouText:
 	line "it!"
 	done
 
-ReceivedEeveeText:
+UnknownText_0x54dae:
 	text "<PLAYER> received"
-	line "EEVEE!"
+	line "MELOETTA!"
 	done
 
-BillEeveeMayEvolveText:
+UnknownText_0x54dc1:
 	text "BILL: PROF.ELM"
-	line "claims EEVEE may"
+	line "claims MELOETTA"
 
-	para "evolve in new and"
-	line "unknown ways."
+	para "is a legendary"
+	line "#MON!"
 	done
 
-BillPartyFullText:
+UnknownText_0x54e02:
 	text "Whoa, wait. You"
 	line "can't carry any"
 	cont "more #MON."
 	done
 
-BillNoEeveeText:
+UnknownText_0x54e2d:
 	text "Oh… Now what to"
 	line "do?"
 	done
 
-BillPopWontWorkText:
+UnknownText_0x54e42:
 	text "BILL: My pop, he"
 	line "won't work. All he"
 
@@ -175,7 +179,7 @@ BillPopWontWorkText:
 	line "a real headache…"
 	done
 
-BillsMomText_BeforeEcruteak:
+UnknownText_0x54ea8:
 	text "Oh, you collect"
 	line "#MON? My son"
 	cont "BILL is an expert."
@@ -193,7 +197,7 @@ BillsMomText_BeforeEcruteak:
 	line "being called…"
 	done
 
-BillsMomText_AfterEcruteak:
+UnknownText_0x54f4e:
 	text "My husband was"
 	line "once known as a"
 
@@ -204,7 +208,7 @@ BillsMomText_AfterEcruteak:
 	line "father."
 	done
 
-BillsSisterUsefulNumberText:
+UnknownText_0x54f9e:
 	text "Are you a trainer?"
 
 	para "I've got a useful"
@@ -212,12 +216,12 @@ BillsSisterUsefulNumberText:
 	cont "you."
 	done
 
-RecordedBillsNumberText:
+UnknownText_0x54fd9:
 	text "<PLAYER> recorded"
 	line "BILL's number."
 	done
 
-BillsSisterRefusedNumberText:
+UnknownText_0x54ff3:
 	text "My brother made"
 	line "the PC #MON"
 	cont "storage system."
@@ -227,12 +231,12 @@ BillsSisterRefusedNumberText:
 	cont "number…"
 	done
 
-BillsSisterPhoneFullText:
+UnknownText_0x55046:
 	text "You can't record"
 	line "any more numbers."
 	done
 
-BillsSisterStorageSystemText:
+UnknownText_0x55069:
 	text "My big brother"
 	line "BILL made the PC"
 
@@ -243,18 +247,18 @@ BillsSisterStorageSystemText:
 BillsFamilysHouse_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 2 ; warp events
 	warp_event  2,  7, GOLDENROD_CITY, 4
 	warp_event  3,  7, GOLDENROD_CITY, 4
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 3 ; bg events
 	bg_event  0,  1, BGEVENT_READ, BillsHouseBookshelf2
 	bg_event  1,  1, BGEVENT_READ, BillsHouseBookshelf1
 	bg_event  7,  1, BGEVENT_READ, BillsHouseRadio
 
-	def_object_events
+	db 3 ; object events
 	object_event  2,  3, SPRITE_BILL, SPRITEMOVEDATA_STANDING_RIGHT, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, BillScript, EVENT_MET_BILL
 	object_event  5,  3, SPRITE_POKEFAN_F, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, BillsMomScript, -1
 	object_event  5,  4, SPRITE_TWIN, SPRITEMOVEDATA_WANDER, 1, 1, -1, -1, PAL_NPC_GREEN, OBJECTTYPE_SCRIPT, 0, BillsSisterScript, -1

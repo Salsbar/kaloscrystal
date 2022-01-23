@@ -1,5 +1,5 @@
-BugContestantPointers:
-	table_width 2, BugContestantPointers
+BugContestantPointers: ; 13783
+; there are NUM_BUG_CONTESTANTS + 1 entries
 	dw BugContestant_BugCatcherDon ; this reverts back to the player
 	dw BugContestant_BugCatcherDon
 	dw BugContestant_BugCatcherEd
@@ -11,7 +11,7 @@ BugContestantPointers:
 	dw BugContestant_BugCatcherJosh
 	dw BugContestant_YoungsterSamuel
 	dw BugContestant_SchoolboyKipp
-	assert_table_length NUM_BUG_CONTESTANTS + 1
+; 13799
 
 ; contestant format:
 ;   db class, id
@@ -21,60 +21,61 @@ BugContestantPointers:
 
 BugContestant_BugCatcherDon:
 	db BUG_CATCHER, DON
-	dbw KAKUNA,     300
-	dbw METAPOD,    285
-	dbw CATERPIE,   226
+	dbw WHIRLIPEDE,     300
+	dbw SWADLOON,    285
+	dbw SEWADDLE,   226
 
 BugContestant_BugCatcherEd:
 	db BUG_CATCHER, ED
-	dbw BUTTERFREE, 286
-	dbw BUTTERFREE, 251
-	dbw CATERPIE,   237
+	dbw VIVILLON, 286
+	dbw VIVILLON, 251
+	dbw SPEWPA,   237
 
 BugContestant_CooltrainerMNick:
 	db COOLTRAINERM, NICK
-	dbw SCYTHER,    357
-	dbw BUTTERFREE, 349
-	dbw PINSIR,     368
+	dbw DURANT,    357
+	dbw VIVILLON, 349
+	dbw JOLTIK,     368
 
 BugContestant_PokefanMWilliam:
 	db POKEFANM, WILLIAM
-	dbw PINSIR,     332
-	dbw BUTTERFREE, 324
-	dbw VENONAT,    321
+	dbw DURANT,     332
+	dbw KARRABLAST, 324
+	dbw SHELMET,    321
 
 BugContestant_BugCatcherBenny:
 	db BUG_CATCHER, BUG_CATCHER_BENNY
-	dbw BUTTERFREE, 318
-	dbw WEEDLE,     295
-	dbw CATERPIE,   285
+	dbw VIVILLON, 318
+	dbw VENIPEDE,     295
+	dbw SEWADDLE,   285
 
 BugContestant_CamperBarry:
 	db CAMPER, BARRY
-	dbw PINSIR,     366
-	dbw VENONAT,    329
-	dbw KAKUNA,     314
+	dbw DURANT,     366
+	dbw JOLTIK,    329
+	dbw WHIRLIPEDE,     314
 
 BugContestant_PicnickerCindy:
 	db PICNICKER, CINDY
-	dbw BUTTERFREE, 341
-	dbw METAPOD,    301
-	dbw CATERPIE,   264
+	dbw VIVILLON, 341
+	dbw SWADLOON,    301
+	dbw SPEWPA,   264
 
 BugContestant_BugCatcherJosh:
 	db BUG_CATCHER, JOSH
-	dbw SCYTHER,    326
-	dbw BUTTERFREE, 292
-	dbw METAPOD,    282
+	dbw DURANT,    326
+	dbw VIVILLON, 292
+	dbw SPEWPA,    282
 
 BugContestant_YoungsterSamuel:
 	db YOUNGSTER, SAMUEL
-	dbw WEEDLE,     270
-	dbw PINSIR,     282
-	dbw CATERPIE,   251
+	dbw VENIPEDE,     270
+	dbw JOLTIK,     282
+	dbw SEWADDLE,   251
 
 BugContestant_SchoolboyKipp:
 	db SCHOOLBOY, KIPP
-	dbw VENONAT,    267
-	dbw PARAS,      254
-	dbw KAKUNA,     259
+	dbw KARRABLAST,    267
+	dbw SHELMET,      254
+	dbw WHIRLIPEDE,     259
+; 13807

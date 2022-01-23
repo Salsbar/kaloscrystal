@@ -1,38 +1,41 @@
-ClearBGPalettes::
+ClearBGPalettes:: ; 31f3
 	call ClearPalettes
-WaitBGMap::
+WaitBGMap:: ; 31f6
 ; Tell VBlank to update BG Map
 	ld a, 1 ; BG Map 0 tiles
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 ; Wait for it to do its magic
 	ld c, 4
 	call DelayFrames
 	ret
+; 3200
 
-WaitBGMap2::
-	ldh a, [hCGB]
+WaitBGMap2:: ; 0x3200
+	ld a, [hCGB]
 	and a
 	jr z, .bg0
 
 	ld a, 2
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	ld c, 4
 	call DelayFrames
 
 .bg0
 	ld a, 1
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	ld c, 4
 	call DelayFrames
 	ret
+; 0x3218
 
-IsCGB::
-	ldh a, [hCGB]
+IsCGB:: ; 3218
+	ld a, [hCGB]
 	and a
 	ret
+; 321c
 
-ApplyTilemap::
-	ldh a, [hCGB]
+ApplyTilemap:: ; 321c
+	ld a, [hCGB]
 	and a
 	jr z, .dmg
 
@@ -41,76 +44,80 @@ ApplyTilemap::
 	jr z, .dmg
 
 	ld a, 1
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	jr CopyTilemapAtOnce
 
 .dmg
 ; WaitBGMap
 	ld a, 1
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	ld c, 4
 	call DelayFrames
 	ret
+; 3238
 
-CGBOnly_CopyTilemapAtOnce::
-	ldh a, [hCGB]
+CGBOnly_CopyTilemapAtOnce:: ; 3238
+	ld a, [hCGB]
 	and a
 	jr z, WaitBGMap
 
-CopyTilemapAtOnce::
-	jr _CopyTilemapAtOnce
+CopyTilemapAtOnce:: ; 323d
+	jr .CopyTilemapAtOnce
+; 323f
 
-CopyAttrmapAndTilemapToWRAMBank3: ; unreferenced
-	farcall HDMATransferAttrmapAndTilemapToWRAMBank3
+; unused
+	farcall HDMATransferAttrMapAndTileMapToWRAMBank3
 	ret
+; 3246
 
-_CopyTilemapAtOnce:
-	ldh a, [hBGMapMode]
+.CopyTilemapAtOnce: ; 3246
+	ld a, [hBGMapMode]
 	push af
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 
-	ldh a, [hMapAnims]
+	ld a, [hMapAnims]
 	push af
 	xor a
-	ldh [hMapAnims], a
+	ld [hMapAnims], a
 
 .wait
-	ldh a, [rLY]
-	cp $80 - 1
+	ld a, [rLY]
+	cp $7f
 	jr c, .wait
 
 	di
-	ld a, BANK(vBGMap2)
-	ldh [rVBK], a
-	hlcoord 0, 0, wAttrmap
-	call .CopyBGMapViaStack
-	ld a, BANK(vBGMap0)
-	ldh [rVBK], a
+	ld a, BANK(vTiles3)
+	ld [rVBK], a
+	hlcoord 0, 0, wAttrMap
+	call .StackPointerMagic
+	ld a, BANK(vTiles0)
+	ld [rVBK], a
 	hlcoord 0, 0
-	call .CopyBGMapViaStack
+	call .StackPointerMagic
 
 .wait2
-	ldh a, [rLY]
-	cp $80 - 1
+	ld a, [rLY]
+	cp $7f
 	jr c, .wait2
 	ei
 
 	pop af
-	ldh [hMapAnims], a
+	ld [hMapAnims], a
 	pop af
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	ret
+; 327b
 
-.CopyBGMapViaStack:
+.StackPointerMagic: ; 327b
 ; Copy all tiles to vBGMap
 	ld [hSPBuffer], sp
 	ld sp, hl
-	ldh a, [hBGMapAddress + 1]
+	ld a, [hBGMapAddress + 1]
 	ld h, a
 	ld l, 0
 	ld a, SCREEN_HEIGHT
-	ldh [hTilesPerCycle], a
+	ld [hTilesPerCycle], a
 	ld b, 1 << 1 ; not in v/hblank
 	ld c, LOW(rSTAT)
 
@@ -119,10 +126,10 @@ rept SCREEN_WIDTH / 2
 	pop de
 ; if in v/hblank, wait until not in v/hblank
 .loop\@
-	ldh a, [c]
+	ld a, [$ff00+c]
 	and b
 	jr nz, .loop\@
-; load vBGMap
+; load BGMap0
 	ld [hl], e
 	inc l
 	ld [hl], d
@@ -131,29 +138,30 @@ endr
 
 	ld de, BG_MAP_WIDTH - SCREEN_WIDTH
 	add hl, de
-	ldh a, [hTilesPerCycle]
+	ld a, [hTilesPerCycle]
 	dec a
-	ldh [hTilesPerCycle], a
+	ld [hTilesPerCycle], a
 	jr nz, .loop
 
-	ldh a, [hSPBuffer]
+	ld a, [hSPBuffer]
 	ld l, a
-	ldh a, [hSPBuffer + 1]
+	ld a, [hSPBuffer + 1]
 	ld h, a
 	ld sp, hl
 	ret
+; 32f9
 
-SetPalettes::
+SetPalettes:: ; 32f9
 ; Inits the Palettes
 ; depending on the system the monochromes palettes or color palettes
-	ldh a, [hCGB]
+	ld a, [hCGB]
 	and a
 	jr nz, .SetPalettesForGameBoyColor
 	ld a, %11100100
-	ldh [rBGP], a
+	ld [rBGP], a
 	ld a, %11010000
-	ldh [rOBP0], a
-	ldh [rOBP1], a
+	ld [rOBP0], a
+	ld [rOBP1], a
 	ret
 
 .SetPalettesForGameBoyColor:
@@ -164,28 +172,29 @@ SetPalettes::
 	call DmgToCgbObjPals
 	pop de
 	ret
+; 3317
 
-ClearPalettes::
+ClearPalettes:: ; 3317
 ; Make all palettes white
 
 ; CGB: make all the palette colors white
-	ldh a, [hCGB]
+	ld a, [hCGB]
 	and a
 	jr nz, .cgb
 
 ; DMG: just change palettes to 0 (white)
 	xor a
-	ldh [rBGP], a
-	ldh [rOBP0], a
-	ldh [rOBP1], a
+	ld [rBGP], a
+	ld [rOBP0], a
+	ld [rOBP1], a
 	ret
 
 .cgb
-	ldh a, [rSVBK]
+	ld a, [rSVBK]
 	push af
 
 	ld a, BANK(wBGPals2)
-	ldh [rSVBK], a
+	ld [rSVBK], a
 
 ; Fill wBGPals2 and wOBPals2 with $ffff (white)
 	ld hl, wBGPals2
@@ -194,43 +203,27 @@ ClearPalettes::
 	call ByteFill
 
 	pop af
-	ldh [rSVBK], a
+	ld [rSVBK], a
 
 ; Request palette update
-	ld a, TRUE
-	ldh [hCGBPalUpdate], a
+	ld a, 1
+	ld [hCGBPalUpdate], a
 	ret
+; 333e
 
-GetMemSGBLayout::
-	ld b, SCGB_DEFAULT
-GetSGBLayout::
+GetMemSGBLayout:: ; 333e
+	ld b, SCGB_RAM
+GetSGBLayout:: ; 3340
 ; load sgb packets unless dmg
 
-	ldh a, [hCGB]
+	ld a, [hCGB]
 	and a
 	jr nz, .sgb
 
-	ldh a, [hSGB]
+	ld a, [hSGB]
 	and a
 	ret z
 
 .sgb
 	predef_jump LoadSGBLayout
-
-SetHPPal::
-; Set palette for hp bar pixel length e at hl.
-	call GetHPPal
-	ld [hl], d
-	ret
-
-GetHPPal::
-; Get palette for hp bar pixel length e in d.
-	ld d, HP_GREEN
-	ld a, e
-	cp (HP_BAR_LENGTH_PX * 50 / 100) ; 24
-	ret nc
-	inc d ; HP_YELLOW
-	cp (HP_BAR_LENGTH_PX * 21 / 100) ; 10
-	ret nc
-	inc d ; HP_RED
-	ret
+; 334e

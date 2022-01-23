@@ -1,4 +1,4 @@
-Pokepic::
+Pokepic:: ; 244e3
 	ld hl, PokepicMenuHeader
 	call CopyMenuHeader
 	call MenuBox
@@ -7,7 +7,7 @@ Pokepic::
 	ld b, SCGB_POKEPIC
 	call GetSGBLayout
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	ld a, [wCurPartySpecies]
 	ld [wCurSpecies], a
 	call GetBaseData
@@ -21,27 +21,27 @@ Pokepic::
 	ld c, a
 	call Coord2Tile
 	ld a, $80
-	ldh [hGraphicStartTile], a
+	ld [hGraphicStartTile], a
 	lb bc, 7, 7
 	predef PlaceGraphic
 	call WaitBGMap
 	ret
 
-ClosePokepic::
+ClosePokepic:: ; 24528
 	ld hl, PokepicMenuHeader
 	call CopyMenuHeader
 	call ClearMenuBoxInterior
 	call WaitBGMap
 	call GetMemSGBLayout
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call OverworldTextModeSwitch
 	call ApplyTilemap
 	call UpdateSprites
 	call LoadStandardFont
 	ret
 
-PokepicMenuHeader:
+PokepicMenuHeader: ; 0x24547
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 6, 4, 14, 13
 	dw NULL

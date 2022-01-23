@@ -1,5 +1,5 @@
-HandleStoneQueue::
-	ldh a, [hROMBank]
+HandleStoneQueue:: ; 3567
+	ld a, [hROMBank]
 	push af
 
 	call SwitchToMapScriptsBank
@@ -9,8 +9,9 @@ HandleStoneQueue::
 	ld a, b
 	rst Bankswitch
 	ret
+; 3574
 
-.WarpAction:
+.WarpAction: ; 3574
 	ld hl, OBJECT_MAP_OBJECT_INDEX
 	add hl, de
 	ld a, [hl]
@@ -34,8 +35,9 @@ HandleStoneQueue::
 .nope
 	and a
 	ret
+; 3599
 
-.IsObjectOnWarp:
+.IsObjectOnWarp: ; 3599
 	push de
 
 	ld hl, OBJECT_NEXT_MAP_X
@@ -54,13 +56,14 @@ HandleStoneQueue::
 
 	pop de
 	ret
+; 35b0
 
-.check_on_warp
-	ld hl, wCurMapWarpsPointer
+.check_on_warp ; 35b0
+	ld hl, wCurrMapWarpsPointer
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	ld a, [wCurMapWarpCount]
+	ld a, [wCurrMapWarpCount]
 	and a
 	jr z, .nope2
 
@@ -76,7 +79,7 @@ HandleStoneQueue::
 	jr .found_warp
 
 .not_on_warp
-	ld a, WARP_EVENT_SIZE
+	ld a, 5
 	add l
 	ld l, a
 	jr nc, .no_carry
@@ -94,13 +97,14 @@ HandleStoneQueue::
 .found_warp
 	pop af
 	ld d, a
-	ld a, [wCurMapWarpCount]
+	ld a, [wCurrMapWarpCount]
 	sub d
 	inc a
 	scf
 	ret
+; 35de
 
-.IsObjectInStoneTable:
+.IsObjectInStoneTable: ; 35de
 	inc e
 	ld hl, CMDQUEUE_ADDR
 	add hl, bc
@@ -136,3 +140,4 @@ HandleStoneQueue::
 .yes
 	scf
 	ret
+; 3600

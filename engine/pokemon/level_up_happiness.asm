@@ -1,9 +1,9 @@
-LevelUpHappinessMod:
+LevelUpHappinessMod: ; 2709e
 	ld a, [wCurPartyMon]
 	ld hl, wPartyMon1CaughtLocation
 	call GetPartyLocation
 	ld a, [hl]
-	and CAUGHT_LOCATION_MASK
+	and $7f
 	ld d, a
 	ld a, [wMapGroup]
 	ld b, a

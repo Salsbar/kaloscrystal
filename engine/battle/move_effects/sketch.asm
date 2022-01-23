@@ -1,4 +1,4 @@
-BattleCommand_Sketch:
+BattleCommand_Sketch: ; 35a74
 ; sketch
 
 	call ClearLastMove
@@ -27,14 +27,14 @@ BattleCommand_Sketch:
 	ld e, l
 ; Get the battle move structs.
 	ld hl, wBattleMonMoves
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
 	jr z, .get_last_move
 	ld hl, wEnemyMonMoves
 .get_last_move
 	ld a, BATTLE_VARS_LAST_COUNTER_MOVE_OPP
 	call GetBattleVar
-	ld [wNamedObjectIndex], a
+	ld [wTypeMatchup], a
 	ld b, a
 ; Fail if move is invalid or is Struggle.
 	and a
@@ -56,7 +56,7 @@ BattleCommand_Sketch:
 .find_sketch
 	dec c
 	ld a, [hld]
-	cp SKETCH
+	cp TACKLE
 	jr nz, .find_sketch
 	inc hl
 ; The Sketched move is loaded to that slot.
@@ -74,7 +74,7 @@ BattleCommand_Sketch:
 	ld [hl], a
 	pop bc
 
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
 	jr z, .user_trainer
 	ld a, [wBattleMode]
@@ -110,8 +110,10 @@ BattleCommand_Sketch:
 	call AnimateCurrentMove
 
 	ld hl, SketchedText
-	jp StdBattleTextbox
+	jp StdBattleTextBox
 
 .fail
 	call AnimateFailedMove
 	jp PrintDidntAffect
+
+; 35b16

@@ -1,14 +1,14 @@
-	object_const_def
+	const_def 2 ; object constants
 	const SAFFRONMAGNETTRAINSTATION_OFFICER
-	const SAFFRONMAGNETTRAINSTATION_GYM_GUIDE
+	const SAFFRONMAGNETTRAINSTATION_GYM_GUY
 	const SAFFRONMAGNETTRAINSTATION_TEACHER
 	const SAFFRONMAGNETTRAINSTATION_LASS
 
 SaffronMagnetTrainStation_MapScripts:
-	def_scene_scripts
+	db 1 ; scene scripts
 	scene_script .DummyScene ; SCENE_DEFAULT
 
-	def_callbacks
+	db 0 ; callbacks
 
 .DummyScene:
 	end
@@ -18,23 +18,23 @@ SaffronMagnetTrainStationOfficerScript:
 	opentext
 	checkevent EVENT_RESTORED_POWER_TO_KANTO
 	iftrue .MagnetTrainToGoldenrod
-	writetext SaffronMagnetTrainStationOfficerTrainIsntOperatingText
+	writetext UnknownText_0x18a8a9
 	waitbutton
 	closetext
 	end
 
 .MagnetTrainToGoldenrod:
-	writetext SaffronMagnetTrainStationOfficerAreYouComingOnBoardText
+	writetext UnknownText_0x18a8dd
 	yesorno
 	iffalse .DecidedNotToRide
 	checkitem PASS
 	iffalse .PassNotInBag
-	writetext SaffronMagnetTrainStationOfficerRightThisWayText
+	writetext UnknownText_0x18a917
 	waitbutton
 	closetext
-	applymovement SAFFRONMAGNETTRAINSTATION_OFFICER, SaffronMagnetTrainStationOfficerApproachTrainDoorMovement
-	applymovement PLAYER, SaffronMagnetTrainStationPlayerApproachAndEnterTrainMovement
-	setval TRUE
+	applymovement SAFFRONMAGNETTRAINSTATION_OFFICER, MovementData_0x18a88f
+	applymovement PLAYER, MovementData_0x18a898
+	writebyte TRUE
 	special MagnetTrain
 	warpcheck
 	newloadmap MAPSETUP_TRAIN
@@ -47,39 +47,39 @@ SaffronMagnetTrainStationOfficerScript:
 	step_end
 
 .PassNotInBag:
-	writetext SaffronMagnetTrainStationOfficerYouDontHaveAPassText
+	writetext UnknownText_0x18a956
 	waitbutton
 	closetext
 	end
 
 .DecidedNotToRide:
-	writetext SaffronMagnetTrainStationOfficerHopeToSeeYouAgainText
+	writetext UnknownText_0x18a978
 	waitbutton
 	closetext
 	end
 
 Script_ArriveFromGoldenrod:
-	applymovement SAFFRONMAGNETTRAINSTATION_OFFICER, SaffronMagnetTrainStationOfficerApproachTrainDoorMovement
-	applymovement PLAYER, SaffronMagnetTrainStationPlayerLeaveTrainAndEnterStationMovement
-	applymovement SAFFRONMAGNETTRAINSTATION_OFFICER, SaffronMagnetTrainStationOfficerReturnToBoardingGateMovement
+	applymovement SAFFRONMAGNETTRAINSTATION_OFFICER, MovementData_0x18a88f
+	applymovement PLAYER, MovementData_0x18a8a1
+	applymovement SAFFRONMAGNETTRAINSTATION_OFFICER, MovementData_0x18a894
 	opentext
-	writetext SaffronMagnetTrainStationOfficerArrivedInSaffronText
+	writetext UnknownText_0x18a993
 	waitbutton
 	closetext
 	end
 
-SaffronMagnetTrainStationGymGuideScript:
+SaffronMagnetTrainStationGymGuyScript:
 	faceplayer
 	opentext
 	checkevent EVENT_RETURNED_MACHINE_PART
 	iftrue .ReturnedMachinePart
-	writetext SaffronMagnetTrainStationGymGuideText
+	writetext SaffronMagnetTrainStationGymGuyText
 	waitbutton
 	closetext
 	end
 
 .ReturnedMachinePart:
-	writetext SaffronMagnetTrainStationGymGuideText_ReturnedMachinePart
+	writetext SaffronMagnetTrainStationGymGuyText_ReturnedMachinePart
 	waitbutton
 	closetext
 	end
@@ -90,20 +90,20 @@ SaffronMagnetTrainStationTeacherScript:
 SaffronMagnetTrainStationLassScript:
 	jumptextfaceplayer SaffronMagnetTrainStationLassText
 
-SaffronMagnetTrainStationOfficerApproachTrainDoorMovement:
+MovementData_0x18a88f:
 	step UP
 	step UP
 	step RIGHT
 	turn_head LEFT
 	step_end
 
-SaffronMagnetTrainStationOfficerReturnToBoardingGateMovement:
+MovementData_0x18a894:
 	step LEFT
 	step DOWN
 	step DOWN
 	step_end
 
-SaffronMagnetTrainStationPlayerApproachAndEnterTrainMovement:
+MovementData_0x18a898:
 	step UP
 	step UP
 	step UP
@@ -114,7 +114,7 @@ SaffronMagnetTrainStationPlayerApproachAndEnterTrainMovement:
 	step UP
 	step_end
 
-SaffronMagnetTrainStationPlayerLeaveTrainAndEnterStationMovement:
+MovementData_0x18a8a1:
 	step LEFT
 	step LEFT
 	step DOWN
@@ -124,13 +124,13 @@ SaffronMagnetTrainStationPlayerLeaveTrainAndEnterStationMovement:
 	turn_head UP
 	step_end
 
-SaffronMagnetTrainStationOfficerTrainIsntOperatingText:
+UnknownText_0x18a8a9:
 	text "I'm sorry, but the"
 	line "MAGNET TRAIN isn't"
 	cont "operating now."
 	done
 
-SaffronMagnetTrainStationOfficerAreYouComingOnBoardText:
+UnknownText_0x18a8dd:
 	text "We'll soon depart"
 	line "for GOLDENROD."
 
@@ -138,7 +138,7 @@ SaffronMagnetTrainStationOfficerAreYouComingOnBoardText:
 	line "board?"
 	done
 
-SaffronMagnetTrainStationOfficerRightThisWayText:
+UnknownText_0x18a917:
 	text "May I see your"
 	line "rail PASS, please?"
 
@@ -146,17 +146,17 @@ SaffronMagnetTrainStationOfficerRightThisWayText:
 	line "way, please."
 	done
 
-SaffronMagnetTrainStationOfficerYouDontHaveAPassText:
+UnknownText_0x18a956:
 	text "Sorry, but you"
 	line "don't have a PASS."
 	done
 
-SaffronMagnetTrainStationOfficerHopeToSeeYouAgainText:
+UnknownText_0x18a978:
 	text "We hope to see you"
 	line "again."
 	done
 
-SaffronMagnetTrainStationOfficerArrivedInSaffronText:
+UnknownText_0x18a993:
 	text "We have arrived in"
 	line "SAFFRON."
 
@@ -164,7 +164,7 @@ SaffronMagnetTrainStationOfficerArrivedInSaffronText:
 	line "again."
 	done
 
-SaffronMagnetTrainStationGymGuideText:
+SaffronMagnetTrainStationGymGuyText:
 	text "The MAGNET TRAIN"
 	line "is a super-modern"
 
@@ -180,7 +180,7 @@ SaffronMagnetTrainStationGymGuideText:
 	cont "tricity…"
 	done
 
-SaffronMagnetTrainStationGymGuideText_ReturnedMachinePart:
+SaffronMagnetTrainStationGymGuyText_ReturnedMachinePart:
 	text "Whew…"
 
 	para "How many times"
@@ -216,19 +216,19 @@ SaffronMagnetTrainStationLassText:
 SaffronMagnetTrainStation_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 4 ; warp events
 	warp_event  8, 17, SAFFRON_CITY, 6
 	warp_event  9, 17, SAFFRON_CITY, 6
 	warp_event  6,  5, GOLDENROD_MAGNET_TRAIN_STATION, 4
 	warp_event 11,  5, GOLDENROD_MAGNET_TRAIN_STATION, 3
 
-	def_coord_events
+	db 1 ; coord events
 	coord_event 11,  6, SCENE_DEFAULT, Script_ArriveFromGoldenrod
 
-	def_bg_events
+	db 0 ; bg events
 
-	def_object_events
+	db 4 ; object events
 	object_event  9,  9, SPRITE_OFFICER, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, SaffronMagnetTrainStationOfficerScript, -1
-	object_event 10, 14, SPRITE_GYM_GUIDE, SPRITEMOVEDATA_WANDER, 1, 1, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, SaffronMagnetTrainStationGymGuideScript, -1
+	object_event 10, 14, SPRITE_GYM_GUY, SPRITEMOVEDATA_WANDER, 1, 1, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, SaffronMagnetTrainStationGymGuyScript, -1
 	object_event  6, 11, SPRITE_TEACHER, SPRITEMOVEDATA_STANDING_RIGHT, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, SaffronMagnetTrainStationTeacherScript, EVENT_SAFFRON_TRAIN_STATION_POPULATION
 	object_event  6, 10, SPRITE_LASS, SPRITEMOVEDATA_STANDING_UP, 0, 0, -1, -1, PAL_NPC_GREEN, OBJECTTYPE_SCRIPT, 0, SaffronMagnetTrainStationLassScript, EVENT_SAFFRON_TRAIN_STATION_POPULATION

@@ -1,6 +1,5 @@
-Marts:
-; entries correspond to MART_* constants (see constants/mart_constants.asm)
-	table_width 2, Marts
+Marts: ; 160a9
+; entries correspond to MART_* constants
 	dw MartCherrygrove
 	dw MartCherrygroveDex
 	dw MartViolet
@@ -35,17 +34,20 @@ Marts:
 	dw MartMtMoon
 	dw MartIndigoPlateau
 	dw MartUnderground
-	assert_table_length NUM_MARTS
+.End
+; 160ed
 
-MartCherrygrove:
+
+MartCherrygrove: ; 160ed
 	db 4 ; # items
 	db POTION
 	db ANTIDOTE
 	db PARLYZ_HEAL
 	db AWAKENING
 	db -1 ; end
+; 160f3
 
-MartCherrygroveDex:
+MartCherrygroveDex: ; 160f3
 	db 5 ; # items
 	db POKE_BALL
 	db POTION
@@ -53,8 +55,9 @@ MartCherrygroveDex:
 	db PARLYZ_HEAL
 	db AWAKENING
 	db -1 ; end
+; 160fa
 
-MartViolet:
+MartViolet: ; 160fa
 	db 10 ; # items
 	db POKE_BALL
 	db POTION
@@ -67,8 +70,9 @@ MartViolet:
 	db X_SPEED
 	db FLOWER_MAIL
 	db -1 ; end
+; 16106
 
-MartAzalea:
+MartAzalea: ; 16106
 	db 9 ; # items
 	db CHARCOAL
 	db POKE_BALL
@@ -80,8 +84,9 @@ MartAzalea:
 	db PARLYZ_HEAL
 	db FLOWER_MAIL
 	db -1 ; end
+; 16111
 
-MartCianwood:
+MartCianwood: ; 16111
 	db 5 ; # items
 	db POTION
 	db SUPER_POTION
@@ -89,8 +94,9 @@ MartCianwood:
 	db FULL_HEAL
 	db REVIVE
 	db -1 ; end
+; 16118
 
-MartGoldenrod2F1:
+MartGoldenrod2F1: ; 16118
 	db 7 ; # items
 	db POTION
 	db SUPER_POTION
@@ -100,8 +106,9 @@ MartGoldenrod2F1:
 	db BURN_HEAL
 	db ICE_HEAL
 	db -1 ; end
+; 16121
 
-MartGoldenrod2F2:
+MartGoldenrod2F2: ; 16121
 	db 8 ; # items
 	db POKE_BALL
 	db GREAT_BALL
@@ -112,8 +119,9 @@ MartGoldenrod2F2:
 	db POKE_DOLL
 	db FLOWER_MAIL
 	db -1 ; end
+; 1612b
 
-MartGoldenrod3F:
+MartGoldenrod3F: ; 1612b
 	db 7 ; # items
 	db X_SPEED
 	db X_SPECIAL
@@ -123,8 +131,9 @@ MartGoldenrod3F:
 	db GUARD_SPEC
 	db X_ACCURACY
 	db -1 ; end
+; 16134
 
-MartGoldenrod4F:
+MartGoldenrod4F: ; 16134
 	db 5 ; # items
 	db PROTEIN
 	db IRON
@@ -132,31 +141,35 @@ MartGoldenrod4F:
 	db CALCIUM
 	db HP_UP
 	db -1 ; end
+; 1613b
 
-MartGoldenrod5F1:
+MartGoldenrod5F1: ; 1613b
 	db 3 ; # items
 	db TM_THUNDERPUNCH
 	db TM_FIRE_PUNCH
 	db TM_ICE_PUNCH
 	db -1 ; end
+; 16140
 
-MartGoldenrod5F2:
+MartGoldenrod5F2: ; 16140
 	db 4 ; # items
 	db TM_THUNDERPUNCH
 	db TM_FIRE_PUNCH
 	db TM_ICE_PUNCH
 	db TM_HEADBUTT
 	db -1 ; end
+; 16146
 
-MartGoldenrod5F3:
+MartGoldenrod5F3: ; 16146
 	db 4 ; # items
 	db TM_THUNDERPUNCH
 	db TM_FIRE_PUNCH
 	db TM_ICE_PUNCH
 	db TM_ROCK_SMASH
 	db -1 ; end
+; 1614c
 
-MartGoldenrod5F4:
+MartGoldenrod5F4: ; 1614c
 	db 5 ; # items
 	db TM_THUNDERPUNCH
 	db TM_FIRE_PUNCH
@@ -164,8 +177,9 @@ MartGoldenrod5F4:
 	db TM_HEADBUTT
 	db TM_ROCK_SMASH
 	db -1 ; end
+; 16153
 
-MartOlivine:
+MartOlivine: ; 16153
 	db 9 ; # items
 	db GREAT_BALL
 	db SUPER_POTION
@@ -177,8 +191,9 @@ MartOlivine:
 	db SUPER_REPEL
 	db SURF_MAIL
 	db -1 ; end
+; 1615e
 
-MartEcruteak:
+MartEcruteak: ; 1615e
 	db 10 ; # items
 	db POKE_BALL
 	db GREAT_BALL
@@ -191,16 +206,18 @@ MartEcruteak:
 	db ICE_HEAL
 	db REVIVE
 	db -1 ; end
+; 1616a
 
-MartMahogany1:
+MartMahogany1: ; 1616a
 	db 4 ; # items
 	db TINYMUSHROOM
 	db SLOWPOKETAIL
 	db POKE_BALL
 	db POTION
 	db -1 ; end
+; 16170
 
-MartMahogany2:
+MartMahogany2: ; 16170
 	db 9 ; # items
 	db RAGECANDYBAR
 	db GREAT_BALL
@@ -212,8 +229,9 @@ MartMahogany2:
 	db REVIVE
 	db FLOWER_MAIL
 	db -1 ; end
+; 1617b
 
-MartBlackthorn:
+MartBlackthorn: ; 1617b
 	db 9 ; # items
 	db GREAT_BALL
 	db ULTRA_BALL
@@ -225,8 +243,9 @@ MartBlackthorn:
 	db X_DEFEND
 	db X_ATTACK
 	db -1 ; end
+; 16186
 
-MartViridian:
+MartViridian: ; 16186
 	db 9 ; # items
 	db ULTRA_BALL
 	db HYPER_POTION
@@ -238,8 +257,9 @@ MartViridian:
 	db BURN_HEAL
 	db FLOWER_MAIL
 	db -1 ; end
+; 16191
 
-MartPewter:
+MartPewter: ; 16191
 	db 7 ; # items
 	db GREAT_BALL
 	db SUPER_POTION
@@ -249,8 +269,9 @@ MartPewter:
 	db AWAKENING
 	db BURN_HEAL
 	db -1 ; end
+; 1619a
 
-MartCerulean:
+MartCerulean: ; 1619a
 	db 9 ; # items
 	db GREAT_BALL
 	db ULTRA_BALL
@@ -262,8 +283,9 @@ MartCerulean:
 	db DIRE_HIT
 	db SURF_MAIL
 	db -1 ; end
+; 161a5
 
-MartLavender:
+MartLavender: ; 161a5
 	db 8 ; # items
 	db GREAT_BALL
 	db POTION
@@ -274,8 +296,9 @@ MartLavender:
 	db AWAKENING
 	db BURN_HEAL
 	db -1 ; end
+; 161af
 
-MartVermilion:
+MartVermilion: ; 161af
 	db 8 ; # items
 	db ULTRA_BALL
 	db SUPER_POTION
@@ -286,8 +309,9 @@ MartVermilion:
 	db BURN_HEAL
 	db LITEBLUEMAIL
 	db -1 ; end
+; 161b9
 
-MartCeladon2F1:
+MartCeladon2F1: ; 161b9
 	db 7 ; # items
 	db POTION
 	db SUPER_POTION
@@ -297,8 +321,9 @@ MartCeladon2F1:
 	db SUPER_REPEL
 	db MAX_REPEL
 	db -1 ; end
+; 161c2
 
-MartCeladon2F2:
+MartCeladon2F2: ; 161c2
 	db 10 ; # items
 	db POKE_BALL
 	db GREAT_BALL
@@ -311,8 +336,9 @@ MartCeladon2F2:
 	db AWAKENING
 	db PARLYZ_HEAL
 	db -1 ; end
+; 161ce
 
-MartCeladon3F:
+MartCeladon3F: ; 161ce
 	db 5 ; # items
 	db TM_HIDDEN_POWER
 	db TM_SUNNY_DAY
@@ -320,15 +346,17 @@ MartCeladon3F:
 	db TM_RAIN_DANCE
 	db TM_SANDSTORM
 	db -1 ; end
+; 161d5
 
-MartCeladon4F:
+MartCeladon4F: ; 161d5
 	db 3 ; # items
 	db POKE_DOLL
 	db LOVELY_MAIL
 	db SURF_MAIL
 	db -1 ; end
+; 161da
 
-MartCeladon5F1:
+MartCeladon5F1: ; 161da
 	db 5 ; # items
 	db HP_UP
 	db PROTEIN
@@ -336,8 +364,9 @@ MartCeladon5F1:
 	db CARBOS
 	db CALCIUM
 	db -1 ; end
+; 161e1
 
-MartCeladon5F2:
+MartCeladon5F2: ; 161e1
 	db 7 ; # items
 	db X_ACCURACY
 	db GUARD_SPEC
@@ -347,8 +376,9 @@ MartCeladon5F2:
 	db X_SPEED
 	db X_SPECIAL
 	db -1 ; end
+; 161ea
 
-MartFuchsia:
+MartFuchsia: ; 161ea
 	db 7 ; # items
 	db GREAT_BALL
 	db ULTRA_BALL
@@ -358,8 +388,9 @@ MartFuchsia:
 	db MAX_REPEL
 	db FLOWER_MAIL
 	db -1 ; end
+; 161f3
 
-MartSaffron:
+MartSaffron: ; 161f3
 	db 8 ; # items
 	db GREAT_BALL
 	db ULTRA_BALL
@@ -370,8 +401,9 @@ MartSaffron:
 	db X_DEFEND
 	db FLOWER_MAIL
 	db -1 ; end
+; 161fd
 
-MartMtMoon:
+MartMtMoon: ; 161fd
 	db 6 ; # items
 	db POKE_DOLL
 	db FRESH_WATER
@@ -380,8 +412,9 @@ MartMtMoon:
 	db REPEL
 	db PORTRAITMAIL
 	db -1 ; end
+; 16205
 
-MartIndigoPlateau:
+MartIndigoPlateau: ; 16205
 	db 7 ; # items
 	db ULTRA_BALL
 	db MAX_REPEL
@@ -391,17 +424,20 @@ MartIndigoPlateau:
 	db REVIVE
 	db FULL_HEAL
 	db -1 ; end
+; 1620e
 
-MartUnderground:
+MartUnderground: ; 1620e
 	db 4 ; # items
 	db ENERGYPOWDER
 	db ENERGY_ROOT
 	db HEAL_POWDER
 	db REVIVAL_HERB
 	db -1 ; end
+; 16214
 
-DefaultMart:
+DefaultMart: ; 16214
 	db 2 ; # items
 	db POKE_BALL
 	db POTION
 	db -1 ; end
+; 16218

@@ -15,7 +15,7 @@
 	const SEERACTION_CANT_TELL_2
 	const SEERACTION_LEVEL_ONLY
 
-PokeSeer:
+PokeSeer: ; 4f0bc
 	ld a, SEER_INTRO
 	call PrintSeerText
 	call JoyWaitAorB
@@ -47,29 +47,34 @@ PokeSeer:
 	ld a, SEER_EGG
 	call PrintSeerText
 	ret
+; 4f0ee
 
-SeerAction:
+
+SeerAction: ; 4f0ee
 	ld a, [wSeerAction]
 	ld hl, SeerActions
 	rst JumpTable
 	ret
+; 4f0f6
 
-SeerActions:
+SeerActions: ; 4f0f6
 	dw SeerAction0
 	dw SeerAction1
 	dw SeerAction2
 	dw SeerAction3
 	dw SeerAction4
+; 4f100
 
-SeerAction0:
+SeerAction0: ; 4f100
 	ld a, SEER_MET_AT
 	call PrintSeerText
 	ld a, SEER_TIME_LEVEL
 	call PrintSeerText
 	call SeerAdvice
 	ret
+; 4f10e
 
-SeerAction1:
+SeerAction1: ; 4f10e
 	call GetCaughtOT
 	ld a, SEER_TRADED
 	call PrintSeerText
@@ -77,24 +82,28 @@ SeerAction1:
 	call PrintSeerText
 	call SeerAdvice
 	ret
+; 4f11f
 
-SeerAction2:
+SeerAction2: ; 4f11f
 	ld a, SEER_CANT_TELL
 	call PrintSeerText
 	ret
+; 4f125
 
-SeerAction3:
+SeerAction3: ; 4f125
 	ld a, SEER_CANT_TELL
 	call PrintSeerText
 	ret
+; 4f12b
 
-SeerAction4:
+SeerAction4: ; 4f12b
 	ld a, SEER_LEVEL_ONLY
 	call PrintSeerText
 	call SeerAdvice
 	ret
+; 4f134
 
-ReadCaughtData:
+ReadCaughtData: ; 4f134
 	ld a, MON_CAUGHTDATA
 	call GetPartyParamLocation
 	ld a, [hli]
@@ -134,8 +143,9 @@ ReadCaughtData:
 	ld a, SEERACTION_CANT_TELL_1
 	ld [wSeerAction], a
 	ret
+; 4f176
 
-GetCaughtName:
+GetCaughtName: ; 4f176
 	ld a, [wCurPartyMon]
 	ld hl, wPartyMonNicknames
 	ld bc, MON_NAME_LENGTH
@@ -144,8 +154,9 @@ GetCaughtName:
 	ld bc, MON_NAME_LENGTH
 	call CopyBytes
 	ret
+; 4f18c
 
-GetCaughtLevel:
+GetCaughtLevel: ; 4f18c
 	ld a, "@"
 	ld hl, wSeerCaughtLevelString
 	ld bc, 4
@@ -164,7 +175,7 @@ GetCaughtLevel:
 	ld [wSeerCaughtLevel], a
 	ld hl, wSeerCaughtLevelString
 	ld de, wSeerCaughtLevel
-	lb bc, PRINTNUM_LEFTALIGN | 1, 3
+	lb bc, PRINTNUM_RIGHTALIGN | 1, 3
 	call PrintNum
 	ret
 
@@ -174,11 +185,13 @@ GetCaughtLevel:
 	ld bc, 4
 	call CopyBytes
 	ret
+; 4f1c1
 
-.unknown_level
+.unknown_level ; 4f1c1
 	db "???@"
+; 4f1c5
 
-GetCaughtTime:
+GetCaughtTime: ; 4f1c5
 	ld a, [wSeerCaughtData]
 	and CAUGHT_TIME_MASK
 	jr z, .none
@@ -199,28 +212,32 @@ GetCaughtTime:
 	ld de, wSeerTimeOfDay
 	call UnknownCaughtData
 	ret
+; 4f1e6
 
-.times
+.times ; 4f1e6
 	db "Morning@"
 	db "Day@"
 	db "Night@"
+; 4f1f8
 
-UnknownCaughtData:
+UnknownCaughtData: ; 4f1f8
 	ld hl, .unknown
 	ld bc, NAME_LENGTH
 	call CopyBytes
 	ret
+; 4f202
 
-.unknown
+.unknown ; 4f202
 	db "Unknown@"
+; 4f20a
 
-GetCaughtLocation:
+GetCaughtLocation: ; 4f20a
 	ld a, [wSeerCaughtGender]
 	and CAUGHT_LOCATION_MASK
 	jr z, .Unknown
-	cp LANDMARK_EVENT
+	cp EVENT_LOCATION
 	jr z, .event
-	cp LANDMARK_GIFT
+	cp GIFT_LOCATION
 	jr z, .fail
 	ld e, a
 	farcall GetLandmarkName
@@ -246,13 +263,14 @@ GetCaughtLocation:
 	ld [wSeerAction], a
 	scf
 	ret
+; 4f242
 
-GetCaughtOT:
+GetCaughtOT: ; 4f242
 	ld a, [wCurPartyMon]
-	ld hl, wPartyMonOTs
+	ld hl, wPartyMonOT
 	ld bc, NAME_LENGTH
 	call AddNTimes
-	ld de, wSeerOT
+	ld de, wSeerOTName
 	ld bc, NAME_LENGTH
 	call CopyBytes
 
@@ -264,17 +282,19 @@ GetCaughtOT:
 	ld hl, .female
 
 .got_grammar
-	ld de, wSeerOTGrammar
+	ld de, wSeerOTNameGrammar
 	ld a, "@"
 	ld [de], a
 	ret
+; 4f26b
 
-.male
+.male ; 4f26b
 	db "@"
-.female
+.female ; 4f26c
 	db "@"
+; 4f26d
 
-PrintSeerText:
+PrintSeerText: ; 4f26d
 	ld e, a
 	ld d, 0
 	ld hl, SeerTexts
@@ -285,50 +305,69 @@ PrintSeerText:
 	ld l, a
 	call PrintText
 	ret
+; 4f27c
 
-SeerTexts:
-	dw SeerSeeAllText
-	dw SeerCantTellAThingText
-	dw SeerNameLocationText
+SeerTexts: ; 4f27c
+	dw SeerIntroText
+	dw SeerCantTellText
+	dw SeerMetAtText
 	dw SeerTimeLevelText
-	dw SeerTradeText
-	dw SeerDoNothingText
+	dw SeerTradedText
+	dw SeerCancelText
 	dw SeerEggText
-	dw SeerNoLocationText
+	dw SeerLevelOnlyText
+; 4f28c
 
-SeerSeeAllText:
-	text_far _SeerSeeAllText
-	text_end
+SeerIntroText: ; 0x4f28c
+	; I see all. I know all… Certainly, I know of your #MON!
+	text_jump UnknownText_0x1c475f
+	db "@"
+; 0x4f291
 
-SeerCantTellAThingText:
-	text_far _SeerCantTellAThingText
-	text_end
+SeerCantTellText: ; 0x4f291
+	; Whaaaat? I can't tell a thing! How could I not know of this?
+	text_jump UnknownText_0x1c4797
+	db "@"
+; 0x4f296
 
-SeerNameLocationText:
-	text_far _SeerNameLocationText
-	text_end
+SeerMetAtText: ; 0x4f296
+	; Hm… I see you met @  here: @ !
+	text_jump UnknownText_0x1c47d4
+	db "@"
+; 0x4f29b
 
-SeerTimeLevelText:
-	text_far _SeerTimeLevelText
-	text_end
+SeerTimeLevelText: ; 0x4f29b
+	; The time was @ ! Its level was @ ! Am I good or what?
+	text_jump UnknownText_0x1c47fa
+	db "@"
+; 0x4f2a0
 
-SeerTradeText:
-	text_far _SeerTradeText
-	text_end
+SeerTradedText: ; 0x4f2a0
+	; Hm… @ came from @ in a trade? @ was where @ met @ !
+	text_jump UnknownText_0x1c4837
+	db "@"
+; 0x4f2a5
 
-SeerNoLocationText:
-	text_far _SeerNoLocationText
-	text_end
+SeerLevelOnlyText: ; 0x4f2a5
+	; What!? Incredible! I don't understand how, but it is incredible! You are special. I can't tell where you met it, but it was at level @ . Am I good or what?
+	text_jump UnknownText_0x1c487f
+	db "@"
+; 0x4f2aa
 
-SeerEggText:
-	text_far _SeerEggText
-	text_end
+SeerEggText: ; 0x4f2aa
+	; Hey! That's an EGG! You can't say that you've met it yet…
+	text_jump UnknownText_0x1c491d
+	db "@"
+; 0x4f2af
 
-SeerDoNothingText:
-	text_far _SeerDoNothingText
-	text_end
+SeerCancelText: ; 0x4f2af
+	; Fufufu! I saw that you'd do nothing!
+	text_jump UnknownText_0x1c4955
+	db "@"
+; 0x4f2b4
 
-SeerAdvice:
+
+SeerAdvice: ; 4f2b4
 	ld a, MON_LEVEL
 	call GetPartyParamLocation
 	ld a, [wSeerCaughtLevel]
@@ -353,44 +392,57 @@ SeerAdvice:
 	ld l, a
 	call PrintText
 	ret
+; 4f2d6
 
-SeerAdviceTexts:
+SeerAdviceTexts: ; 4f2d6
 ; level, text
-	dbw 9,   SeerMoreCareText
-	dbw 29,  SeerMoreConfidentText
-	dbw 59,  SeerMuchStrengthText
-	dbw 89,  SeerMightyText
-	dbw 100, SeerImpressedText
-	dbw 255, SeerMoreCareText
+	dbw 9,   SeerAdvice1
+	dbw 29,  SeerAdvice2
+	dbw 59,  SeerAdvice3
+	dbw 89,  SeerAdvice4
+	dbw 100, SeerAdvice5
+	dbw 255, SeerAdvice1
+; 4f2e8
 
-SeerMoreCareText:
-	text_far _SeerMoreCareText
-	text_end
+SeerAdvice1: ; 0x4f2e8
+	; Incidentally… It would be wise to raise your #MON with a little more care.
+	text_jump UnknownText_0x1c497a
+	db "@"
+; 0x4f2ed
 
-SeerMoreConfidentText:
-	text_far _SeerMoreConfidentText
-	text_end
+SeerAdvice2: ; 0x4f2ed
+	; Incidentally… It seems to have grown a little. @  seems to be becoming more confident.
+	text_jump UnknownText_0x1c49c6
+	db "@"
+; 0x4f2f2
 
-SeerMuchStrengthText:
-	text_far _SeerMuchStrengthText
-	text_end
+SeerAdvice3: ; 0x4f2f2
+	; Incidentally… @  has grown. It's gained much strength.
+	text_jump UnknownText_0x1c4a21
+	db "@"
+; 0x4f2f7
 
-SeerMightyText:
-	text_far _SeerMightyText
-	text_end
+SeerAdvice4: ; 0x4f2f7
+	; Incidentally… It certainly has grown mighty! This @ must have come through numerous #MON battles. It looks brimming with confidence.
+	text_jump UnknownText_0x1c4a5b
+	db "@"
+; 0x4f2fc
 
-SeerImpressedText:
-	text_far _SeerImpressedText
-	text_end
+SeerAdvice5: ; 0x4f2fc
+	; Incidentally… I'm impressed by your dedication. It's been a long time since I've seen a #MON as mighty as this @ . I'm sure that seeing @ in battle would excite anyone.
+	text_jump UnknownText_0x1c4ae5
+	db "@"
+; 0x4f301
 
-GetCaughtGender:
+
+GetCaughtGender: ; 4f301
 	ld hl, MON_CAUGHTGENDER
 	add hl, bc
 
 	ld a, [hl]
 	and CAUGHT_LOCATION_MASK
 	jr z, .genderless
-	cp LANDMARK_EVENT
+	cp EVENT_LOCATION
 	jr z, .genderless
 
 	ld a, [hl]
@@ -406,3 +458,4 @@ GetCaughtGender:
 .genderless
 	ld c, CAUGHT_BY_UNKNOWN
 	ret
+; 4f31c

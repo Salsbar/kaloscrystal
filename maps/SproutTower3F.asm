@@ -1,4 +1,4 @@
-	object_const_def
+	const_def 2 ; object constants
 	const SPROUTTOWER3F_SAGE1
 	const SPROUTTOWER3F_SAGE2
 	const SPROUTTOWER3F_SAGE3
@@ -8,11 +8,11 @@
 	const SPROUTTOWER3F_SILVER
 
 SproutTower3F_MapScripts:
-	def_scene_scripts
+	db 2 ; scene scripts
 	scene_script .DummyScene0 ; SCENE_DEFAULT
 	scene_script .DummyScene1 ; SCENE_FINISHED
 
-	def_callbacks
+	db 0 ; callbacks
 
 .DummyScene0:
 	end
@@ -31,16 +31,16 @@ SproutTower3FRivalScene:
 	playsound SFX_TACKLE
 	playsound SFX_ELEVATOR
 	earthquake 79
-	applymovement PLAYER, SproutTower3FPlayerApproachesRivalMovement
-	applymovement SPROUTTOWER3F_SILVER, SproutTower3FRivalApproachesElderMovement
+	applymovement PLAYER, MovementData_0x184a1d
+	applymovement SPROUTTOWER3F_SILVER, MovementData_0x184a22
 	opentext
-	writetext SproutTowerElderLecturesRivalText
+	writetext UnknownText_0x184a27
 	waitbutton
 	closetext
 	showemote EMOTE_SHOCK, SPROUTTOWER3F_SILVER, 15
 	turnobject SPROUTTOWER3F_SILVER, DOWN
 	pause 15
-	applymovement SPROUTTOWER3F_SILVER, SproutTower3FRivalLeavesElderMovement
+	applymovement SPROUTTOWER3F_SILVER, MovementData_0x184a24
 	playmusic MUSIC_RIVAL_ENCOUNTER
 	opentext
 	writetext SproutTowerRivalOnlyCareAboutStrongText
@@ -75,7 +75,7 @@ SageLiScript:
 	reloadmapafterbattle
 	opentext
 	writetext SageLiTakeThisFlashText
-	promptbutton
+	buttonsound
 	verbosegiveitem HM_FLASH
 	setevent EVENT_GOT_HM05_FLASH
 	setevent EVENT_BEAT_SAGE_LI
@@ -135,23 +135,23 @@ SproutTower3FPotion:
 SproutTower3FEscapeRope:
 	itemball ESCAPE_ROPE
 
-SproutTower3FPlayerApproachesRivalMovement:
+MovementData_0x184a1d:
 	step UP
 	step UP
 	step UP
 	step UP
 	step_end
 
-SproutTower3FRivalApproachesElderMovement:
+MovementData_0x184a22:
 	step UP
 	step_end
 
-SproutTower3FRivalLeavesElderMovement:
+MovementData_0x184a24:
 	step RIGHT
 	step DOWN
 	step_end
 
-SproutTowerElderLecturesRivalText:
+UnknownText_0x184a27:
 	text "ELDER: You are in-"
 	line "deed skilled as a"
 	cont "trainer."
@@ -207,7 +207,7 @@ SageLiSeenText:
 	text "So good of you to"
 	line "come here!"
 
-	para "SPROUT TOWER is a"
+	para "PETAL TOWER is a"
 	line "place of training."
 
 	para "People and #MON"
@@ -317,7 +317,7 @@ SageNealAfterBattleText:
 SproutTower3FPaintingText:
 	text "It's a powerful"
 	line "painting of a"
-	cont "BELLSPROUT."
+	cont "FLABEBE."
 	done
 
 SproutTower3FStatueText:
@@ -330,13 +330,13 @@ SproutTower3FStatueText:
 SproutTower3F_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 1 ; warp events
 	warp_event 10, 14, SPROUT_TOWER_2F, 4
 
-	def_coord_events
+	db 1 ; coord events
 	coord_event 11,  9, SCENE_DEFAULT, SproutTower3FRivalScene
 
-	def_bg_events
+	db 6 ; bg events
 	bg_event  8,  1, BGEVENT_READ, SproutTower3FStatue
 	bg_event 11,  1, BGEVENT_READ, SproutTower3FStatue
 	bg_event  9,  0, BGEVENT_READ, SproutTower3FPainting
@@ -344,7 +344,7 @@ SproutTower3F_MapEvents:
 	bg_event  5, 15, BGEVENT_READ, SproutTower3FStatue
 	bg_event 14, 15, BGEVENT_READ, SproutTower3FStatue
 
-	def_object_events
+	db 7 ; object events
 	object_event  8, 13, SPRITE_SAGE, SPRITEMOVEDATA_STANDING_RIGHT, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_TRAINER, 3, TrainerSageJin, -1
 	object_event  8,  8, SPRITE_SAGE, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_TRAINER, 2, TrainerSageTroy, -1
 	object_event 10,  2, SPRITE_SAGE, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_SCRIPT, 0, SageLiScript, -1

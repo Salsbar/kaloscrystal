@@ -6,13 +6,14 @@
 
 ; This prevents the display and audio output from lagging.
 
-VBlank::
+
+VBlank:: ; 283
 	push af
 	push bc
 	push de
 	push hl
 
-	ldh a, [hVBlank]
+	ld a, [hVBlank]
 	and 7
 
 	ld e, a
@@ -33,8 +34,9 @@ VBlank::
 	pop bc
 	pop af
 	reti
+; 2a1
 
-.VBlanks:
+.VBlanks: ; 2a1
 	dw VBlank0
 	dw VBlank1
 	dw VBlank2
@@ -43,8 +45,10 @@ VBlank::
 	dw VBlank5
 	dw VBlank6
 	dw VBlank0 ; just in case
+; 2b1
 
-VBlank0::
+
+VBlank0:: ; 2b1
 ; normal operation
 
 ; rng
@@ -63,29 +67,29 @@ VBlank0::
 	inc [hl]
 
 	; advance random variables
-	ldh a, [rDIV]
+	ld a, [rDIV]
 	ld b, a
-	ldh a, [hRandomAdd]
+	ld a, [hRandomAdd]
 	adc b
-	ldh [hRandomAdd], a
+	ld [hRandomAdd], a
 
-	ldh a, [rDIV]
+	ld a, [rDIV]
 	ld b, a
-	ldh a, [hRandomSub]
+	ld a, [hRandomSub]
 	sbc b
-	ldh [hRandomSub], a
+	ld [hRandomSub], a
 
-	ldh a, [hROMBank]
-	ldh [hROMBankBackup], a
+	ld a, [hROMBank]
+	ld [hROMBankBackup], a
 
-	ldh a, [hSCX]
-	ldh [rSCX], a
-	ldh a, [hSCY]
-	ldh [rSCY], a
-	ldh a, [hWY]
-	ldh [rWY], a
-	ldh a, [hWX]
-	ldh [rWX], a
+	ld a, [hSCX]
+	ld [rSCX], a
+	ld a, [hSCY]
+	ld [rSCY], a
+	ld a, [hWY]
+	ld [rWY], a
+	ld a, [hWX]
+	ld [rWX], a
 
 	; There's only time to call one of these in one vblank.
 	; Calls are in order of priority.
@@ -106,11 +110,12 @@ VBlank0::
 
 .done
 
-	ldh a, [hOAMUpdate]
+	ld a, [hOAMUpdate]
 	and a
 	jr nz, .done_oam
 	call hTransferVirtualOAM
 .done_oam
+
 
 	; vblank-sensitive operations are done
 
@@ -131,37 +136,41 @@ VBlank0::
 	ld [wTextDelayFrames], a
 .ok2
 
-	call UpdateJoypad
+	call Joypad
 
 	ld a, BANK(_UpdateSound)
 	rst Bankswitch
 	call _UpdateSound
-	ldh a, [hROMBankBackup]
+	ld a, [hROMBankBackup]
 	rst Bankswitch
 
-	ldh a, [hSeconds]
-	ldh [hUnusedBackup], a
+	ld a, [hSeconds]
+	ld [hSecondsBackup], a
 
 	ret
+; 325
 
-VBlank2::
+
+VBlank2:: ; 325
 ; sound only
 
-	ldh a, [hROMBank]
-	ldh [hROMBankBackup], a
+	ld a, [hROMBank]
+	ld [hROMBankBackup], a
 
 	ld a, BANK(_UpdateSound)
 	rst Bankswitch
 	call _UpdateSound
 
-	ldh a, [hROMBankBackup]
+	ld a, [hROMBankBackup]
 	rst Bankswitch
 
 	xor a
 	ld [wVBlankOccurred], a
 	ret
+; 337
 
-VBlank1::
+
+VBlank1:: ; 337
 ; scx, scy
 ; palettes
 ; bg map
@@ -169,13 +178,13 @@ VBlank1::
 ; oam
 ; sound / lcd stat
 
-	ldh a, [hROMBank]
-	ldh [hROMBankBackup], a
+	ld a, [hROMBank]
+	ld [hROMBankBackup], a
 
-	ldh a, [hSCX]
-	ldh [rSCX], a
-	ldh a, [hSCY]
-	ldh [rSCY], a
+	ld a, [hSCX]
+	ld [rSCX], a
+	ld a, [hSCY]
+	ld [rSCY], a
 
 	call UpdatePals
 	jr c, .done
@@ -184,68 +193,72 @@ VBlank1::
 	call Serve2bppRequest_VBlank
 
 	call hTransferVirtualOAM
-
 .done
+
 	xor a
 	ld [wVBlankOccurred], a
 
 	; get requested ints
-	ldh a, [rIF]
+	ld a, [rIF]
 	ld b, a
 	; discard requested ints
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	; enable lcd stat
-	ld a, 1 << LCD_STAT
-	ldh [rIE], a
+	ld a, %10 ; lcd stat
+	ld [rIE], a
 	; rerequest serial int if applicable (still disabled)
 	; request lcd stat
 	ld a, b
-	and 1 << SERIAL
-	or 1 << LCD_STAT
-	ldh [rIF], a
+	and %1000 ; serial
+	or %10 ; lcd stat
+	ld [rIF], a
 
 	ei
 	ld a, BANK(_UpdateSound)
 	rst Bankswitch
 	call _UpdateSound
-	ldh a, [hROMBankBackup]
+	ld a, [hROMBankBackup]
 	rst Bankswitch
 	di
 
 	; get requested ints
-	ldh a, [rIF]
+	ld a, [rIF]
 	ld b, a
 	; discard requested ints
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	; enable ints besides joypad
-	ld a, IE_DEFAULT
-	ldh [rIE], a
+	ld a, %1111 ; serial timer lcdstat vblank
+	ld [rIE], a
 	; rerequest ints
 	ld a, b
-	ldh [rIF], a
+	ld [rIF], a
 	ret
+; 37f
 
-UpdatePals::
+
+UpdatePals:: ; 37f
 ; update pals for either dmg or cgb
 
-	ldh a, [hCGB]
+	ld a, [hCGB]
 	and a
 	jp nz, UpdateCGBPals
 
 	; update gb pals
 	ld a, [wBGP]
-	ldh [rBGP], a
+	ld [rBGP], a
 	ld a, [wOBP0]
-	ldh [rOBP0], a
+	ld [rOBP0], a
 	ld a, [wOBP1]
-	ldh [rOBP1], a
+	ld [rOBP1], a
 
 	and a
 	ret
+; 396
 
-VBlank3::
+
+VBlank3:: ; 396
 ; scx, scy
 ; palettes
 ; bg map
@@ -253,15 +266,15 @@ VBlank3::
 ; oam
 ; sound / lcd stat
 
-	ldh a, [hROMBank]
-	ldh [hROMBankBackup], a
+	ld a, [hROMBank]
+	ld [hROMBankBackup], a
 
-	ldh a, [hSCX]
-	ldh [rSCX], a
-	ldh a, [hSCY]
-	ldh [rSCY], a
+	ld a, [hSCX]
+	ld [rSCX], a
+	ld a, [hSCY]
+	ld [rSCY], a
 
-	ldh a, [hCGBPalUpdate]
+	ld a, [hCGBPalUpdate]
 	and a
 	call nz, ForceUpdateCGBPals
 	jr c, .done
@@ -275,24 +288,24 @@ VBlank3::
 	xor a
 	ld [wVBlankOccurred], a
 
-	ldh a, [rIF]
+	ld a, [rIF]
 	push af
 	xor a
-	ldh [rIF], a
-	ld a, 1 << LCD_STAT
-	ldh [rIE], a
-	ldh [rIF], a
+	ld [rIF], a
+	ld a, %10 ; lcd stat
+	ld [rIE], a
+	ld [rIF], a
 
 	ei
 	ld a, BANK(_UpdateSound)
 	rst Bankswitch
 	call _UpdateSound
-	ldh a, [hROMBankBackup]
+	ld a, [hROMBankBackup]
 	rst Bankswitch
 	di
 
 	; request lcdstat
-	ldh a, [rIF]
+	ld a, [rIF]
 	ld b, a
 	; and any other ints
 	pop af
@@ -300,16 +313,18 @@ VBlank3::
 	ld b, a
 	; reset ints
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	; enable ints besides joypad
-	ld a, IE_DEFAULT
-	ldh [rIE], a
+	ld a, %1111 ; serial timer lcdstat vblank
+	ld [rIE], a
 	; request ints
 	ld a, b
-	ldh [rIF], a
+	ld [rIF], a
 	ret
+; 3df
 
-VBlank4::
+
+VBlank4:: ; 3df
 ; bg map
 ; tiles
 ; oam
@@ -317,15 +332,15 @@ VBlank4::
 ; serial
 ; sound
 
-	ldh a, [hROMBank]
-	ldh [hROMBankBackup], a
+	ld a, [hROMBank]
+	ld [hROMBankBackup], a
 
 	call UpdateBGMap
 	call Serve2bppRequest
 
 	call hTransferVirtualOAM
 
-	call UpdateJoypad
+	call Joypad
 
 	xor a
 	ld [wVBlankOccurred], a
@@ -336,11 +351,13 @@ VBlank4::
 	rst Bankswitch
 	call _UpdateSound
 
-	ldh a, [hROMBankBackup]
+	ld a, [hROMBankBackup]
 	rst Bankswitch
 	ret
+; 400
 
-VBlank5::
+
+VBlank5:: ; 400
 ; scx
 ; palettes
 ; bg map
@@ -348,11 +365,11 @@ VBlank5::
 ; joypad
 ;
 
-	ldh a, [hROMBank]
-	ldh [hROMBankBackup], a
+	ld a, [hROMBank]
+	ld [hROMBankBackup], a
 
-	ldh a, [hSCX]
-	ldh [rSCX], a
+	ld a, [hSCX]
+	ld [rSCX], a
 
 	call UpdatePalsIfCGB
 	jr c, .done
@@ -364,38 +381,40 @@ VBlank5::
 	xor a
 	ld [wVBlankOccurred], a
 
-	call UpdateJoypad
+	call Joypad
 
 	xor a
-	ldh [rIF], a
-	ld a, 1 << LCD_STAT
-	ldh [rIE], a
+	ld [rIF], a
+	ld a, %10 ; lcd stat
+	ld [rIE], a
 	; request lcd stat
-	ldh [rIF], a
+	ld [rIF], a
 
 	ei
 	ld a, BANK(_UpdateSound)
 	rst Bankswitch
 	call _UpdateSound
-	ldh a, [hROMBankBackup]
+	ld a, [hROMBankBackup]
 	rst Bankswitch
 	di
 
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	; enable ints besides joypad
-	ld a, IE_DEFAULT
-	ldh [rIE], a
+	ld a, %1111 ; serial timer lcdstat vblank
+	ld [rIE], a
 	ret
+; 436
 
-VBlank6::
+
+VBlank6:: ; 436
 ; palettes
 ; tiles
 ; dma transfer
 ; sound
 
-	ldh a, [hROMBank]
-	ldh [hROMBankBackup], a
+	ld a, [hROMBank]
+	ld [hROMBankBackup], a
 
 	; inc frame counter
 	ld hl, hVBlankCounter
@@ -416,6 +435,7 @@ VBlank6::
 	rst Bankswitch
 	call _UpdateSound
 
-	ldh a, [hROMBankBackup]
+	ld a, [hROMBankBackup]
 	rst Bankswitch
 	ret
+; 45a

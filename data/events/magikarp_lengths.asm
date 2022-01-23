@@ -1,4 +1,4 @@
-MagikarpLengths:
+MagikarpLengths: ; fbca8
 ; [wMagikarpLength] = z * 100 + (bc - x) / y
 ; First argument is the bc threshold as well as x.
 ; Second argument is y.
@@ -18,3 +18,4 @@ MagikarpLengths:
 	dwb 65210, 5
 	dwb 65410, 2
 	dwb 65510, 1 ; not used
+; fbcd2

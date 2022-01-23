@@ -1,4 +1,4 @@
-NPCTrade::
+NPCTrade:: ; fcba8
 	ld a, e
 	ld [wJumptableIndex], a
 	call Trade_GetDialog
@@ -21,7 +21,7 @@ NPCTrade::
 	jr c, .done
 
 	ld e, NPCTRADE_GIVEMON
-	call GetTradeAttr
+	call GetTradeAttribute
 	ld a, [wCurPartySpecies]
 	cp [hl]
 	ld a, TRADE_DIALOG_WRONG
@@ -34,7 +34,7 @@ NPCTrade::
 	ld b, SET_FLAG
 	call TradeFlagAction
 
-	ld hl, NPCTradeCableText
+	ld hl, ConnectLinkCableText
 	call PrintText
 
 	call DoNPCTrade
@@ -51,28 +51,29 @@ NPCTrade::
 .done
 	call PrintTradeText
 	ret
+; fcc07
 
-.TradeAnimation:
+.TradeAnimation: ; fcc07
 	call DisableSpriteUpdates
 	ld a, [wJumptableIndex]
 	push af
-	; wTradeDialog aliases wFrameCounter, which TradeAnimation uses
-	ld a, [wTradeDialog]
+	ld a, [wcf64]
 	push af
 	predef TradeAnimation
 	pop af
-	ld [wTradeDialog], a
+	ld [wcf64], a
 	pop af
 	ld [wJumptableIndex], a
 	call ReturnToMapWithSpeechTextbox
 	ret
+; fcc23
 
-CheckTradeGender:
+CheckTradeGender: ; fcc23
 	xor a
 	ld [wMonType], a
 
 	ld e, NPCTRADE_GENDER
-	call GetTradeAttr
+	call GetTradeAttribute
 	ld a, [hl]
 	and a ; TRADE_GENDER_EITHER
 	jr z, .matching
@@ -94,8 +95,9 @@ CheckTradeGender:
 .not_matching
 	scf
 	ret
+; fcc4a
 
-TradeFlagAction:
+TradeFlagAction: ; fcc4a
 	ld hl, wTradeFlags
 	ld a, [wJumptableIndex]
 	ld c, a
@@ -103,22 +105,24 @@ TradeFlagAction:
 	ld a, c
 	and a
 	ret
+; fcc59
 
-Trade_GetDialog:
+Trade_GetDialog: ; fcc59
 	ld e, NPCTRADE_DIALOG
-	call GetTradeAttr
+	call GetTradeAttribute
 	ld a, [hl]
-	ld [wTradeDialog], a
+	ld [wcf64], a
 	ret
+; fcc63
 
-DoNPCTrade:
+DoNPCTrade: ; fcc63
 	ld e, NPCTRADE_GIVEMON
-	call GetTradeAttr
+	call GetTradeAttribute
 	ld a, [hl]
 	ld [wPlayerTrademonSpecies], a
 
 	ld e, NPCTRADE_GETMON
-	call GetTradeAttr
+	call GetTradeAttribute
 	ld a, [hl]
 	ld [wOTTrademonSpecies], a
 
@@ -132,7 +136,7 @@ DoNPCTrade:
 	call GetTradeMonName
 	call CopyTradeName
 
-	ld hl, wPartyMonOTs
+	ld hl, wPartyMonOT
 	ld bc, NAME_LENGTH
 	call Trade_GetAttributeOfCurrentPartymon
 	ld de, wPlayerTrademonOTName
@@ -164,7 +168,7 @@ DoNPCTrade:
 	ld [wPlayerTrademonCaughtData], a
 
 	ld e, NPCTRADE_DIALOG
-	call GetTradeAttr
+	call GetTradeAttribute
 	ld a, [hl]
 	cp TRADE_DIALOGSET_GIRL
 	ld a, CAUGHT_BY_GIRL
@@ -187,17 +191,17 @@ DoNPCTrade:
 	predef TryAddMonToParty
 
 	ld e, NPCTRADE_DIALOG
-	call GetTradeAttr
+	call GetTradeAttribute
 	ld a, [hl]
-	cp TRADE_DIALOGSET_GIRL
-	ld b, CAUGHT_BY_UNKNOWN
+	cp TRADE_DIALOG_COMPLETE
+	ld b, RESET_FLAG
 	jr c, .incomplete
-	ld b, CAUGHT_BY_GIRL
+	ld b, SET_FLAG
 .incomplete
 	farcall SetGiftPartyMonCaughtData
 
-	ld e, NPCTRADE_NICKNAME
-	call GetTradeAttr
+	ld e, NPCTRADE_NICK
+	call GetTradeAttribute
 	ld de, wOTTrademonNickname
 	call CopyTradeName
 
@@ -208,7 +212,7 @@ DoNPCTrade:
 	call CopyTradeName
 
 	ld e, NPCTRADE_OT_NAME
-	call GetTradeAttr
+	call GetTradeAttribute
 	push hl
 	ld de, wOTTrademonOTName
 	call CopyTradeName
@@ -216,14 +220,14 @@ DoNPCTrade:
 	ld de, wOTTrademonSenderName
 	call CopyTradeName
 
-	ld hl, wPartyMonOTs
+	ld hl, wPartyMonOT
 	ld bc, NAME_LENGTH
 	call Trade_GetAttributeOfLastPartymon
 	ld hl, wOTTrademonOTName
 	call CopyTradeName
 
 	ld e, NPCTRADE_DVS
-	call GetTradeAttr
+	call GetTradeAttribute
 	ld de, wOTTrademonDVs
 	call Trade_CopyTwoBytes
 
@@ -234,7 +238,7 @@ DoNPCTrade:
 	call Trade_CopyTwoBytes
 
 	ld e, NPCTRADE_OT_ID
-	call GetTradeAttr
+	call GetTradeAttribute
 	ld de, wOTTrademonID + 1
 	call Trade_CopyTwoBytesReverseEndian
 
@@ -245,7 +249,7 @@ DoNPCTrade:
 	call Trade_CopyTwoBytes
 
 	ld e, NPCTRADE_ITEM
-	call GetTradeAttr
+	call GetTradeAttribute
 	push hl
 	ld hl, wPartyMon1Item
 	ld bc, PARTYMON_STRUCT_LENGTH
@@ -271,8 +275,10 @@ DoNPCTrade:
 	pop bc
 	pop af
 	ret
+; fcdc2
 
-GetTradeAttr:
+
+GetTradeAttribute: ; 0xfcdc2
 	ld d, 0
 	push de
 	ld a, [wJumptableIndex]
@@ -286,66 +292,75 @@ GetTradeAttr:
 	pop de
 	add hl, de
 	ret
+; 0xfcdd7
 
-Trade_GetAttributeOfCurrentPartymon:
+Trade_GetAttributeOfCurrentPartymon: ; fcdd7
 	ld a, [wCurPartyMon]
 	call AddNTimes
 	ret
+; fcdde
 
-Trade_GetAttributeOfLastPartymon:
+Trade_GetAttributeOfLastPartymon: ; fcdde
 	ld a, [wPartyCount]
 	dec a
 	call AddNTimes
 	ld e, l
 	ld d, h
 	ret
+; fcde8
 
-GetTradeMonName:
+GetTradeMonName: ; fcde8
 	push de
-	ld [wNamedObjectIndex], a
+	ld [wd265], a
 	call GetBasePokemonName
 	ld hl, wStringBuffer1
 	pop de
 	ret
+; fcdf4
 
-CopyTradeName:
+CopyTradeName: ; fcdf4
 	ld bc, NAME_LENGTH
 	call CopyBytes
 	ret
+; fcdfb
 
-Trade_CopyFourCharString: ; unreferenced
+Unreferenced_Functionfcdfb: ; fcdfb
 	ld bc, 4
 	call CopyBytes
 	ld a, "@"
 	ld [de], a
 	ret
+; fce05
 
-Trade_CopyThreeCharString: ; unreferenced
+Unreferenced_Functionfce05: ; fce05
 	ld bc, 3
 	call CopyBytes
 	ld a, "@"
 	ld [de], a
 	ret
+; fce0f
 
-Trade_CopyTwoBytes:
+Trade_CopyTwoBytes: ; fce0f
 	ld a, [hli]
 	ld [de], a
 	inc de
 	ld a, [hl]
 	ld [de], a
 	ret
+; fce15
 
-Trade_CopyTwoBytesReverseEndian:
+Trade_CopyTwoBytesReverseEndian: ; fce15
 	ld a, [hli]
 	ld [de], a
 	dec de
 	ld a, [hl]
 	ld [de], a
 	ret
+; fce1b
 
-GetTradeMonNames:
+GetTradeMonNames: ; fce1b
 	ld e, NPCTRADE_GETMON
-	call GetTradeAttr
+	call GetTradeAttribute
 	ld a, [hl]
 	call GetTradeMonName
 
@@ -353,7 +368,7 @@ GetTradeMonNames:
 	call CopyTradeName
 
 	ld e, NPCTRADE_GIVEMON
-	call GetTradeAttr
+	call GetTradeAttribute
 	ld a, [hl]
 	call GetTradeMonName
 
@@ -369,7 +384,7 @@ GetTradeMonNames:
 	dec hl
 	push hl
 	ld e, NPCTRADE_GENDER
-	call GetTradeAttr
+	call GetTradeAttribute
 	ld a, [hl]
 	pop hl
 	and a ; TRADE_GENDER_EITHER
@@ -383,17 +398,20 @@ GetTradeMonNames:
 	ld [hli], a
 	ld [hl], "@"
 	ret
+; fce58
+
 
 INCLUDE "data/events/npc_trades.asm"
 
-PrintTradeText:
+
+PrintTradeText: ; fcf38
 	push af
 	call GetTradeMonNames
 	pop af
 	ld bc, 2 * 4
 	ld hl, TradeTexts
 	call AddNTimes
-	ld a, [wTradeDialog]
+	ld a, [wcf64]
 	ld c, a
 	add hl, bc
 	add hl, bc
@@ -402,43 +420,49 @@ PrintTradeText:
 	ld l, a
 	call PrintText
 	ret
+; fcf53
 
-TradeTexts:
+TradeTexts: ; fcf53
 ; entries correspond to TRADE_DIALOG_* × TRADE_DIALOGSET_* constants
 ; TRADE_DIALOG_INTRO
-	dw NPCTradeIntroText1
-	dw NPCTradeIntroText2
-	dw NPCTradeIntroText2
-	dw NPCTradeIntroText3
+	dw TradeIntroText1
+	dw TradeIntroText2
+	dw TradeIntroText3
+	dw TradeIntroText4
 ; TRADE_DIALOG_CANCEL
-	dw NPCTradeCancelText1
-	dw NPCTradeCancelText2
-	dw NPCTradeCancelText2
-	dw NPCTradeCancelText3
+	dw TradeCancelText1
+	dw TradeCancelText2
+	dw TradeCancelText3
+	dw TradeCancelText4
 ; TRADE_DIALOG_WRONG
-	dw NPCTradeWrongText1
-	dw NPCTradeWrongText2
-	dw NPCTradeWrongText2
-	dw NPCTradeWrongText3
+	dw TradeWrongText1
+	dw TradeWrongText2
+	dw TradeWrongText3
+	dw TradeWrongText4
 ; TRADE_DIALOG_COMPLETE
-	dw NPCTradeCompleteText1
-	dw NPCTradeCompleteText2
-	dw NPCTradeCompleteText4
-	dw NPCTradeCompleteText3
+	dw TradeCompleteText1
+	dw TradeCompleteText2
+	dw TradeCompleteText3
+	dw TradeCompleteText4
 ; TRADE_DIALOG_AFTER
-	dw NPCTradeAfterText1
-	dw NPCTradeAfterText2
-	dw NPCTradeAfterText4
-	dw NPCTradeAfterText3
+	dw TradeAfterText1
+	dw TradeAfterText2
+	dw TradeAfterText3
+	dw TradeAfterText4
+; fcf7b
 
-NPCTradeCableText:
-	text_far _NPCTradeCableText
-	text_end
 
-TradedForText:
+ConnectLinkCableText: ; 0xfcf7b
+	; OK, connect the Game Link Cable.
+	text_jump UnknownText_0x1bd407
+	db "@"
+; 0xfcf80
+
+
+TradedForText: ; 0xfcf80
 	; traded givemon for getmon
-	text_far Text_NPCTraded
-	text_asm
+	text_jump UnknownText_0x1bd429
+	start_asm
 	ld de, MUSIC_NONE
 	call PlayMusic
 	call DelayFrame
@@ -446,73 +470,117 @@ TradedForText:
 	ret
 
 .done
-	text_far _NPCTradeFanfareText
-	text_end
+	; sound_dex_fanfare_80_109
+	; interpret_data
+	text_jump UnknownText_0x1bd445
+	db "@"
+; 0xfcf97
 
-NPCTradeIntroText1:
-	text_far _NPCTradeIntroText1
-	text_end
 
-NPCTradeCancelText1:
-	text_far _NPCTradeCancelText1
-	text_end
+TradeIntroText1: ; 0xfcf97
+	; I collect #MON. Do you have @ ? Want to trade it for my @ ?
+	text_jump UnknownText_0x1bd449
+	db "@"
+; 0xfcf9c
 
-NPCTradeWrongText1:
-	text_far _NPCTradeWrongText1
-	text_end
+TradeCancelText1: ; 0xfcf9c
+	; You don't want to trade? Aww…
+	text_jump UnknownText_0x1bd48c
+	db "@"
+; 0xfcfa1
 
-NPCTradeCompleteText1:
-	text_far _NPCTradeCompleteText1
-	text_end
+TradeWrongText1: ; 0xfcfa1
+	; Huh? That's not @ .  What a letdown…
+	text_jump UnknownText_0x1bd4aa
+	db "@"
+; 0xfcfa6
 
-NPCTradeAfterText1:
-	text_far _NPCTradeAfterText1
-	text_end
+TradeCompleteText1: ; 0xfcfa6
+	; Yay! I got myself @ ! Thanks!
+	text_jump UnknownText_0x1bd4d2
+	db "@"
+; 0xfcfab
 
-NPCTradeIntroText2:
-	text_far _NPCTradeIntroText2
-	text_end
+TradeAfterText1: ; 0xfcfab
+	; Hi, how's my old @  doing?
+	text_jump UnknownText_0x1bd4f4
+	db "@"
+; 0xfcfb0
 
-NPCTradeCancelText2:
-	text_far _NPCTradeCancelText2
-	text_end
 
-NPCTradeWrongText2:
-	text_far _NPCTradeWrongText2
-	text_end
+TradeIntroText2:
+TradeIntroText3: ; 0xfcfb0
+	; Hi, I'm looking for this #MON. If you have @ , would you trade it for my @ ?
+	text_jump UnknownText_0x1bd512
+	db "@"
+; 0xfcfb5
 
-NPCTradeCompleteText2:
-	text_far _NPCTradeCompleteText2
-	text_end
+TradeCancelText2:
+TradeCancelText3: ; 0xfcfb5
+	; You don't have one either? Gee, that's really disappointing…
+	text_jump UnknownText_0x1bd565
+	db "@"
+; 0xfcfba
 
-NPCTradeAfterText2:
-	text_far _NPCTradeAfterText2
-	text_end
+TradeWrongText2:
+TradeWrongText3: ; 0xfcfba
+	; You don't have @ ? That's too bad, then.
+	text_jump UnknownText_0x1bd5a1
+	db "@"
+; 0xfcfbf
 
-NPCTradeIntroText3:
-	text_far _NPCTradeIntroText3
-	text_end
+TradeCompleteText2: ; 0xfcfbf
+	; Great! Thank you! I finally got @ .
+	text_jump UnknownText_0x1bd5cc
+	db "@"
+; 0xfcfc4
 
-NPCTradeCancelText3:
-	text_far _NPCTradeCancelText3
-	text_end
+TradeAfterText2: ; 0xfcfc4
+	; Hi! The @ you traded me is doing great!
+	text_jump UnknownText_0x1bd5f4
+	db "@"
+; 0xfcfc9
 
-NPCTradeWrongText3:
-	text_far _NPCTradeWrongText3
-	text_end
 
-NPCTradeCompleteText3:
-	text_far _NPCTradeCompleteText3
-	text_end
+TradeIntroText4: ; 0xfcfc9
+	; 's cute, but I don't have it. Do you have @ ? Want to trade it for my @ ?
+	text_jump UnknownText_0x1bd621
+	db "@"
+; 0xfcfce
 
-NPCTradeAfterText3:
-	text_far _NPCTradeAfterText3
-	text_end
+TradeCancelText4: ; 0xfcfce
+	; You don't want to trade? Oh, darn…
+	text_jump UnknownText_0x1bd673
+	db "@"
+; 0xfcfd3
 
-NPCTradeCompleteText4:
-	text_far _NPCTradeCompleteText4
-	text_end
+TradeWrongText4: ; 0xfcfd3
+	; That's not @ . Please trade with me if you get one.
+	text_jump UnknownText_0x1bd696
+	db "@"
+; 0xfcfd8
 
-NPCTradeAfterText4:
-	text_far _NPCTradeAfterText4
-	text_end
+TradeCompleteText4: ; 0xfcfd8
+	; Wow! Thank you! I always wanted @ !
+	text_jump UnknownText_0x1bd6cd
+	db "@"
+; 0xfcfdd
+
+TradeAfterText4: ; 0xfcfdd
+	; How is that @  I traded you doing? Your @ 's so cute!
+	text_jump UnknownText_0x1bd6f5
+	db "@"
+; 0xfcfe2
+
+
+TradeCompleteText3: ; 0xfcfe2
+	; Uh? What happened?
+	text_jump UnknownText_0x1bd731
+	db "@"
+; 0xfcfe7
+
+TradeAfterText3: ; 0xfcfe7
+	; Trading is so odd… I still have a lot to learn about it.
+	text_jump UnknownText_0x1bd745
+	db "@"
+; 0xfcfec

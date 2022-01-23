@@ -1,67 +1,72 @@
-Reset::
+Reset:: ; 150
 	di
-	call InitSound
+	call MapSetup_Sound_Off
 	xor a
-	ldh [hMapAnims], a
+	ld [hMapAnims], a
 	call ClearPalettes
 	xor a
-	ldh [rIF], a
-	ld a, 1 << VBLANK
-	ldh [rIE], a
+	ld [rIF], a
+	ld a, 1 ; VBlank int
+	ld [rIE], a
 	ei
 
-	ld hl, wJoypadDisable
-	set JOYPAD_DISABLE_SGB_TRANSFER_F, [hl]
+	ld hl, wcfbe
+	set 7, [hl]
 
 	ld c, 32
 	call DelayFrames
 
 	jr Init
+; 16e
 
-_Start::
+
+_Start:: ; 16e
 	cp $11
 	jr z, .cgb
-	xor a ; FALSE
+	xor a
 	jr .load
 
 .cgb
-	ld a, TRUE
+	ld a, $1
 
 .load
-	ldh [hCGB], a
-	ld a, TRUE
-	ldh [hSystemBooted], a
+	ld [hCGB], a
+	ld a, $1
+	ld [hSystemBooted], a
+; 17d
 
-Init::
+
+Init:: ; 17d
+
 	di
 
 	xor a
-	ldh [rIF], a
-	ldh [rIE], a
-	ldh [rRP], a
-	ldh [rSCX], a
-	ldh [rSCY], a
-	ldh [rSB], a
-	ldh [rSC], a
-	ldh [rWX], a
-	ldh [rWY], a
-	ldh [rBGP], a
-	ldh [rOBP0], a
-	ldh [rOBP1], a
-	ldh [rTMA], a
-	ldh [rTAC], a
-	ld [wBetaTitleSequenceOpeningType], a
+	ld [rIF], a
+	ld [rIE], a
+	ld [rRP], a
+	ld [rSCX], a
+	ld [rSCY], a
+	ld [rSB], a
+	ld [rSC], a
+	ld [rWX], a
+	ld [rWY], a
+	ld [rBGP], a
+	ld [rOBP0], a
+	ld [rOBP1], a
+	ld [rTMA], a
+	ld [rTAC], a
+	ld [WRAM1_Begin], a
 
 	ld a, %100 ; Start timer at 4096Hz
-	ldh [rTAC], a
+	ld [rTAC], a
 
 .wait
-	ldh a, [rLY]
+	ld a, [rLY]
 	cp LY_VBLANK + 1
 	jr nz, .wait
 
 	xor a
-	ldh [rLCDC], a
+	ld [rLCDC], a
 
 ; Clear WRAM bank 0
 	ld hl, WRAM0_Begin
@@ -74,50 +79,51 @@ Init::
 	or c
 	jr nz, .ByteFill
 
-	ld sp, wStackTop
+	ld sp, wStack
 
 ; Clear HRAM
-	ldh a, [hCGB]
+	ld a, [hCGB]
 	push af
-	ldh a, [hSystemBooted]
+	ld a, [hSystemBooted]
 	push af
 	xor a
 	ld hl, HRAM_Begin
 	ld bc, HRAM_End - HRAM_Begin
 	call ByteFill
 	pop af
-	ldh [hSystemBooted], a
+	ld [hSystemBooted], a
 	pop af
-	ldh [hCGB], a
+	ld [hCGB], a
 
 	call ClearWRAM
 	ld a, 1
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	call ClearVRAM
 	call ClearSprites
 	call ClearsScratch
 
-	ld a, BANK(WriteOAMDMACodeToHRAM) ; aka BANK(GameInit)
+
+	ld a, BANK(WriteOAMDMACodeToHRAM)
 	rst Bankswitch
 
 	call WriteOAMDMACodeToHRAM
 
 	xor a
-	ldh [hMapAnims], a
-	ldh [hSCX], a
-	ldh [hSCY], a
-	ldh [rJOYP], a
+	ld [hMapAnims], a
+	ld [hSCX], a
+	ld [hSCY], a
+	ld [rJOYP], a
 
 	ld a, $8 ; HBlank int enable
-	ldh [rSTAT], a
+	ld [rSTAT], a
 
 	ld a, $90
-	ldh [hWY], a
-	ldh [rWY], a
+	ld [hWY], a
+	ld [rWY], a
 
 	ld a, 7
-	ldh [hWX], a
-	ldh [rWX], a
+	ld [hWX], a
+	ld [rWX], a
 
 	ld a, LCDC_DEFAULT ; %11100011
 	; LCD on
@@ -128,69 +134,72 @@ Init::
 	; OBJ 8x8
 	; OBJ on
 	; BG on
-	ldh [rLCDC], a
+	ld [rLCDC], a
 
 	ld a, CONNECTION_NOT_ESTABLISHED
-	ldh [hSerialConnectionStatus], a
+	ld [hSerialConnectionStatus], a
 
 	farcall InitCGBPals
 
 	ld a, HIGH(vBGMap1)
-	ldh [hBGMapAddress + 1], a
+	ld [hBGMapAddress + 1], a
 	xor a ; LOW(vBGMap1)
-	ldh [hBGMapAddress], a
+	ld [hBGMapAddress], a
 
 	farcall StartClock
 
-	xor a ; SRAM_DISABLE
+	xor a
 	ld [MBC3LatchClock], a
 	ld [MBC3SRamEnable], a
 
-	ldh a, [hCGB]
+	ld a, [hCGB]
 	and a
 	jr z, .no_double_speed
 	call NormalSpeed
 .no_double_speed
 
 	xor a
-	ldh [rIF], a
-	ld a, IE_DEFAULT
-	ldh [rIE], a
+	ld [rIF], a
+	ld a, %1111 ; VBlank, LCDStat, Timer, Serial interrupts
+	ld [rIE], a
 	ei
 
 	call DelayFrame
 
-	predef InitSGBBorder
+	predef InitSGBBorder ; SGB init
 
-	call InitSound
+	call MapSetup_Sound_Off
 	xor a
 	ld [wMapMusic], a
 	jp GameInit
+; 245
 
-ClearVRAM::
+
+ClearVRAM:: ; 245
 ; Wipe VRAM banks 0 and 1
 
 	ld a, 1
-	ldh [rVBK], a
+	ld [rVBK], a
 	call .clear
 
 	xor a ; 0
-	ldh [rVBK], a
+	ld [rVBK], a
 .clear
 	ld hl, VRAM_Begin
 	ld bc, VRAM_End - VRAM_Begin
 	xor a
 	call ByteFill
 	ret
+; 25a
 
-ClearWRAM::
+ClearWRAM:: ; 25a
 ; Wipe swappable WRAM banks (1-7)
 ; Assumes CGB or AGB
 
 	ld a, 1
 .bank_loop
 	push af
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	xor a
 	ld hl, WRAM1_Begin
 	ld bc, WRAM1_End - WRAM1_Begin
@@ -200,15 +209,17 @@ ClearWRAM::
 	cp 8
 	jr nc, .bank_loop ; Should be jr c
 	ret
+; 270
 
-ClearsScratch::
+ClearsScratch:: ; 270
 ; Wipe the first 32 bytes of sScratch
 
 	ld a, BANK(sScratch)
-	call OpenSRAM
+	call GetSRAMBank
 	ld hl, sScratch
 	ld bc, $20
 	xor a
 	call ByteFill
 	call CloseSRAM
 	ret
+; 283

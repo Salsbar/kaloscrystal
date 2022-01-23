@@ -1,25 +1,27 @@
-BattleCommand_HappinessPower:
+BattleCommand_HappinessPower: ; 3784b
 ; happinesspower
 	push bc
 	ld hl, wBattleMonHappiness
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
 	jr z, .ok
 	ld hl, wEnemyMonHappiness
 .ok
 	xor a
-	ldh [hMultiplicand + 0], a
-	ldh [hMultiplicand + 1], a
+	ld [hMultiplicand + 0], a
+	ld [hMultiplicand + 1], a
 	ld a, [hl]
-	ldh [hMultiplicand + 2], a
+	ld [hMultiplicand + 2], a
 	ld a, 10
-	ldh [hMultiplier], a
+	ld [hMultiplier], a
 	call Multiply
 	ld a, 25
-	ldh [hDivisor], a
+	ld [hDivisor], a
 	ld b, 4
 	call Divide
-	ldh a, [hQuotient + 3]
+	ld a, [hQuotient + 2]
 	ld d, a
 	pop bc
 	ret
+
+; 37874

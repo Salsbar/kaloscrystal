@@ -1,11 +1,11 @@
-CheckPlayerMoveTypeMatchups:
+CheckPlayerMoveTypeMatchups: ; 3484e
 ; Check how well the moves you've already used
 ; fare against the enemy's Pokemon.  Used to
 ; score a potential switch.
 	push hl
 	push de
 	push bc
-	ld a, BASE_AI_SWITCH_SCORE
+	ld a, 10
 	ld [wEnemyAISwitchScore], a
 	ld hl, wPlayerUsedMoves
 	ld a, [hl]
@@ -30,14 +30,14 @@ CheckPlayerMoveTypeMatchups:
 	ld hl, wEnemyMonType
 	call CheckTypeMatchup
 	ld a, [wTypeMatchup]
-	cp EFFECTIVE + 1 ; 1.0 + 0.1
+	cp 10 + 1 ; 1.0 + 0.1
 	jr nc, .super_effective
 	and a
 	jr z, .next
-	cp EFFECTIVE ; 1.0
+	cp 10 ; 1.0
 	jr nc, .neutral
 
-; not very effective
+.not_very_effective
 	ld a, e
 	cp 1 ; 0.1
 	jr nc, .next
@@ -75,7 +75,7 @@ CheckPlayerMoveTypeMatchups:
 	ld hl, wEnemyMonType1
 	call CheckTypeMatchup
 	ld a, [wTypeMatchup]
-	cp EFFECTIVE + 1 ; 1.0 + 0.1
+	cp 10 + 1 ; 1.0 + 0.1
 	jr c, .ok
 	call .DecreaseScore
 .ok
@@ -84,7 +84,7 @@ CheckPlayerMoveTypeMatchups:
 	jr z, .ok2
 	call CheckTypeMatchup
 	ld a, [wTypeMatchup]
-	cp EFFECTIVE + 1 ; 1.0 + 0.1
+	cp 10 + 1 ; 1.0 + 0.1
 	jr c, .ok2
 	call .DecreaseScore
 .ok2
@@ -95,8 +95,10 @@ CheckPlayerMoveTypeMatchups:
 	pop de
 	pop hl
 	ret
+; 348de
 
-.CheckEnemyMoveMatchups:
+
+.CheckEnemyMoveMatchups: ; 348de
 	ld de, wEnemyMonMoves
 	ld b, NUM_MOVES + 1
 	ld c, 0
@@ -130,7 +132,7 @@ CheckPlayerMoveTypeMatchups:
 
 	; not very effective
 	inc c
-	cp EFFECTIVE
+	cp 10
 	jr c, .loop2
 
 	; neutral
@@ -139,7 +141,7 @@ CheckPlayerMoveTypeMatchups:
 	inc c
 	inc c
 	inc c
-	cp EFFECTIVE
+	cp 10
 	jr z, .loop2
 
 	; super effective
@@ -161,19 +163,21 @@ CheckPlayerMoveTypeMatchups:
 
 .doubledown
 	call .DecreaseScore
-.DecreaseScore:
+.DecreaseScore: ; 34931
 	ld a, [wEnemyAISwitchScore]
 	dec a
 	ld [wEnemyAISwitchScore], a
 	ret
+; 34939
 
-.IncreaseScore:
+.IncreaseScore: ; 34939
 	ld a, [wEnemyAISwitchScore]
 	inc a
 	ld [wEnemyAISwitchScore], a
 	ret
+; 34941
 
-CheckAbleToSwitch:
+CheckAbleToSwitch: ; 34941
 	xor a
 	ld [wEnemySwitchMonParam], a
 	call FindAliveEnemyMons
@@ -288,8 +292,10 @@ CheckAbleToSwitch:
 	add $10
 	ld [wEnemySwitchMonParam], a
 	ret
+; 349f4
 
-FindAliveEnemyMons:
+
+FindAliveEnemyMons: ; 349f4
 	ld a, [wOTPartyCount]
 	cp 2
 	jr c, .only_one
@@ -338,8 +344,10 @@ FindAliveEnemyMons:
 .more_than_one
 	and a
 	ret
+; 34a2a
 
-FindEnemyMonsImmuneToLastCounterMove:
+
+FindEnemyMonsImmuneToLastCounterMove: ; 34a2a
 	ld hl, wOTPartyMon1
 	ld a, [wOTPartyCount]
 	ld b, a
@@ -404,8 +412,10 @@ FindEnemyMonsImmuneToLastCounterMove:
 	inc d
 	srl c
 	jr .loop
+; 34a85
 
-FindAliveEnemyMonsWithASuperEffectiveMove:
+
+FindAliveEnemyMonsWithASuperEffectiveMove: ; 34a85
 	push bc
 	ld a, [wOTPartyCount]
 	ld e, a
@@ -435,9 +445,8 @@ FindAliveEnemyMonsWithASuperEffectiveMove:
 
 	and c
 	ld c, a
-	; fallthrough
+FindEnemyMonsWithASuperEffectiveMove: ; 34aa7
 
-FindEnemyMonsWithASuperEffectiveMove:
 	ld a, -1
 	ld [wEnemyAISwitchScore], a
 	ld hl, wOTPartyMon1Moves
@@ -481,7 +490,7 @@ FindEnemyMonsWithASuperEffectiveMove:
 
 	; if neutral: load 1 and continue
 	ld e, 1
-	cp EFFECTIVE + 1
+	cp 10 + 1
 	jr c, .nope
 
 	; if super-effective: load 2 and break
@@ -542,8 +551,10 @@ FindEnemyMonsWithASuperEffectiveMove:
 	ld [wEnemyAISwitchScore], a
 	pop bc
 	ret
+; 34b20
 
-FindEnemyMonsThatResistPlayer:
+
+FindEnemyMonsThatResistPlayer: ; 34b20
 	push bc
 	ld hl, wOTPartySpecies
 	ld b, 1 << (PARTY_LENGTH - 1)
@@ -584,7 +595,7 @@ FindEnemyMonsThatResistPlayer:
 	ld hl, wBaseType
 	call CheckTypeMatchup
 	ld a, [wTypeMatchup]
-	cp EFFECTIVE + 1
+	cp 10 + 1
 	jr nc, .dont_choose_mon
 
 	ld a, b
@@ -602,8 +613,10 @@ FindEnemyMonsThatResistPlayer:
 	and c
 	ld c, a
 	ret
+; 34b77
 
-FindEnemyMonsWithAtLeastQuarterMaxHP:
+
+FindEnemyMonsWithAtLeastQuarterMaxHP: ; 34b77
 	push bc
 	ld de, wOTPartySpecies
 	ld b, 1 << (PARTY_LENGTH - 1)
@@ -656,3 +669,4 @@ FindEnemyMonsWithAtLeastQuarterMaxHP:
 	and c
 	ld c, a
 	ret
+; 34bb1

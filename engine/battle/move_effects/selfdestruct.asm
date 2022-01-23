@@ -1,4 +1,4 @@
-BattleCommand_Selfdestruct:
+BattleCommand_Selfdestruct: ; 37380
 	farcall StubbedTrainerRankings_Selfdestruct
 	ld a, BATTLEANIM_PLAYER_DAMAGE
 	ld [wNumHits], a
@@ -12,7 +12,7 @@ BattleCommand_Selfdestruct:
 	ld [hli], a
 	ld [hl], a
 	ld a, $1
-	ld [wBattleAnimParam], a
+	ld [wKickCounter], a
 	call BattleCommand_LowerSub
 	call LoadMoveAnim
 	ld a, BATTLE_VARS_SUBSTATUS4
@@ -27,3 +27,5 @@ BattleCommand_Selfdestruct:
 	farcall DrawEnemyHUD
 	call WaitBGMap
 	jp RefreshBattleHuds
+
+; 373c9

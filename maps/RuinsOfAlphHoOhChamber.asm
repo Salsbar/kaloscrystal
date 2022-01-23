@@ -1,9 +1,9 @@
 RuinsOfAlphHoOhChamber_MapScripts:
-	def_scene_scripts
+	db 2 ; scene scripts
 	scene_script .CheckWall ; SCENE_DEFAULT
 	scene_script .DummyScene ; SCENE_FINISHED
 
-	def_callbacks
+	db 1 ; callbacks
 	callback MAPCALLBACK_TILES, .HiddenDoors
 
 .CheckWall:
@@ -13,7 +13,7 @@ RuinsOfAlphHoOhChamber_MapScripts:
 	end
 
 .OpenWall:
-	sdefer .WallOpenScript
+	priorityjump .WallOpenScript
 	end
 
 .DummyScene:
@@ -26,12 +26,12 @@ RuinsOfAlphHoOhChamber_MapScripts:
 .WallOpen:
 	checkevent EVENT_SOLVED_HO_OH_PUZZLE
 	iffalse .FloorClosed
-	endcallback
+	return
 
 .FloorClosed:
 	changeblock 2, 2, $01 ; left floor
 	changeblock 4, 2, $02 ; right floor
-	endcallback
+	return
 
 .WallOpenScript:
 	pause 30
@@ -48,7 +48,7 @@ RuinsOfAlphHoOhChamber_MapScripts:
 
 RuinsOfAlphHoOhChamberPuzzle:
 	refreshscreen
-	setval UNOWNPUZZLE_HO_OH
+	writebyte UNOWNPUZZLE_HO_OH
 	special UnownPuzzle
 	closetext
 	iftrue .PuzzleComplete
@@ -57,8 +57,17 @@ RuinsOfAlphHoOhChamberPuzzle:
 .PuzzleComplete:
 	setevent EVENT_RUINS_OF_ALPH_INNER_CHAMBER_TOURISTS
 	setevent EVENT_SOLVED_HO_OH_PUZZLE
-	setflag ENGINE_UNLOCKED_UNOWNS_X_TO_Z
+	checkevent EVENT_SOLVED_KABUTO_PUZZLE
+	iffalse .DontSet
+	checkevent EVENT_SOLVED_AERODACTYL_PUZZLE
+	iffalse .DontSet
+	checkevent EVENT_SOLVED_OMANYTE_PUZZLE
+	iffalse .DontSet
 	setmapscene RUINS_OF_ALPH_INNER_CHAMBER, SCENE_RUINSOFALPHINNERCHAMBER_STRANGE_PRESENCE
+	jump .Drop
+.DontSet:
+	setmapscene RUINS_OF_ALPH_INNER_CHAMBER, SCENE_RUINSOFALPHINNERCHAMBER_NOTHING
+.Drop:
 	earthquake 30
 	showemote EMOTE_SHOCK, PLAYER, 15
 	changeblock 2, 2, $18 ; left hole
@@ -82,7 +91,7 @@ RuinsOfAlphHoOhChamberDescriptionSign:
 RuinsOfAlphHoOhChamberWallPatternLeft:
 	opentext
 	writetext RuinsOfAlphHoOhChamberWallPatternLeftText
-	setval UNOWNWORDS_HO_OH
+	writebyte UNOWNWORDS_HO_OH
 	special DisplayUnownWords
 	closetext
 	end
@@ -92,7 +101,7 @@ RuinsOfAlphHoOhChamberWallPatternRight:
 	iftrue .WallOpen
 	opentext
 	writetext RuinsOfAlphHoOhChamberWallPatternRightText
-	setval UNOWNWORDS_HO_OH
+	writebyte UNOWNWORDS_HO_OH
 	special DisplayUnownWords
 	closetext
 	end
@@ -113,7 +122,8 @@ RuinsOfAlphHoOhChamberWallPatternLeftText:
 	line "on the walls…"
 	done
 
-RuinsOfAlphHoOhChamberUnownText: ; unreferenced
+RuinsOfAlphHoOhChamberUnownText:
+; unused
 	text "It's UNOWN text!"
 	done
 
@@ -144,16 +154,16 @@ RuinsOfAlphHoOhChamberDescriptionText:
 RuinsOfAlphHoOhChamber_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 5 ; warp events
 	warp_event  3,  9, RUINS_OF_ALPH_OUTSIDE, 1
 	warp_event  4,  9, RUINS_OF_ALPH_OUTSIDE, 1
 	warp_event  3,  3, RUINS_OF_ALPH_INNER_CHAMBER, 2
 	warp_event  4,  3, RUINS_OF_ALPH_INNER_CHAMBER, 3
 	warp_event  4,  0, RUINS_OF_ALPH_HO_OH_ITEM_ROOM, 1
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 6 ; bg events
 	bg_event  2,  3, BGEVENT_READ, RuinsOfAlphHoOhChamberAncientReplica
 	bg_event  5,  3, BGEVENT_READ, RuinsOfAlphHoOhChamberAncientReplica
 	bg_event  3,  2, BGEVENT_UP, RuinsOfAlphHoOhChamberPuzzle
@@ -161,4 +171,4 @@ RuinsOfAlphHoOhChamber_MapEvents:
 	bg_event  3,  0, BGEVENT_UP, RuinsOfAlphHoOhChamberWallPatternLeft
 	bg_event  4,  0, BGEVENT_UP, RuinsOfAlphHoOhChamberWallPatternRight
 
-	def_object_events
+	db 0 ; object events

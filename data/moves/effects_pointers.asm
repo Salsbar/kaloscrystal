@@ -1,6 +1,5 @@
-MoveEffectsPointers:
+MoveEffectsPointers: ; 271f4
 ; entries correspond to EFFECT_* constants
-	table_width 2, MoveEffectsPointers
 	dw NormalHit
 	dw DoSleep
 	dw PoisonHit
@@ -31,11 +30,9 @@ MoveEffectsPointers:
 	dw Rampage
 	dw ForceSwitch
 	dw MultiHit
-	dw Conversion
 	dw FlinchHit
 	dw Heal
 	dw Toxic
-	dw PayDay
 	dw LightScreen
 	dw TriAttack
 	dw NormalHit
@@ -58,7 +55,6 @@ MoveEffectsPointers:
 	dw SpecialDefenseUp2
 	dw AccuracyUp2
 	dw EvasionUp2
-	dw Transform
 	dw AttackDown2
 	dw DefenseDown2
 	dw SpeedDown2
@@ -86,7 +82,6 @@ MoveEffectsPointers:
 	dw Mimic
 	dw Metronome
 	dw LeechSeed
-	dw Splash
 	dw Disable
 	dw StaticDamage
 	dw Psywave
@@ -94,9 +89,7 @@ MoveEffectsPointers:
 	dw Encore
 	dw PainSplit
 	dw Snore
-	dw Conversion2
 	dw LockOn
-	dw Sketch
 	dw DefrostOpponent
 	dw SleepTalk
 	dw DestinyBond
@@ -105,7 +98,7 @@ MoveEffectsPointers:
 	dw FalseSwipe
 	dw HealBell
 	dw NormalHit
-	dw TripleKick
+	;dw TripleKick
 	dw Thief
 	dw MeanLook
 	dw Nightmare
@@ -123,7 +116,6 @@ MoveEffectsPointers:
 	dw FuryCutter
 	dw Attract
 	dw Return
-	dw Present
 	dw Frustration
 	dw Safeguard
 	dw SacredFire
@@ -155,7 +147,9 @@ MoveEffectsPointers:
 	dw Solarbeam
 	dw Thunder
 	dw Teleport
-	dw BeatUp
 	dw Fly
 	dw DefenseCurl
-	assert_table_length NUM_MOVE_EFECTS
+	dw QuiverDance
+	dw NobleRoar
+	dw ShiftGear
+	dw FlyingPressM

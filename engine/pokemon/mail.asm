@@ -1,4 +1,4 @@
-SendMailToPC:
+SendMailToPC: ; 4456e
 	ld a, MON_ITEM
 	call GetPartyParamLocation
 	ld d, [hl]
@@ -8,7 +8,7 @@ SendMailToPC:
 	cp MAILBOX_CAPACITY
 	jr nc, .full
 	ld bc, MAIL_STRUCT_LENGTH
-	ld hl, sMailboxes
+	ld hl, sMailbox
 	call AddNTimes
 	ld d, h
 	ld e, l
@@ -18,7 +18,7 @@ SendMailToPC:
 	call AddNTimes
 	push hl
 	ld a, BANK(sMailboxCount)
-	call OpenSRAM
+	call GetSRAMBank
 	ld bc, MAIL_STRUCT_LENGTH
 	call CopyBytes
 	pop hl
@@ -37,14 +37,15 @@ SendMailToPC:
 .full
 	scf
 	ret
+; 445c0
 
-DeleteMailFromPC:
+DeleteMailFromPC: ; 445c0 (11:45c0)
 ; Shift all mail messages in the mailbox
 	ld a, BANK(sMailboxCount)
-	call OpenSRAM
+	call GetSRAMBank
 	ld a, b
 	push bc
-	ld hl, sMailboxes
+	ld hl, sMailbox
 	ld bc, MAIL_STRUCT_LENGTH
 	call AddNTimes
 	push hl
@@ -70,10 +71,11 @@ DeleteMailFromPC:
 	ld hl, sMailboxCount
 	dec [hl]
 	jp CloseSRAM
+; 445f4 (11:45f4)
 
-ReadMailMessage:
+ReadMailMessage: ; 445f4
 	ld a, b
-	ld hl, sMailboxes
+	ld hl, sMailbox
 	ld bc, MAIL_STRUCT_LENGTH
 	call AddNTimes
 	ld d, h
@@ -81,13 +83,13 @@ ReadMailMessage:
 	farcall ReadAnyMail
 	ret
 
-MoveMailFromPCToParty:
+MoveMailFromPCToParty: ; 44607
 	ld a, BANK(sMailboxCount)
-	call OpenSRAM
+	call GetSRAMBank
 	push bc
 	ld a, b
 	ld bc, MAIL_STRUCT_LENGTH
-	ld hl, sMailboxes
+	ld hl, sMailbox
 	call AddNTimes
 	push hl
 	ld a, [wCurPartyMon]
@@ -112,15 +114,17 @@ MoveMailFromPCToParty:
 	call CloseSRAM
 	pop bc
 	jp DeleteMailFromPC
+; 44648 (11:4648)
 
-GetMailboxCount:
+GetMailboxCount: ; 44648
 	ld a, BANK(sMailboxCount)
-	call OpenSRAM
+	call GetSRAMBank
 	ld a, [sMailboxCount]
 	ld c, a
 	jp CloseSRAM
+; 44654
 
-CheckPokeMail::
+CheckPokeMail:: ; 44654
 	push bc
 	push de
 	farcall SelectMonFromParty
@@ -137,7 +141,7 @@ CheckPokeMail::
 	jr nc, .pop_return
 
 	ld a, BANK(sPartyMail)
-	call OpenSRAM
+	call GetSRAMBank
 	ld a, [wCurPartyMon]
 	ld hl, sPartyMail
 	ld bc, MAIL_STRUCT_LENGTH
@@ -149,7 +153,7 @@ CheckPokeMail::
 
 ; Compare the mail message, byte for byte, with the expected message.
 	ld a, MAIL_MSG_LENGTH
-	ld [wTempByteValue], a
+	ld [wd265], a
 .loop
 	ld a, [de]
 	ld c, a
@@ -162,9 +166,9 @@ CheckPokeMail::
 	jr nz, .close_sram_return
 	inc hl
 	inc de
-	ld a, [wTempByteValue]
+	ld a, [wd265]
 	dec a
-	ld [wTempByteValue], a
+	ld [wd265], a
 	jr nz, .loop
 
 .done
@@ -187,8 +191,10 @@ CheckPokeMail::
 .return
 	ld [wScriptVar], a
 	ret
+; 446cc
 
-GivePokeMail::
+
+GivePokeMail:: ; 446cc
 	ld a, [wPartyCount]
 	dec a
 	push af
@@ -206,14 +212,14 @@ GivePokeMail::
 	call AddNTimes
 	ld d, h
 	ld e, l
-	ld hl, wMonMailMessageBuffer
+	ld hl, wd002
 	ld bc, MAIL_MSG_LENGTH + 1
 	ld a, BANK(sPartyMail)
-	call OpenSRAM
+	call GetSRAMBank
 	call CopyBytes
 	pop af
 	push af
-	ld hl, wPartyMonOTs
+	ld hl, wPartyMonOT
 	ld bc, NAME_LENGTH
 	call AddNTimes
 	ld bc, NAME_LENGTH - 1
@@ -235,47 +241,52 @@ GivePokeMail::
 	ld a, b
 	ld [de], a
 	jp CloseSRAM
+; 44725
 
-BackupPartyMonMail:
+
+BackupPartyMonMail: ; 44725
 	ld a, BANK(sPartyMail)
-	call OpenSRAM
+	call GetSRAMBank
 	ld hl, sPartyMail
 	ld de, sPartyMailBackup
-	ld bc, PARTY_LENGTH * MAIL_STRUCT_LENGTH
+	ld bc, 6 * MAIL_STRUCT_LENGTH
 	call CopyBytes
 	ld hl, sMailboxCount
 	ld de, sMailboxCountBackup
-	ld bc, 1 + MAILBOX_CAPACITY * MAIL_STRUCT_LENGTH
+	ld bc, 1 + 10 * MAIL_STRUCT_LENGTH
 	call CopyBytes
 	jp CloseSRAM
+; 44745
 
-RestorePartyMonMail:
+RestorePartyMonMail: ; 44745 (11:4745)
 	ld a, BANK(sPartyMail)
-	call OpenSRAM
+	call GetSRAMBank
 	ld hl, sPartyMailBackup
 	ld de, sPartyMail
-	ld bc, PARTY_LENGTH * MAIL_STRUCT_LENGTH
+	ld bc, 6 * MAIL_STRUCT_LENGTH
 	call CopyBytes
 	ld hl, sMailboxCountBackup
 	ld de, sMailboxCount
-	ld bc, 1 + MAILBOX_CAPACITY * MAIL_STRUCT_LENGTH
+	ld bc, 1 + 10 * MAIL_STRUCT_LENGTH
 	call CopyBytes
 	jp CloseSRAM
 
-DeletePartyMonMail:
+DeletePartyMonMail: ; 44765 (11:4765)
 	ld a, BANK(sPartyMail)
-	call OpenSRAM
+	call GetSRAMBank
 	xor a
 	ld hl, sPartyMail
-	ld bc, PARTY_LENGTH * MAIL_STRUCT_LENGTH
+	ld bc, 6 * MAIL_STRUCT_LENGTH
 	call ByteFill
 	xor a
 	ld hl, sMailboxCount
-	ld bc, 1 + MAILBOX_CAPACITY * MAIL_STRUCT_LENGTH
+	ld bc, 1 + 10 * MAIL_STRUCT_LENGTH
 	call ByteFill
 	jp CloseSRAM
+; 44781 (11:4781)
 
-IsAnyMonHoldingMail:
+
+IsAnyMonHoldingMail: ; 44781
 	ld a, [wPartyCount]
 	and a
 	jr z, .no_mons
@@ -297,8 +308,9 @@ IsAnyMonHoldingMail:
 .no_mons
 	and a
 	ret
+; 447a0
 
-_PlayerMailBoxMenu:
+_PlayerMailBoxMenu: ; 0x447a0
 	call InitMail
 	jr z, .nomail
 	call LoadStandardMenuHeader
@@ -307,27 +319,27 @@ _PlayerMailBoxMenu:
 
 .nomail
 	ld hl, .EmptyMailboxText
-	jp MenuTextboxBackup
+	jp MenuTextBoxBackup
+; 0x447b4
 
-.EmptyMailboxText:
-	text_far _EmptyMailboxText
-	text_end
+.EmptyMailboxText: ; 0x447b4
+	text_jump _EmptyMailboxText
+	db "@"
 
-InitMail:
-; return z if no mail
+InitMail: ; 0x447b9
+; initialize wMailboxCount and beyond with incrementing values, one per mail
+; set z if no mail
 	ld a, BANK(sMailboxCount)
-	call OpenSRAM
+	call GetSRAMBank
 	ld a, [sMailboxCount]
 	call CloseSRAM
-
-; initialize wMailboxCount from sMailboxCount
 	ld hl, wMailboxCount
 	ld [hli], a
-	assert wMailboxCount + 1 == wMailboxItems
 	and a
+
 	jr z, .done ; if no mail, we're done
 
-; initialize wMailboxItems with incrementing values starting at 1
+	; load values in memory with incrementing values starting at wMailboxCount
 	ld b, a
 	ld a, 1
 .loop
@@ -335,21 +347,21 @@ InitMail:
 	inc a
 	dec b
 	jr nz, .loop
-
 .done
 	ld [hl], -1 ; terminate
 
 	ld a, [wMailboxCount]
 	and a
 	ret
+; 0x447da
 
-MailboxPC_GetMailAuthor:
+MailboxPC_GetMailAuthor: ; 0x447da
 	dec a
 	ld hl, sMailbox1Author
 	ld bc, MAIL_STRUCT_LENGTH
 	call AddNTimes
 	ld a, BANK(sMailboxCount)
-	call OpenSRAM
+	call GetSRAMBank
 	ld de, wStringBuffer2
 	push de
 	ld bc, NAME_LENGTH - 1
@@ -359,15 +371,17 @@ MailboxPC_GetMailAuthor:
 	call CloseSRAM
 	pop de
 	ret
+; 0x447fb
 
-MailboxPC_PrintMailAuthor:
+MailboxPC_PrintMailAuthor: ; 0x447fb
 	push de
 	ld a, [wMenuSelection]
 	call MailboxPC_GetMailAuthor
 	pop hl
 	jp PlaceString
+; 0x44806
 
-MailboxPC:
+MailboxPC: ; 0x44806
 	xor a
 	ld [wCurMessageScrollPosition], a
 	ld a, 1
@@ -377,12 +391,12 @@ MailboxPC:
 	ld hl, .TopMenuHeader
 	call CopyMenuHeader
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call InitScrollingMenu
 	call UpdateSprites
 
 	ld a, [wCurMessageIndex]
-	ld [wMenuCursorPosition], a
+	ld [wMenuCursorBuffer], a
 	ld a, [wCurMessageScrollPosition]
 	ld [wMenuScrollPosition], a
 	call ScrollingMenu
@@ -400,8 +414,9 @@ MailboxPC:
 .exit
 	xor a
 	ret
+; 0x4484a
 
-.Submenu:
+.Submenu: ; 0x4484a
 	ld hl, .SubMenuHeader
 	call LoadMenuHeader
 	call VerticalMenu
@@ -409,29 +424,31 @@ MailboxPC:
 	jr c, .subexit
 	ld a, [wMenuCursorY]
 	dec a
-	ld hl, .Jumptable
+	ld hl, .JumpTable
 	rst JumpTable
 
 .subexit
 	ret
+; 0x44861
 
-.Jumptable:
+.JumpTable:
 	dw .ReadMail
 	dw .PutInPack
 	dw .AttachMail
 	dw .Cancel
 
-.ReadMail:
+.ReadMail: ; 0x44869
 	call FadeToMenu
 	ld a, [wMenuSelection]
 	dec a
 	ld b, a
 	call ReadMailMessage
 	jp CloseSubmenu
+; 0x44877
 
-.PutInPack:
-	ld hl, .MailMessageLostText
-	call MenuTextbox
+.PutInPack: ; 0x44877
+	ld hl, .MessageLostText
+	call MenuTextBox
 	call YesNoBox
 	call ExitMenu
 	ret c
@@ -439,37 +456,38 @@ MailboxPC:
 	dec a
 	call .GetMailType
 	ld a, 1
-	ld [wItemQuantityChange], a
+	ld [wItemQuantityChangeBuffer], a
 	ld hl, wNumItems
 	call ReceiveItem
 	jr c, .put_in_bag
-	ld hl, .MailPackFullText
-	jp MenuTextboxBackup
+	ld hl, .PackFullText
+	jp MenuTextBoxBackup
 
 .put_in_bag
 	ld a, [wMenuSelection]
 	dec a
 	ld b, a
 	call DeleteMailFromPC
-	ld hl, .MailClearedPutAwayText
-	jp MenuTextboxBackup
+	ld hl, .PutAwayText
+	jp MenuTextBoxBackup
+; 0x448ac
 
-.MailClearedPutAwayText:
-	text_far _MailClearedPutAwayText
-	text_end
+.PutAwayText: ; 0x448ac
+	text_jump ClearedMailPutAwayText
+	db "@"
 
-.MailPackFullText:
-	text_far _MailPackFullText
-	text_end
+.PackFullText: ; 0x448b1
+	text_jump MailPackFullText
+	db "@"
 
-.MailMessageLostText:
-	text_far _MailMessageLostText
-	text_end
+.MessageLostText: ; 0x448b6
+	text_jump MailMessageLostText
+	db "@"
 
-.GetMailType:
+.GetMailType: ; 0x448bb
 	push af
 	ld a, BANK(sMailboxCount)
-	call OpenSRAM
+	call GetSRAMBank
 	pop af
 	ld hl, sMailbox1Type
 	ld bc, MAIL_STRUCT_LENGTH
@@ -477,8 +495,9 @@ MailboxPC:
 	ld a, [hl]
 	ld [wCurItem], a
 	jp CloseSRAM
+; 0x448d2
 
-.AttachMail:
+.AttachMail: ; 0x448d2
 	call FadeToMenu
 	xor a
 	ld [wPartyMenuActionText], a
@@ -502,12 +521,12 @@ MailboxPC:
 	ld a, [hl]
 	and a
 	jr z, .attach_mail
-	ld hl, .MailAlreadyHoldingItemText
+	ld hl, .HoldingMailText
 	call PrintText
 	jr .try_again
 
 .egg
-	ld hl, .MailEggText
+	ld hl, .EggText
 	call PrintText
 	jr .try_again
 
@@ -516,28 +535,29 @@ MailboxPC:
 	dec a
 	ld b, a
 	call MoveMailFromPCToParty
-	ld hl, .MailMovedFromBoxText
+	ld hl, .MailMovedText
 	call PrintText
 
 .exit2
 	jp CloseSubmenu
+; 0x4493c
 
-.MailAlreadyHoldingItemText:
-	text_far _MailAlreadyHoldingItemText
-	text_end
+.HoldingMailText: ; 0x4493c
+	text_jump MailAlreadyHoldingItemText
+	db "@"
 
-.MailEggText:
-	text_far _MailEggText
-	text_end
+.EggText: ; 0x44941
+	text_jump MailEggText
+	db "@"
 
-.MailMovedFromBoxText:
-	text_far _MailMovedFromBoxText
-	text_end
+.MailMovedText: ; 0x44946
+	text_jump MailMovedFromBoxText
+	db "@"
 
 .Cancel:
 	ret
 
-.TopMenuHeader:
+.TopMenuHeader: ; 0x4494c
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 8, 1, SCREEN_WIDTH - 2, 10
 	dw .TopMenuData
@@ -545,14 +565,14 @@ MailboxPC:
 
 .TopMenuData:
 	db SCROLLINGMENU_DISPLAY_ARROWS ; flags
-	db 4, 0 ; rows, columns
-	db SCROLLINGMENU_ITEMS_NORMAL ; item format
-	dbw 0, wMailboxCount
+	db 4, 0 ; rows/columns?
+	db 1 ; horizontal spacing?
+	dbw 0, wMailboxCount ; text pointer
 	dba MailboxPC_PrintMailAuthor
 	dba NULL
 	dba NULL
 
-.SubMenuHeader:
+.SubMenuHeader: ; 0x44964
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 0, 0, 13, 9
 	dw .SubMenuData

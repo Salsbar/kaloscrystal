@@ -1,20 +1,16 @@
-CELADONDEPTSTORE6F_FRESH_WATER_PRICE EQU 200
-CELADONDEPTSTORE6F_SODA_POP_PRICE    EQU 300
-CELADONDEPTSTORE6F_LEMONADE_PRICE    EQU 350
-
-	object_const_def
+	const_def 2 ; object constants
 	const CELADONDEPTSTORE6F_SUPER_NERD
 	const CELADONDEPTSTORE6F_YOUNGSTER
 
 CeladonDeptStore6F_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 1 ; callbacks
 	callback MAPCALLBACK_TILES, .HideRooftopStairs
 
 .HideRooftopStairs:
 	changeblock 12, 0, $03 ; wall
-	endcallback
+	return
 
 CeladonDeptStore6FSuperNerdScript:
 	jumptextfaceplayer CeladonDeptStore6FSuperNerdText
@@ -37,49 +33,49 @@ CeladonDeptStore6FVendingMachine:
 	end
 
 .FreshWater:
-	checkmoney YOUR_MONEY, CELADONDEPTSTORE6F_FRESH_WATER_PRICE
+	checkmoney YOUR_MONEY, 200
 	ifequal HAVE_LESS, .NotEnoughMoney
 	giveitem FRESH_WATER
 	iffalse .NotEnoughSpace
-	takemoney YOUR_MONEY, CELADONDEPTSTORE6F_FRESH_WATER_PRICE
-	getitemname STRING_BUFFER_3, FRESH_WATER
-	sjump .VendItem
+	takemoney YOUR_MONEY, 200
+	itemtotext FRESH_WATER, MEM_BUFFER_0
+	jump .VendItem
 
 .SodaPop:
-	checkmoney YOUR_MONEY, CELADONDEPTSTORE6F_SODA_POP_PRICE
+	checkmoney YOUR_MONEY, 300
 	ifequal HAVE_LESS, .NotEnoughMoney
 	giveitem SODA_POP
 	iffalse .NotEnoughSpace
-	takemoney YOUR_MONEY, CELADONDEPTSTORE6F_SODA_POP_PRICE
-	getitemname STRING_BUFFER_3, SODA_POP
-	sjump .VendItem
+	takemoney YOUR_MONEY, 300
+	itemtotext SODA_POP, MEM_BUFFER_0
+	jump .VendItem
 
 .Lemonade:
-	checkmoney YOUR_MONEY, CELADONDEPTSTORE6F_LEMONADE_PRICE
+	checkmoney YOUR_MONEY, 350
 	ifequal HAVE_LESS, .NotEnoughMoney
 	giveitem LEMONADE
 	iffalse .NotEnoughSpace
-	takemoney YOUR_MONEY, CELADONDEPTSTORE6F_LEMONADE_PRICE
-	getitemname STRING_BUFFER_3, LEMONADE
-	sjump .VendItem
+	takemoney YOUR_MONEY, 350
+	itemtotext LEMONADE, MEM_BUFFER_0
+	jump .VendItem
 
 .VendItem:
 	pause 10
 	playsound SFX_ENTER_DOOR
 	writetext CeladonClangText
-	promptbutton
+	buttonsound
 	itemnotify
-	sjump .Start
+	jump .Start
 
 .NotEnoughMoney:
 	writetext CeladonVendingNoMoneyText
 	waitbutton
-	sjump .Start
+	jump .Start
 
 .NotEnoughSpace:
 	writetext CeladonVendingNoSpaceText
 	waitbutton
-	sjump .Start
+	jump .Start
 
 .MenuHeader:
 	db MENU_BACKUP_TILES ; flags
@@ -90,16 +86,17 @@ CeladonDeptStore6FVendingMachine:
 .MenuData:
 	db STATICMENU_CURSOR ; flags
 	db 4 ; items
-	db "FRESH WATER  ¥{d:CELADONDEPTSTORE6F_FRESH_WATER_PRICE}@"
-	db "SODA POP     ¥{d:CELADONDEPTSTORE6F_SODA_POP_PRICE}@"
-	db "LEMONADE     ¥{d:CELADONDEPTSTORE6F_LEMONADE_PRICE}@"
+	db "FRESH WATER  ¥200@"
+	db "SODA POP     ¥300@"
+	db "LEMONADE     ¥350@"
 	db "CANCEL@"
 
 CeladonDeptStore6FDirectory:
 	jumptext CeladonDeptStore6FDirectoryText
 
-CeladonDeptStore6FElevatorButton: ; unreferenced
-	jumpstd ElevatorButtonScript
+; unused
+CeladonDeptStore6FElevatorButton:
+	jumpstd elevatorbutton
 
 CeladonVendingText:
 	text "A vending machine!"
@@ -110,7 +107,7 @@ CeladonClangText:
 	text "Clang!"
 
 	para "@"
-	text_ram wStringBuffer3
+	text_from_ram wStringBuffer3
 	text_start
 	line "popped out."
 	done
@@ -149,13 +146,13 @@ CeladonDeptStore6FDirectoryText:
 CeladonDeptStore6F_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 2 ; warp events
 	warp_event 15,  0, CELADON_DEPT_STORE_5F, 2
 	warp_event  2,  0, CELADON_DEPT_STORE_ELEVATOR, 1
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 6 ; bg events
 	bg_event 14,  0, BGEVENT_READ, CeladonDeptStore6FDirectory
 	bg_event  3,  0, BGEVENT_READ, CeladonDeptStore1FElevatorButton
 	bg_event  8,  1, BGEVENT_UP, CeladonDeptStore6FVendingMachine
@@ -163,6 +160,6 @@ CeladonDeptStore6F_MapEvents:
 	bg_event 10,  1, BGEVENT_UP, CeladonDeptStore6FVendingMachine
 	bg_event 11,  1, BGEVENT_UP, CeladonDeptStore6FVendingMachine
 
-	def_object_events
+	db 2 ; object events
 	object_event  9,  2, SPRITE_SUPER_NERD, SPRITEMOVEDATA_STANDING_UP, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, CeladonDeptStore6FSuperNerdScript, -1
 	object_event 12,  5, SPRITE_YOUNGSTER, SPRITEMOVEDATA_WANDER, 2, 1, -1, -1, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, CeladonDeptStore6FYoungsterScript, -1

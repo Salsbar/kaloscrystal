@@ -1,6 +1,6 @@
 ; HM moves can't be forgotten
 
-IsHM::
+IsHM:: ; 34df
 	cp HM01
 	jr c, .NotHM
 	scf
@@ -8,13 +8,14 @@ IsHM::
 .NotHM:
 	and a
 	ret
+; 34e7
 
-IsHMMove::
+IsHMMove:: ; 34e7
 	ld hl, .HMMoves
 	ld de, 1
 	jp IsInArray
 
-.HMMoves:
+.HMMoves: ; 34f0
 	db CUT
 	db FLY
 	db SURF
@@ -23,3 +24,4 @@ IsHMMove::
 	db WATERFALL
 	db WHIRLPOOL
 	db -1 ; end
+; 34f8

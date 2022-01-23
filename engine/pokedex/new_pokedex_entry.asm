@@ -1,18 +1,18 @@
-NewPokedexEntry:
-	ldh a, [hMapAnims]
+NewPokedexEntry: ; fb877
+	ld a, [hMapAnims]
 	push af
 	xor a
-	ldh [hMapAnims], a
+	ld [hMapAnims], a
 	call LowVolume
 	call ClearBGPalettes
-	call ClearTilemap
+	call ClearTileMap
 	call UpdateSprites
 	call ClearSprites
 	ld a, [wPokedexStatus]
 	push af
-	ldh a, [hSCX]
+	ld a, [hSCX]
 	add POKEDEX_SCX
-	ldh [hSCX], a
+	ld [hSCX], a
 	xor a
 	ld [wPokedexStatus], a
 	farcall _NewPokedexEntry
@@ -25,16 +25,17 @@ NewPokedexEntry:
 	ld [wPokedexStatus], a
 	call MaxVolume
 	call RotateThreePalettesRight
-	ldh a, [hSCX]
+	ld a, [hSCX]
 	add -POKEDEX_SCX
-	ldh [hSCX], a
+	ld [hSCX], a
 	call .ReturnFromDexRegistration
 	pop af
-	ldh [hMapAnims], a
+	ld [hMapAnims], a
 	ret
+; fb8c8
 
-.ReturnFromDexRegistration:
-	call ClearTilemap
+.ReturnFromDexRegistration: ; fb8c8
+	call ClearTileMap
 	call LoadFontsExtra
 	call LoadStandardFont
 	farcall Pokedex_PlaceFrontpicTopLeftCorner
@@ -48,3 +49,4 @@ NewPokedexEntry:
 	call GetSGBLayout
 	call SetPalettes
 	ret
+; fb8f1

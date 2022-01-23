@@ -1,35 +1,35 @@
-_DudeAutoInput_A::
+_DudeAutoInput_A:: ; 1de28a
 	ld hl, DudeAutoInput_A
 	jr _DudeAutoInput
 
-_DudeAutoInput_RightA:
+_DudeAutoInput_RightA: ; 1de28f
 	ld hl, DudeAutoInput_RightA
 	jr _DudeAutoInput
 
-_DudeAutoInput_DownA:
+_DudeAutoInput_DownA: ; 1de294
 	ld hl, DudeAutoInput_DownA
 	jr _DudeAutoInput
 
-_DudeAutoInput:
+_DudeAutoInput: ; 1de299
 	ld a, BANK(DudeAutoInputs)
 	call StartAutoInput
 	ret
 
-DudeAutoInputs: ; used only for BANK(DudeAutoInputs)
+DudeAutoInputs:
 
-DudeAutoInput_A:
+DudeAutoInput_A: ; 1de29f
 	db NO_INPUT, $50
 	db A_BUTTON, $00
 	db NO_INPUT, $ff ; end
 
-DudeAutoInput_RightA:
+DudeAutoInput_RightA: ; 1de2a5
 	db NO_INPUT, $08
 	db D_RIGHT,  $00
 	db NO_INPUT, $08
 	db A_BUTTON, $00
 	db NO_INPUT, $ff ; end
 
-DudeAutoInput_DownA:
+DudeAutoInput_DownA: ; 1de2af
 	db NO_INPUT, $fe
 	db NO_INPUT, $fe
 	db NO_INPUT, $fe

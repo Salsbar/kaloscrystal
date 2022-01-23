@@ -1,10 +1,10 @@
-	object_const_def
+	const_def 2 ; object constants
 	const BILLSHOUSE_GRAMPS
 
 BillsHouse_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 0 ; callbacks
 
 BillsGrandpa:
 	faceplayer
@@ -16,7 +16,7 @@ BillsGrandpa:
 	checkevent EVENT_MET_BILLS_GRANDPA
 	iftrue .MetGrandpa
 	writetext BillsGrandpaIntroText
-	promptbutton
+	buttonsound
 	setevent EVENT_MET_BILLS_GRANDPA
 .MetGrandpa:
 	checkevent EVENT_SHOWED_PICHU_TO_BILLS_GRANDPA
@@ -30,89 +30,89 @@ BillsGrandpa:
 	checkevent EVENT_SHOWED_LICKITUNG_TO_BILLS_GRANDPA
 	iftrue .ShowedLickitung
 	writetext BillsGrandpaLickitungText
-	promptbutton
+	buttonsound
 	writetext BillsGrandpaAskToSeeMonText
 	yesorno
 	iffalse .SaidNo
 	scall .ExcitedToSee
 	special BillsGrandfather
 	iffalse .SaidNo
-	ifnotequal LICKITUNG, .WrongPokemon
+	ifnotequal BOUFFALANT, .WrongPokemon
 	scall .CorrectPokemon
 	setevent EVENT_SHOWED_LICKITUNG_TO_BILLS_GRANDPA
-	sjump .ShowedLickitung
+	jump .ShowedLickitung
 
 .GotEverstone:
 	writetext BillsGrandpaOddishText
-	promptbutton
+	buttonsound
 	writetext BillsGrandpaAskToSeeMonText
 	yesorno
 	iffalse .SaidNo
 	scall .ExcitedToSee
 	special BillsGrandfather
 	iffalse .SaidNo
-	ifnotequal ODDISH, .WrongPokemon
+	ifnotequal PETILIL, .WrongPokemon
 	scall .CorrectPokemon
 	setevent EVENT_SHOWED_ODDISH_TO_BILLS_GRANDPA
-	sjump .ShowedOddish
+	jump .ShowedOddish
 
 .GotLeafStone:
 	writetext BillsGrandpaStaryuText
-	promptbutton
+	buttonsound
 	writetext BillsGrandpaAskToSeeMonText
 	yesorno
 	iffalse .SaidNo
 	scall .ExcitedToSee
 	special BillsGrandfather
 	iffalse .SaidNo
-	ifnotequal STARYU, .WrongPokemon
+	ifnotequal CARBINK, .WrongPokemon
 	scall .CorrectPokemon
 	setevent EVENT_SHOWED_STARYU_TO_BILLS_GRANDPA
-	sjump .ShowedStaryu
+	jump .ShowedStaryu
 
 .GotWaterStone:
 	checkver
 	iftrue .AskVulpix
 	writetext BillsGrandpaGrowlitheText
-	promptbutton
+	buttonsound
 	writetext BillsGrandpaAskToSeeMonText
 	yesorno
 	iffalse .SaidNo
 	scall .ExcitedToSee
 	special BillsGrandfather
 	iffalse .SaidNo
-	ifnotequal GROWLITHE, .WrongPokemon
+	ifnotequal STOUTLAND, .WrongPokemon
 	scall .CorrectPokemon
 	setevent EVENT_SHOWED_GROWLITHE_VULPIX_TO_BILLS_GRANDPA
-	sjump .ShowedGrowlitheVulpix
+	jump .ShowedGrowlitheVulpix
 
 .AskVulpix:
 	writetext BillsGrandpaVulpixText
-	promptbutton
+	buttonsound
 	writetext BillsGrandpaAskToSeeMonText
 	yesorno
 	iffalse .SaidNo
 	scall .ExcitedToSee
 	special BillsGrandfather
 	iffalse .SaidNo
-	ifnotequal VULPIX, .WrongPokemon
+	ifnotequal DEDENNE, .WrongPokemon
 	scall .CorrectPokemon
 	setevent EVENT_SHOWED_GROWLITHE_VULPIX_TO_BILLS_GRANDPA
-	sjump .ShowedGrowlitheVulpix
+	jump .ShowedGrowlitheVulpix
 
 .GotFireStone:
 	writetext BillsGrandpaPichuText
-	promptbutton
+	buttonsound
 	writetext BillsGrandpaAskToSeeMonText
 	yesorno
 	iffalse .SaidNo
 	scall .ExcitedToSee
 	special BillsGrandfather
 	iffalse .SaidNo
-	ifnotequal PICHU, .WrongPokemon
+	ifnotequal SWIRLIX, .WrongPokemon
 	scall .CorrectPokemon
 	setevent EVENT_SHOWED_PICHU_TO_BILLS_GRANDPA
-	sjump .ShowedPichu
+	jump .ShowedPichu
 
 .ShowedLickitung:
 	checkevent EVENT_GOT_EVERSTONE_FROM_BILLS_GRANDPA
@@ -168,7 +168,7 @@ BillsGrandpa:
 
 .ExcitedToSee:
 	writetext BillsGrandpaExcitedToSeeText
-	promptbutton
+	buttonsound
 	end
 
 .SaidNo:
@@ -179,12 +179,12 @@ BillsGrandpa:
 
 .CorrectPokemon:
 	writetext BillsGrandpaShownPokemonText
-	promptbutton
+	buttonsound
 	end
 
 .ReceiveItem:
 	writetext BillsGrandpaTokenOfAppreciationText
-	promptbutton
+	buttonsound
 	end
 
 .JustShowedSomething:
@@ -239,7 +239,7 @@ BillsGrandpaYouDontHaveItTextText:
 BillsGrandpaShownPokemonText:
 	text "Ah, so that is"
 	line "@"
-	text_ram wStringBuffer3
+	text_from_ram wStringBuffer3
 	text "?"
 
 	para "Isn't it cute!"
@@ -283,8 +283,8 @@ BillsGrandpaLickitungText:
 	text "My grandson BILL"
 	line "told me about a"
 
-	para "#MON that has a"
-	line "long tongue."
+	para "#MON that has"
+	line "big afro hair."
 	done
 
 BillsGrandpaOddishText:
@@ -300,15 +300,11 @@ BillsGrandpaStaryuText:
 	text "Do you know of a"
 	line "sea #MON that"
 
-	para "has a red sphere"
+	para "has a diamong"
 	line "in its body?"
 
-	para "You know, the one"
-	line "that's shaped like"
-	cont "a star?"
-
 	para "I heard that it"
-	line "appears at night."
+	line "appears in caves."
 
 	para "I would surely"
 	line "like to see it."
@@ -321,14 +317,16 @@ BillsGrandpaGrowlitheText:
 	para "very loyal to its"
 	line "trainer."
 
-	para "It's supposed to"
-	line "ROAR well."
+	para "It's a big dog and"
+	line "is supposed to"
+	cont "ROAR well."
 	done
 
 BillsGrandpaVulpixText:
 	text "I heard about a"
 	line "cute #MON that"
-	cont "has six tails."
+	cont "has an antenna"
+	cont "for a tail."
 
 	para "I would love to"
 	line "hug a cute #MON"
@@ -341,8 +339,9 @@ BillsGrandpaPichuText:
 	cont "#MON?"
 
 	para "The #MON that"
-	line "has a yellow body"
-	cont "and red cheeks."
+	line "looks like a"
+	cont "dog made out of"
+	cont "cotton candy?"
 
 	para "I would love to"
 	line "see what it looks"
@@ -354,13 +353,13 @@ BillsGrandpaPichuText:
 BillsHouse_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 2 ; warp events
 	warp_event  2,  7, ROUTE_25, 1
 	warp_event  3,  7, ROUTE_25, 1
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 0 ; bg events
 
-	def_object_events
+	db 1 ; object events
 	object_event  2,  3, SPRITE_GRAMPS, SPRITEMOVEDATA_STANDING_UP, 0, 2, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_SCRIPT, 0, BillsGrandpa, -1

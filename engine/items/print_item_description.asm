@@ -1,4 +1,4 @@
-PrintItemDescription:
+PrintItemDescription: ; 0x1c8955
 ; Print the description for item [wCurSpecies] at de.
 
 	ld a, [wCurSpecies]
@@ -9,9 +9,9 @@ PrintItemDescription:
 	push de
 	farcall GetTMHMItemMove
 	pop hl
-	ld a, [wTempTMHM]
+	ld a, [wd265]
 	ld [wCurSpecies], a
-	predef PrintMoveDescription
+	predef PrintMoveDesc
 	ret
 
 .not_a_tm
@@ -28,5 +28,4 @@ PrintItemDescription:
 	ld d, [hl]
 	pop hl
 	jp PlaceString
-
-INCLUDE "data/items/descriptions.asm"
+; 0x1c8987

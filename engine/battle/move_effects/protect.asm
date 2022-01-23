@@ -1,4 +1,4 @@
-BattleCommand_Protect:
+BattleCommand_Protect: ; 37618
 ; protect
 	call ProtectChance
 	ret c
@@ -10,15 +10,18 @@ BattleCommand_Protect:
 	call AnimateCurrentMove
 
 	ld hl, ProtectedItselfText
-	jp StdBattleTextbox
+	jp StdBattleTextBox
+; 3762c
 
-ProtectChance:
+
+ProtectChance: ; 3762c
+
 	ld de, wPlayerProtectCount
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
-	jr z, .got_count
+	jr z, .asm_37637
 	ld de, wEnemyProtectCount
-.got_count
+.asm_37637
 
 	call CheckOpponentWentFirst
 	jr nz, .failed
@@ -66,6 +69,7 @@ ProtectChance:
 	and a
 	ret
 
+
 .failed
 	xor a
 	ld [de], a
@@ -73,3 +77,4 @@ ProtectChance:
 	call PrintButItFailed
 	scf
 	ret
+; 3766f

@@ -1,4 +1,4 @@
-TreeMonEncounter:
+TreeMonEncounter: ; b81ea
 	farcall StubbedTrainerRankings_TreeEncounters
 
 	xor a
@@ -25,8 +25,10 @@ TreeMonEncounter:
 	xor a
 	ld [wScriptVar], a
 	ret
+; b8219
 
-RockMonEncounter:
+RockMonEncounter: ; b8219
+
 	xor a
 	ld [wTempWildMonSpecies], a
 	ld [wCurPartyLevel], a
@@ -52,10 +54,11 @@ RockMonEncounter:
 .no_battle
 	xor a
 	ret
+; b823e
 
 	db $05 ; ????
 
-GetTreeMonSet:
+GetTreeMonSet: ; b823f
 ; Return carry and treemon set in a
 ; if the current map is in table hl.
 	ld a, [wMapNumber]
@@ -90,10 +93,11 @@ GetTreeMonSet:
 	ld a, [hl]
 	scf
 	ret
+; b825e
 
 INCLUDE "data/wild/treemon_maps.asm"
 
-GetTreeMons:
+GetTreeMons: ; b82d2
 ; Return the address of TreeMon table a in hl.
 ; Return nc if table a doesn't exist.
 
@@ -119,10 +123,11 @@ GetTreeMons:
 .quit
 	xor a
 	ret
+; b82e8
 
 INCLUDE "data/wild/treemons.asm"
 
-GetTreeMon:
+GetTreeMon: ; b83e5
 	push hl
 	call GetTreeScore
 	pop hl
@@ -163,8 +168,9 @@ GetTreeMon:
 	jr nz, .skip
 	call SelectTreeMon
 	ret
+; b841f
 
-SelectTreeMon:
+SelectTreeMon: ; b841f
 ; Read a TreeMons table and pick one monster at random.
 
 	ld a, 100
@@ -189,19 +195,20 @@ SelectTreeMon:
 	scf
 	ret
 
-NoTreeMon:
+NoTreeMon: ; b843b
 	xor a
 	ld [wTempWildMonSpecies], a
 	ld [wCurPartyLevel], a
 	ret
+; b8443
 
-GetTreeScore:
+GetTreeScore: ; b8443
 	call .CoordScore
-	ld [wTreeMonCoordScore], a
+	ld [wBuffer1], a
 	call .OTIDScore
-	ld [wTreeMonOTIDScore], a
+	ld [wBuffer2], a
 	ld c, a
-	ld a, [wTreeMonCoordScore]
+	ld a, [wBuffer1]
 	sub c
 	jr z, .rare
 	jr nc, .ok
@@ -210,7 +217,7 @@ GetTreeScore:
 	cp 5
 	jr c, .good
 
-; bad
+.bad
 	xor a ; TREEMON_SCORE_BAD
 	ret
 
@@ -221,8 +228,9 @@ GetTreeScore:
 .rare
 	ld a, TREEMON_SCORE_RARE
 	ret
+; b8466
 
-.CoordScore:
+.CoordScore: ; b8466
 	call GetFacingTileCoord
 	ld hl, 0
 	ld c, e
@@ -242,34 +250,36 @@ GetTreeScore:
 	add hl, bc
 
 	ld a, h
-	ldh [hDividend], a
+	ld [hDividend], a
 	ld a, l
-	ldh [hDividend + 1], a
+	ld [hDividend + 1], a
 	ld a, 5
-	ldh [hDivisor], a
+	ld [hDivisor], a
 	ld b, 2
 	call Divide
 
-	ldh a, [hQuotient + 2]
-	ldh [hDividend], a
-	ldh a, [hQuotient + 3]
-	ldh [hDividend + 1], a
+	ld a, [hQuotient + 1]
+	ld [hDividend], a
+	ld a, [hQuotient + 2]
+	ld [hDividend + 1], a
 	ld a, 10
-	ldh [hDivisor], a
+	ld [hDivisor], a
 	ld b, 2
 	call Divide
 
-	ldh a, [hRemainder]
+	ld a, [hQuotient + 3]
 	ret
+; b849d
 
-.OTIDScore:
+.OTIDScore: ; b849d
 	ld a, [wPlayerID]
-	ldh [hDividend], a
+	ld [hDividend], a
 	ld a, [wPlayerID + 1]
-	ldh [hDividend + 1], a
+	ld [hDividend + 1], a
 	ld a, 10
-	ldh [hDivisor], a
+	ld [hDivisor], a
 	ld b, 2
 	call Divide
-	ldh a, [hRemainder]
+	ld a, [hQuotient + 3]
 	ret
+; b84b3

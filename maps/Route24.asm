@@ -1,29 +1,59 @@
-	object_const_def
+	const_def 2 ; object constants
+	const ROUTE24_RESHIRAM
 	const ROUTE24_ROCKET
 
 Route24_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 1 ; callbacks
+	callback MAPCALLBACK_OBJECTS, .Reshiram
+	
+.Reshiram:
+	checkevent EVENT_FOUGHT_RESHIRAM
+	iftrue .NoAppear
+	checkevent EVENT_DRAGONS_LEFT
+	iffalse .NoAppear
+	appear ROUTE24_RESHIRAM
+	return
+
+.NoAppear:
+	disappear ROUTE24_RESHIRAM
+	return
+
+
+Reshiram:
+	faceplayer
+	opentext
+	writetext ReshiramText
+	cry RESHIRAM
+	pause 15
+	closetext
+	setevent EVENT_FOUGHT_RESHIRAM
+	writecode VAR_BATTLETYPE, BATTLETYPE_FORCEITEM
+	loadwildmon RESHIRAM, 60
+	startbattle
+	disappear ROUTE24_RESHIRAM
+	reloadmapafterbattle
+	end
 
 Route24RocketScript:
 	faceplayer
 	playmusic MUSIC_ROCKET_ENCOUNTER
 	opentext
-	writetext Route24RocketSeenText
+	writetext UnknownText_0x1adc2e
 	waitbutton
 	closetext
-	winlosstext Route24RocketBeatenText, -1
+	winlosstext UnknownText_0x1add67, -1
 	loadtrainer GRUNTM, GRUNTM_31
 	startbattle
 	dontrestartmapmusic
 	reloadmapafterbattle
 	playmusic MUSIC_ROCKET_ENCOUNTER
 	opentext
-	writetext Route24RocketAfterBattleText
-	promptbutton
+	writetext UnknownText_0x1addc0
+	buttonsound
 	special FadeOutMusic
-	writetext Route24RocketDisappearsText
+	writetext UnknownText_0x1adee1
 	waitbutton
 	closetext
 	special FadeBlackQuickly
@@ -34,7 +64,11 @@ Route24RocketScript:
 	playmapmusic
 	end
 
-Route24RocketSeenText:
+ReshiramText:
+	text "Reaaahh!"
+	done
+	
+UnknownText_0x1adc2e:
 	text "Hey, kid! Me am a"
 	line "TEAM ROCKET member"
 	cont "kind of guy!"
@@ -63,7 +97,7 @@ Route24RocketSeenText:
 	line "begin we do!"
 	done
 
-Route24RocketBeatenText:
+UnknownText_0x1add67:
 	text "Ayieeeh! No, no,"
 	line "no, believe it I"
 	cont "can't!"
@@ -73,7 +107,7 @@ Route24RocketBeatenText:
 	cont "not to you!"
 	done
 
-Route24RocketAfterBattleText:
+UnknownText_0x1addc0:
 	text "OK. Tell you mine"
 	line "secret will I."
 
@@ -102,7 +136,7 @@ Route24RocketAfterBattleText:
 	line "revenge they are."
 	done
 
-Route24RocketDisappearsText:
+UnknownText_0x1adee1:
 	text "…"
 
 	para "You say what? TEAM"
@@ -119,11 +153,12 @@ Route24RocketDisappearsText:
 Route24_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 0 ; warp events
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 0 ; bg events
 
-	def_object_events
+	db 2 ; object events
+	object_event  3, 13, SPRITE_DRAGON, SPRITEMOVEDATA_STANDING_UP, 0, 0, -1, -1, PAL_NPC_SILVER, OBJECTTYPE_SCRIPT, 0, Reshiram, EVENT_CERULEAN_CITY_RESHIRAM
 	object_event  8,  7, SPRITE_ROCKET, SPRITEMOVEDATA_SPINRANDOM_SLOW, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, Route24RocketScript, EVENT_ROUTE_24_ROCKET

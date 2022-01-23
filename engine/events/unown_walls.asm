@@ -1,7 +1,7 @@
-HoOhChamber:
+HoOhChamber: ; 0x8addb
 	ld hl, wPartySpecies
 	ld a, [hl]
-	cp HO_OH ; is Ho-oh the first Pokémon in the party?
+	cp XERNEAS ; is Ho-oh the first Pokémon in the party?
 	jr nz, .done ; if not, we're done
 	call GetMapAttributesPointer ; pointless?
 	ld de, EVENT_WALL_OPENED_IN_HO_OH_CHAMBER
@@ -9,8 +9,9 @@ HoOhChamber:
 	call EventFlagAction
 .done
 	ret
+; 0x8adef
 
-OmanyteChamber:
+OmanyteChamber: ; 8adef
 	call GetMapAttributesPointer ; pointless?
 	ld de, EVENT_WALL_OPENED_IN_OMANYTE_CHAMBER
 	ld b, CHECK_FLAG
@@ -50,8 +51,9 @@ OmanyteChamber:
 
 .nope
 	ret
+; 8ae30
 
-SpecialAerodactylChamber:
+SpecialAerodactylChamber: ; 8ae30
 	push de
 	push bc
 
@@ -77,8 +79,9 @@ SpecialAerodactylChamber:
 	pop bc
 	pop de
 	ret
+; 8ae4e
 
-SpecialKabutoChamber:
+SpecialKabutoChamber: ; 8ae4e
 	push hl
 	push de
 
@@ -98,8 +101,9 @@ SpecialKabutoChamber:
 	pop de
 	pop hl
 	ret
+; 8ae68
 
-DisplayUnownWords:
+DisplayUnownWords: ; 8ae68
 	ld a, [wScriptVar]
 	ld hl, MenuHeaders_UnownWalls
 	and a
@@ -115,7 +119,7 @@ DisplayUnownWords:
 .load
 	call LoadMenuHeader
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call MenuBox
 	call UpdateSprites
 	call ApplyTilemap
@@ -139,7 +143,7 @@ DisplayUnownWords:
 	jr nz, .loop2
 .copy
 	call _DisplayUnownWords_CopyWord
-	ld bc, wAttrmap - wTilemap
+	ld bc, wAttrMap - wTileMap
 	add hl, bc
 	call _DisplayUnownWords_FillAttr
 	call WaitBGMap2
@@ -147,10 +151,11 @@ DisplayUnownWords:
 	call PlayClickSFX
 	call CloseWindow
 	ret
+; 8aebc
 
 INCLUDE "data/events/unown_walls.asm"
 
-_DisplayUnownWords_FillAttr:
+_DisplayUnownWords_FillAttr: ; 8aee9
 	ld a, [de]
 	cp $ff
 	ret z
@@ -165,8 +170,9 @@ _DisplayUnownWords_FillAttr:
 	inc hl
 	inc de
 	jr _DisplayUnownWords_FillAttr
+; 8aefd
 
-.PlaceSquare:
+.PlaceSquare: ; 8aefd
 	push hl
 	ld [hli], a
 	ld [hld], a
@@ -177,8 +183,9 @@ _DisplayUnownWords_FillAttr:
 	ld [hl], a
 	pop hl
 	ret
+; 8af09
 
-_DisplayUnownWords_CopyWord:
+_DisplayUnownWords_CopyWord: ; 8af09
 	push hl
 	push de
 .word_loop
@@ -196,8 +203,9 @@ _DisplayUnownWords_CopyWord:
 	pop de
 	pop hl
 	ret
+; 8af1c
 
-.ConvertChar:
+.ConvertChar: ; 8af1c
 	push hl
 	ld a, c
 	cp $60
@@ -256,3 +264,4 @@ _DisplayUnownWords_CopyWord:
 	ld [hl], $2
 	pop hl
 	ret
+; 8af6b

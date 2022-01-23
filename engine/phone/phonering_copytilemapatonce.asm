@@ -1,71 +1,64 @@
-PhoneRing_CopyTilemapAtOnce:
-	ldh a, [hCGB]
+PhoneRing_CopyTilemapAtOnce: ; 4d188
+	ld a, [hCGB]
 	and a
 	jp z, WaitBGMap
 	ld a, [wSpriteUpdatesEnabled]
 	cp $0
 	jp z, WaitBGMap
 
-; The following is a modified version of _CopyTilemapAtOnce
-; that waits for [rLY] to be LY_VBLANK - 1 instead of $80 - 1.
-	ldh a, [hBGMapMode]
+; What follows is a modified version of CopyTilemapAtOnce.
+	ld a, [hBGMapMode]
 	push af
 	xor a
-	ldh [hBGMapMode], a
-
-	ldh a, [hMapAnims]
+	ld [hBGMapMode], a
+	ld a, [hMapAnims]
 	push af
 	xor a
-	ldh [hMapAnims], a
-
+	ld [hMapAnims], a
 .wait
-	ldh a, [rLY]
+	ld a, [rLY]
 	cp LY_VBLANK - 1
 	jr c, .wait
 
 	di
 	ld a, BANK(vBGMap2)
-	ldh [rVBK], a
-	hlcoord 0, 0, wAttrmap
-	call .CopyBGMapViaStack
+	ld [rVBK], a
+	hlcoord 0, 0, wAttrMap
+	call .CopyTilemapAtOnce
 	ld a, BANK(vBGMap0)
-	ldh [rVBK], a
+	ld [rVBK], a
 	hlcoord 0, 0
-	call .CopyBGMapViaStack
-
+	call .CopyTilemapAtOnce
 .wait2
-	ldh a, [rLY]
+	ld a, [rLY]
 	cp LY_VBLANK - 1
 	jr c, .wait2
 	ei
 
 	pop af
-	ldh [hMapAnims], a
+	ld [hMapAnims], a
 	pop af
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	ret
 
-.CopyBGMapViaStack:
-; Copy all tiles to vBGMap
+.CopyTilemapAtOnce: ; 4d1cb
 	ld [hSPBuffer], sp
 	ld sp, hl
-	ldh a, [hBGMapAddress + 1]
+	ld a, [hBGMapAddress + 1]
 	ld h, a
 	ld l, 0
 	ld a, SCREEN_HEIGHT
-	ldh [hTilesPerCycle], a
+	ld [hTilesPerCycle], a
 	ld b, 1 << 1 ; not in v/hblank
 	ld c, LOW(rSTAT)
 
 .loop
 rept SCREEN_WIDTH / 2
 	pop de
-; if in v/hblank, wait until not in v/hblank
 .loop\@
-	ldh a, [c]
+	ld a, [$ff00+c]
 	and b
 	jr nz, .loop\@
-; load vBGMap
 	ld [hl], e
 	inc l
 	ld [hl], d
@@ -74,14 +67,14 @@ endr
 
 	ld de, BG_MAP_WIDTH - SCREEN_WIDTH
 	add hl, de
-	ldh a, [hTilesPerCycle]
+	ld a, [hTilesPerCycle]
 	dec a
-	ldh [hTilesPerCycle], a
+	ld [hTilesPerCycle], a
 	jr nz, .loop
 
-	ldh a, [hSPBuffer]
+	ld a, [hSPBuffer]
 	ld l, a
-	ldh a, [hSPBuffer + 1]
+	ld a, [hSPBuffer + 1]
 	ld h, a
 	ld sp, hl
 	ret

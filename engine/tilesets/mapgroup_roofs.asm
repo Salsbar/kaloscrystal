@@ -1,4 +1,4 @@
-LoadMapGroupRoof::
+LoadMapGroupRoof:: ; 1c000
 	ld a, [wMapGroup]
 	ld e, a
 	ld d, 0
@@ -8,11 +8,13 @@ LoadMapGroupRoof::
 	cp -1
 	ret z
 	ld hl, Roofs
-	ld bc, ROOF_LENGTH tiles
+	ld bc, 9 tiles
 	call AddNTimes
 	ld de, vTiles2 tile $0a
-	ld bc, ROOF_LENGTH tiles
+	ld bc, 9 tiles
 	call CopyBytes
 	ret
+; 1c021
+
 
 INCLUDE "data/maps/roofs.asm"

@@ -1,41 +1,6 @@
-GetPartyParamLocation::
-; Get the location of parameter a from wCurPartyMon in hl
-	push bc
-	ld hl, wPartyMons
-	ld c, a
-	ld b, 0
-	add hl, bc
-	ld a, [wCurPartyMon]
-	call GetPartyLocation
-	pop bc
-	ret
-
-GetPartyLocation::
-; Add the length of a PartyMon struct to hl a times.
-	ld bc, PARTYMON_STRUCT_LENGTH
-	jp AddNTimes
-
-GetDexNumber:: ; unreferenced
-; Probably used in gen 1 to convert index number to dex number
-; Not required in gen 2 because index number == dex number
-	push hl
-	ld a, b
-	dec a
-	ld b, 0
-	add hl, bc
-	ld hl, BaseData + BASE_DEX_NO
-	ld bc, BASE_DATA_SIZE
-	call AddNTimes
-	ld a, BANK(BaseData)
-	call GetFarWord
-	ld b, l
-	ld c, h
-	pop hl
-	ret
-
-UserPartyAttr::
+UserPartyAttr:: ; 3945
 	push af
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
 	jr nz, .ot
 	pop af
@@ -43,10 +8,12 @@ UserPartyAttr::
 .ot
 	pop af
 	jr OTPartyAttr
+; 3951
 
-OpponentPartyAttr::
+
+OpponentPartyAttr:: ; 3951
 	push af
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
 	jr z, .ot
 	pop af
@@ -54,9 +21,11 @@ OpponentPartyAttr::
 .ot
 	pop af
 	jr OTPartyAttr
+; 395d
 
-BattlePartyAttr::
-; Get attribute a from the party struct of the active battle mon.
+
+BattlePartyAttr:: ; 395d
+; Get attribute a from the party struct of the active battle mon. 
 	push bc
 	ld c, a
 	ld b, 0
@@ -66,8 +35,10 @@ BattlePartyAttr::
 	call GetPartyLocation
 	pop bc
 	ret
+; 396d
 
-OTPartyAttr::
+
+OTPartyAttr:: ; 396d
 ; Get attribute a from the party struct of the active enemy mon.
 	push bc
 	ld c, a
@@ -78,41 +49,49 @@ OTPartyAttr::
 	call GetPartyLocation
 	pop bc
 	ret
+; 397d
 
-ResetDamage::
+
+ResetDamage:: ; 397d
 	xor a
 	ld [wCurDamage], a
 	ld [wCurDamage + 1], a
 	ret
+; 3985
 
-SetPlayerTurn::
+SetPlayerTurn:: ; 3985
 	xor a
-	ldh [hBattleTurn], a
+	ld [hBattleTurn], a
 	ret
+; 3989
 
-SetEnemyTurn::
+SetEnemyTurn:: ; 3989
 	ld a, 1
-	ldh [hBattleTurn], a
+	ld [hBattleTurn], a
 	ret
+; 398e
 
-UpdateOpponentInParty::
-	ldh a, [hBattleTurn]
+
+UpdateOpponentInParty:: ; 398e
+	ld a, [hBattleTurn]
 	and a
 	jr z, UpdateEnemyMonInParty
 	jr UpdateBattleMonInParty
+; 3995
 
-UpdateUserInParty::
-	ldh a, [hBattleTurn]
+UpdateUserInParty:: ; 3995
+	ld a, [hBattleTurn]
 	and a
 	jr z, UpdateBattleMonInParty
 	jr UpdateEnemyMonInParty
+; 399c
 
-UpdateBattleMonInParty::
+UpdateBattleMonInParty:: ; 399c
 ; Update level, status, current HP
 
 	ld a, [wCurBattleMon]
 
-UpdateBattleMon::
+UpdateBattleMon:: ; 399f
 	ld hl, wPartyMon1Level
 	call GetPartyLocation
 
@@ -121,8 +100,9 @@ UpdateBattleMon::
 	ld hl, wBattleMonLevel
 	ld bc, wBattleMonMaxHP - wBattleMonLevel
 	jp CopyBytes
+; 39b0
 
-UpdateEnemyMonInParty::
+UpdateEnemyMonInParty:: ; 39b0
 ; Update level, status, current HP
 
 ; No wildmons.
@@ -139,30 +119,36 @@ UpdateEnemyMonInParty::
 	ld hl, wEnemyMonLevel
 	ld bc, wEnemyMonMaxHP - wEnemyMonLevel
 	jp CopyBytes
+; 39c9
 
-RefreshBattleHuds::
+
+RefreshBattleHuds:: ; 39c9
 	call UpdateBattleHuds
 	ld c, 3
 	call DelayFrames
 	jp WaitBGMap
+; 39d4
 
-UpdateBattleHuds::
+UpdateBattleHuds:: ; 39d4
 	farcall UpdatePlayerHUD
 	farcall UpdateEnemyHUD
 	ret
+; 39e1
+
 
 INCLUDE "home/battle_vars.asm"
 
-FarCopyRadioText::
+
+FarCopyRadioText:: ; 3a90
 	inc hl
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 	ld a, [hli]
 	ld e, a
 	ld a, [hli]
 	ld d, a
 	ld a, [hli]
-	ldh [hROMBank], a
+	ld [hROMBank], a
 	ld [MBC3RomBank], a
 	ld a, e
 	ld l, a
@@ -172,11 +158,17 @@ FarCopyRadioText::
 	ld bc, 2 * SCREEN_WIDTH
 	call CopyBytes
 	pop af
-	ldh [hROMBank], a
+	ld [hROMBank], a
 	ld [MBC3RomBank], a
 	ret
+; 3ab2
 
-MobileTextBorder::
+
+MobileTextBorder:: ; 3ab2
+
+CELL_PHONE_TOP    EQU $5e
+CELL_PHONE_BOTTOM EQU $5f
+
 	; For mobile link battles only.
 	ld a, [wLinkMode]
 	cp LINK_MOBILE
@@ -185,38 +177,44 @@ MobileTextBorder::
 	; Draw a cell phone icon at the
 	; top right corner of the border.
 	hlcoord 19, 12
-	ld [hl], $5e ; top
+	ld [hl], CELL_PHONE_TOP
 	hlcoord 19, 13
-	ld [hl], $5f ; bottom
+	ld [hl], CELL_PHONE_BOTTOM
 	ret
+; 3ac3
 
-BattleTextbox::
+
+BattleTextBox:: ; 3ac3
 ; Open a textbox and print text at hl.
 	push hl
-	call SpeechTextbox
+	call SpeechTextBox
 	call MobileTextBorder
 	call UpdateSprites
 	call ApplyTilemap
 	pop hl
-	call PrintTextboxText
+	call PrintTextBoxText
 	ret
+; 3ad5
 
-StdBattleTextbox::
+
+StdBattleTextBox:: ; 3ad5
 ; Open a textbox and print battle text at 20:hl.
 
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 
 	ld a, BANK(BattleText)
 	rst Bankswitch
 
-	call BattleTextbox
+	call BattleTextBox
 
 	pop af
 	rst Bankswitch
 	ret
+; 3ae1
 
-GetBattleAnimPointer::
+GetBattleAnimPointer:: ; 3ae1
+
 	ld a, BANK(BattleAnimations)
 	rst Bankswitch
 
@@ -225,13 +223,14 @@ GetBattleAnimPointer::
 	ld a, [hl]
 	ld [wBattleAnimAddress + 1], a
 
-	; ClearBattleAnims is the only function that calls this...
-	ld a, BANK(ClearBattleAnims)
+	ld a, BANK(BattleAnimCommands)
 	rst Bankswitch
 
 	ret
+; 3af0
 
-GetBattleAnimByte::
+GetBattleAnimByte:: ; 3af0
+
 	push hl
 	push de
 
@@ -259,22 +258,4 @@ GetBattleAnimByte::
 
 	ld a, [wBattleAnimByte]
 	ret
-
-PushLYOverrides::
-	ldh a, [hLCDCPointer]
-	and a
-	ret z
-
-	ld a, LOW(wLYOverridesBackup)
-	ld [wRequested2bppSource], a
-	ld a, HIGH(wLYOverridesBackup)
-	ld [wRequested2bppSource + 1], a
-
-	ld a, LOW(wLYOverrides)
-	ld [wRequested2bppDest], a
-	ld a, HIGH(wLYOverrides)
-	ld [wRequested2bppDest + 1], a
-
-	ld a, (wLYOverridesEnd - wLYOverrides) / LEN_2BPP_TILE
-	ld [wRequested2bppSize], a
-	ret
+; 3b0c

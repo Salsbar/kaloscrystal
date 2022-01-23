@@ -69,17 +69,16 @@ PascalCase: ; label
 PascalCase:: ; global label
 .snake_case ; local jump
 .PascalCase: ; an atomic chunk of code or data that's local
-; don't define unused labels when a comment would do
 
 ; Labels are prefixed with lower case letters depending on location
 wPascalCase: ; wram
 sPascalCase: ; sram
 vPascalCase: ; vram
-hPascalCase: ; hram
 PascalCase:  ; rom
 
 ; Some constants are also prefixed
 rBGP EQU $ff47 ; hardware register
+hPascalCase EQU $ff80 ; hram
 
 ; Most other constants should be upper case
 UPPER_CASE EQU 1
@@ -152,7 +151,9 @@ endr
 
 	; do
 	db \1, \2, \3, \4, \5
-	shift 5
+rept 5
+	shift
+endr
 	db \1, \2, \3, \4, \5
 
 ENDM
@@ -160,7 +161,7 @@ ENDM
 
 UPPER_CASE_IS_OK_SOMETIMES: MACRO
 
-; but I can't think of any examples besides ACRONYMS
+; but i can't think of any examples
 
 ENDM
 

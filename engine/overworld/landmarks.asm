@@ -1,4 +1,4 @@
-GetLandmarkCoords:
+GetLandmarkCoords: ; 0x1ca896
 ; Return coordinates (d, e) of landmark e.
 	push hl
 	ld l, e
@@ -12,8 +12,10 @@ GetLandmarkCoords:
 	ld d, [hl]
 	pop hl
 	ret
+; 0x1ca8a5
 
-GetLandmarkName::
+
+GetLandmarkName:: ; 0x1ca8a5
 ; Copy the name of landmark e to wStringBuffer1.
 	push hl
 	push de
@@ -42,10 +44,13 @@ GetLandmarkName::
 	pop de
 	pop hl
 	ret
+; 0x1ca8c3
+
 
 INCLUDE "data/maps/landmarks.asm"
 
-RegionCheck:
+
+RegionCheck: ; 0x1caea1
 ; Checks if the player is in Kanto or Johto.
 ; If in Johto, returns 0 in e.
 ; If in Kanto, returns 1 in e.
@@ -54,9 +59,9 @@ RegionCheck:
 	ld a, [wMapNumber]
 	ld c, a
 	call GetWorldMapLocation
-	cp LANDMARK_FAST_SHIP ; S.S. Aqua
+	cp FAST_SHIP ; S.S. Aqua
 	jr z, .johto
-	cp LANDMARK_SPECIAL
+	cp SPECIAL_MAP
 	jr nz, .checkagain
 
 ; In a special map, get the backup map group / map id
@@ -71,7 +76,7 @@ RegionCheck:
 	jr c, .johto
 
 ; Victory Road area is considered to be Johto.
-	cp LANDMARK_VICTORY_ROAD
+	cp VICTORY_ROAD
 	jr c, .kanto
 
 .johto

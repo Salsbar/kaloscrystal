@@ -1,29 +1,30 @@
-NamesPointers::
+NamesPointers:: ; 33ab
 ; entries correspond to GetName constants (see constants/text_constants.asm)
 	dba PokemonNames        ; MON_NAME (not used; jumps to GetPokemonName)
 	dba MoveNames           ; MOVE_NAME
-	dba NULL                ; DUMMY_NAME
+	dbw 0, NULL             ; DUMMY_NAME
 	dba ItemNames           ; ITEM_NAME
-	dbw 0, wPartyMonOTs     ; PARTY_OT_NAME
-	dbw 0, wOTPartyMonOTs   ; ENEMY_OT_NAME
+	dbw 0, wPartyMonOT       ; PARTY_OT_NAME
+	dbw 0, wOTPartyMonOT     ; ENEMY_OT_NAME
 	dba TrainerClassNames   ; TRAINER_NAME
 	dbw 4, MoveDescriptions ; MOVE_DESC_NAME_BROKEN (wrong bank)
+; 33c3
 
-GetName::
-; Return name wCurSpecies from name list wNamedObjectType in wStringBuffer1.
+GetName:: ; 33c3
+; Return name wCurSpecies from name list wNamedObjectTypeBuffer in wStringBuffer1.
 
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 	push hl
 	push bc
 	push de
 
-	ld a, [wNamedObjectType]
+	ld a, [wNamedObjectTypeBuffer]
 	cp MON_NAME
 	jr nz, .NotPokeName
 
 	ld a, [wCurSpecies]
-	ld [wNamedObjectIndex], a
+	ld [wd265], a
 	call GetPokemonName
 	ld hl, MON_NAME_LENGTH
 	add hl, de
@@ -32,7 +33,7 @@ GetName::
 	jr .done
 
 .NotPokeName:
-	ld a, [wNamedObjectType]
+	ld a, [wNamedObjectTypeBuffer]
 	dec a
 	ld e, a
 	ld d, 0
@@ -56,9 +57,9 @@ GetName::
 
 .done
 	ld a, e
-	ld [wUnusedNamesPointer], a
+	ld [wUnusedD102], a
 	ld a, d
-	ld [wUnusedNamesPointer + 1], a
+	ld [wUnusedD102 + 1], a
 
 	pop de
 	pop bc
@@ -66,8 +67,9 @@ GetName::
 	pop af
 	rst Bankswitch
 	ret
+; 3411
 
-GetNthString::
+GetNthString:: ; 3411
 ; Return the address of the
 ; ath string starting from hl.
 
@@ -85,8 +87,9 @@ GetNthString::
 	jr nz, .readChar
 	pop bc
 	ret
+; 3420
 
-GetBasePokemonName::
+GetBasePokemonName:: ; 3420
 ; Discards gender (Nidoran).
 
 	push hl
@@ -109,26 +112,28 @@ GetBasePokemonName::
 	pop hl
 	ret
 
-GetPokemonName::
-; Get Pokemon name for wNamedObjectIndex.
+; 343b
 
-	ldh a, [hROMBank]
+GetPokemonName:: ; 343b
+; Get Pokemon name wd265.
+
+	ld a, [hROMBank]
 	push af
 	push hl
 	ld a, BANK(PokemonNames)
 	rst Bankswitch
 
 ; Each name is ten characters
-	ld a, [wNamedObjectIndex]
+	ld a, [wd265]
 	dec a
 	ld d, 0
 	ld e, a
 	ld h, 0
 	ld l, a
-	add hl, hl
-	add hl, hl
-	add hl, de
-	add hl, hl
+	add hl, hl ; hl = hl * 4
+	add hl, hl ; hl = hl * 4
+	add hl, de ; hl = (hl*4) + de
+	add hl, hl ; hl = (5*hl) + (5*hl)
 	ld de, PokemonNames
 	add hl, de
 
@@ -145,20 +150,21 @@ GetPokemonName::
 	pop af
 	rst Bankswitch
 	ret
+; 3468
 
-GetItemName::
-; Get item name for wNamedObjectIndex.
+GetItemName:: ; 3468
+; Get item name wd265.
 
 	push hl
 	push bc
-	ld a, [wNamedObjectIndex]
+	ld a, [wd265]
 
 	cp TM01
 	jr nc, .TM
 
 	ld [wCurSpecies], a
 	ld a, ITEM_NAME
-	ld [wNamedObjectType], a
+	ld [wNamedObjectTypeBuffer], a
 	call GetName
 	jr .Copied
 .TM:
@@ -168,14 +174,15 @@ GetItemName::
 	pop bc
 	pop hl
 	ret
+; 3487
 
-GetTMHMName::
-; Get TM/HM name for item wNamedObjectIndex.
+GetTMHMName:: ; 3487
+; Get TM/HM name by item id wd265.
 
 	push hl
 	push de
 	push bc
-	ld a, [wNamedObjectIndex]
+	ld a, [wd265]
 	push af
 
 ; TM/HM prefix
@@ -185,19 +192,19 @@ GetTMHMName::
 
 	ld hl, .HMText
 	ld bc, .HMTextEnd - .HMText
-	jr .copy
+	jr .asm_34a1
 
 .TM:
 	ld hl, .TMText
 	ld bc, .TMTextEnd - .TMText
 
-.copy
+.asm_34a1
 	ld de, wStringBuffer1
 	call CopyBytes
 
 ; TM/HM number
 	push de
-	ld a, [wNamedObjectIndex]
+	ld a, [wd265]
 	ld c, a
 	callfar GetTMHMNumber
 	pop de
@@ -205,20 +212,20 @@ GetTMHMName::
 ; HM numbers start from 51, not 1
 	pop af
 	ld a, c
-	jr c, .not_hm
+	jr c, .asm_34b9
 	sub NUM_TMS
-.not_hm
+.asm_34b9
 
 ; Divide and mod by 10 to get the top and bottom digits respectively
 	ld b, "0"
 .mod10
 	sub 10
-	jr c, .done_mod
+	jr c, .asm_34c2
 	inc b
 	jr .mod10
-
-.done_mod
+.asm_34c2
 	add 10
+
 	push af
 	ld a, b
 	ld [de], a
@@ -235,7 +242,7 @@ GetTMHMName::
 	ld [de], a
 
 	pop af
-	ld [wNamedObjectIndex], a
+	ld [wd265], a
 	pop bc
 	pop de
 	pop hl
@@ -250,16 +257,17 @@ GetTMHMName::
 	db "HM"
 .HMTextEnd:
 	db "@"
+; 34df
 
 INCLUDE "home/hm_moves.asm"
 
-GetMoveName::
+GetMoveName:: ; 34f8
 	push hl
 
 	ld a, MOVE_NAME
-	ld [wNamedObjectType], a
+	ld [wNamedObjectTypeBuffer], a
 
-	ld a, [wNamedObjectIndex] ; move id
+	ld a, [wNamedObjectIndexBuffer] ; move id
 	ld [wCurSpecies], a
 
 	call GetName
@@ -267,3 +275,4 @@ GetMoveName::
 
 	pop hl
 	ret
+; 350c

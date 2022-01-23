@@ -1,11 +1,11 @@
-BattleCommand_SleepTalk:
+BattleCommand_SleepTalk: ; 35b33
 ; sleeptalk
 
 	call ClearLastMove
 	ld a, [wAttackMissed]
 	and a
 	jr nz, .fail
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
 	ld hl, wBattleMonMoves + 1
 	ld a, [wDisabledMove]
@@ -52,11 +52,11 @@ BattleCommand_SleepTalk:
 	ld [hl], a
 	call CheckUserIsCharging
 	jr nz, .charging
-	ld a, [wBattleAnimParam]
+	ld a, [wKickCounter]
 	push af
 	call BattleCommand_LowerSub
 	pop af
-	ld [wBattleAnimParam], a
+	ld [wKickCounter], a
 .charging
 	call LoadMoveAnim
 	call UpdateMoveData
@@ -77,7 +77,7 @@ BattleCommand_SleepTalk:
 	ret
 
 .check_has_usable_move
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
 	ld a, [wDisabledMove]
 	jr z, .got_move_2
@@ -141,3 +141,5 @@ BattleCommand_SleepTalk:
 	ret z
 	cp EFFECT_BIDE
 	ret
+
+; 35bff

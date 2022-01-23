@@ -1,36 +1,41 @@
-_TitleScreen:
+_TitleScreen: ; 10ed67
+
 	call ClearBGPalettes
 	call ClearSprites
-	call ClearTilemap
+	call ClearTileMap
 
 ; Turn BG Map update off
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 
 ; Reset timing variables
 	ld hl, wJumptableIndex
 	ld [hli], a ; wJumptableIndex
-	ld [hli], a ; wTitleScreenSelectedOption
+	ld [hli], a ; wIntroSceneFrameCounter
 	ld [hli], a ; wTitleScreenTimer
 	ld [hl], a  ; wTitleScreenTimer + 1
 
 ; Turn LCD off
 	call DisableLCD
 
+
 ; VRAM bank 1
 	ld a, 1
-	ldh [rVBK], a
+	ld [rVBK], a
+
 
 ; Decompress running Suicune gfx
 	ld hl, TitleSuicuneGFX
 	ld de, vTiles1
 	call Decompress
 
+
 ; Clear screen palettes
 	hlbgcoord 0, 0
 	ld bc, 20 * BG_MAP_WIDTH
 	xor a
 	call ByteFill
+
 
 ; Fill tile palettes:
 
@@ -41,6 +46,7 @@ _TitleScreen:
 	ld bc, BG_MAP_WIDTH
 	ld a, 7 ; palette
 	call ByteFill
+
 
 ; BG Map 0:
 
@@ -72,9 +78,10 @@ _TitleScreen:
 	ld a, 6
 	call ByteFill
 
+
 ; 'CRYSTAL VERSION'
 	hlbgcoord 5, 9
-	ld bc, 11 ; length of version text
+	ld bc, NAME_LENGTH ; length of version text
 	ld a, 1
 	call ByteFill
 
@@ -84,9 +91,11 @@ _TitleScreen:
 	ld a, 0 | VRAM_BANK_1
 	call ByteFill
 
+
 ; Back to VRAM bank 0
-	ld a, 0
-	ldh [rVBK], a
+	ld a, $0
+	ld [rVBK], a
+
 
 ; Decompress logo
 	ld hl, TitleLogoGFX
@@ -98,6 +107,7 @@ _TitleScreen:
 	ld de, vTiles0
 	call Decompress
 
+
 ; Clear screen tiles
 	hlbgcoord 0, 0
 	ld bc, 64 * BG_MAP_WIDTH
@@ -108,14 +118,14 @@ _TitleScreen:
 	hlcoord 0, 3
 	lb bc, 7, 20
 	ld d, $80
-	ld e, 20
+	ld e, $14
 	call DrawTitleGraphic
 
 ; Draw copyright text
 	hlbgcoord 3, 0, vBGMap1
 	lb bc, 1, 13
 	ld d, $c
-	ld e, 16
+	ld e, $10
 	call DrawTitleGraphic
 
 ; Initialize running Suicune?
@@ -125,12 +135,14 @@ _TitleScreen:
 ; Initialize background crystal
 	call InitializeBackground
 
-; Update palette colors
-	ldh a, [rSVBK]
+; Save WRAM bank
+	ld a, [rSVBK]
 	push af
+; WRAM bank 5
 	ld a, BANK(wBGPals1)
-	ldh [rSVBK], a
+	ld [rSVBK], a
 
+; Update palette colors
 	ld hl, TitleScreenPalettes
 	ld de, wBGPals1
 	ld bc, 16 palettes
@@ -141,15 +153,17 @@ _TitleScreen:
 	ld bc, 16 palettes
 	call CopyBytes
 
+; Restore WRAM bank
 	pop af
-	ldh [rSVBK], a
+	ld [rSVBK], a
+
 
 ; LY/SCX trickery starts here
 
-	ldh a, [rSVBK]
+	ld a, [rSVBK]
 	push af
 	ld a, BANK(wLYOverrides)
-	ldh [rSVBK], a
+	ld [rSVBK], a
 
 ; Make alternating lines come in from opposite sides
 
@@ -174,38 +188,39 @@ _TitleScreen:
 	call ByteFill
 
 ; Let LCD Stat know we're messing around with SCX
-	ld a, LOW(rSCX)
-	ldh [hLCDCPointer], a
+	ld a, rSCX - $ff00
+	ld [hLCDCPointer], a
 
 	pop af
-	ldh [rSVBK], a
+	ld [rSVBK], a
+
 
 ; Reset audio
 	call ChannelsOff
 	call EnableLCD
 
 ; Set sprite size to 8x16
-	ldh a, [rLCDC]
+	ld a, [rLCDC]
 	set rLCDC_SPRITE_SIZE, a
-	ldh [rLCDC], a
+	ld [rLCDC], a
 
 	ld a, +112
-	ldh [hSCX], a
+	ld [hSCX], a
 	ld a, 8
-	ldh [hSCY], a
+	ld [hSCY], a
 	ld a, 7
-	ldh [hWX], a
+	ld [hWX], a
 	ld a, -112
-	ldh [hWY], a
+	ld [hWY], a
 
-	ld a, TRUE
-	ldh [hCGBPalUpdate], a
+	ld a, $1
+	ld [hCGBPalUpdate], a
 
 ; Update BG Map 0 (bank 0)
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 
 	xor a
-	ld [wSuicuneFrame], a
+	ld [wd002], a
 
 ; Play starting sound effect
 	call SFXChannelsOff
@@ -213,9 +228,10 @@ _TitleScreen:
 	call PlaySFX
 
 	ret
+; 10eea7
 
-SuicuneFrameIterator:
-	ld hl, wSuicuneFrame
+SuicuneFrameIterator: ; 10eea7
+	ld hl, wd002
 	ld a, [hl]
 	ld c, a
 	inc [hl]
@@ -229,26 +245,29 @@ SuicuneFrameIterator:
 	sla a
 	swap a
 	ld e, a
-	ld d, 0
+	ld d, $0
 	ld hl, .Frames
 	add hl, de
 	ld d, [hl]
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call LoadSuicuneFrame
 	ld a, $1
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	ld a, $3
-	ldh [hBGMapThird], a
+	ld [hBGMapThird], a
 	ret
+; 10eece
 
-.Frames:
-	db $80 ; vTiles3 tile $80
-	db $88 ; vTiles3 tile $88
+.Frames: ; 10eece
+	db $80 ; vTiles4 tile $00
+	db $88 ; vTiles4 tile $08
 	db $00 ; vTiles5 tile $00
 	db $08 ; vTiles5 tile $08
+; 10eed2
 
-LoadSuicuneFrame:
+
+LoadSuicuneFrame: ; 10eed2
 	hlcoord 6, 12
 	ld b, 6
 .bgrows
@@ -271,8 +290,9 @@ LoadSuicuneFrame:
 	dec b
 	jr nz, .bgrows
 	ret
+; 10eeef
 
-DrawTitleGraphic:
+DrawTitleGraphic: ; 10eeef
 ; input:
 ;   hl: draw location
 ;   b: height
@@ -300,8 +320,9 @@ DrawTitleGraphic:
 	dec b
 	jr nz, .bgrows
 	ret
+; 10ef06
 
-InitializeBackground:
+InitializeBackground: ; 10ef06
 	ld hl, wVirtualOAMSprite00
 	ld d, -$22
 	ld e, $0
@@ -316,8 +337,9 @@ InitializeBackground:
 	dec c
 	jr nz, .loop
 	ret
+; 10ef1c
 
-.InitColumn:
+.InitColumn: ; 10ef1c
 	ld c, $6
 	ld b, $40
 .loop2
@@ -336,8 +358,10 @@ InitializeBackground:
 	dec c
 	jr nz, .loop2
 	ret
+; 10ef32
 
-AnimateTitleCrystal:
+
+AnimateTitleCrystal: ; 10ef32
 ; Move the title screen crystal downward until it's fully visible
 
 ; Stop at y=6
@@ -353,22 +377,26 @@ AnimateTitleCrystal:
 	ld a, [hl]
 	add 2
 	ld [hli], a ; y
-rept SPRITEOAMSTRUCT_LENGTH - 1
+rept SPRITEOAMSTRUCT_LENGTH + -1
 	inc hl
 endr
 	dec c
 	jr nz, .loop
 
 	ret
+; 10ef46
 
-TitleSuicuneGFX:
+TitleSuicuneGFX: ; 10ef46
 INCBIN "gfx/title/suicune.2bpp.lz"
+; 10f326
 
-TitleLogoGFX:
+TitleLogoGFX: ; 10f326
 INCBIN "gfx/title/logo.2bpp.lz"
+; 10fcee
 
-TitleCrystalGFX:
+TitleCrystalGFX: ; 10fcee
 INCBIN "gfx/title/crystal.2bpp.lz"
+; 10fede
 
 TitleScreenPalettes:
 INCLUDE "gfx/title/title.pal"

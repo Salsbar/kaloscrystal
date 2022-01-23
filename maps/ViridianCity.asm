@@ -1,32 +1,32 @@
-	object_const_def
+	const_def 2 ; object constants
 	const VIRIDIANCITY_GRAMPS1
 	const VIRIDIANCITY_GRAMPS2
 	const VIRIDIANCITY_FISHER
 	const VIRIDIANCITY_YOUNGSTER
 
 ViridianCity_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 1 ; callbacks
 	callback MAPCALLBACK_NEWMAP, .FlyPoint
 
 .FlyPoint:
 	setflag ENGINE_FLYPOINT_VIRIDIAN
-	endcallback
+	return
 
 ViridianCityCoffeeGramps:
 	faceplayer
 	opentext
-	writetext ViridianCityCoffeeGrampsQuestionText
+	writetext UnknownText_0x1a9aa5
 	yesorno
 	iffalse .no
-	writetext ViridianCityCoffeeGrampsBelievedText
+	writetext UnknownText_0x1a9b6f
 	waitbutton
 	closetext
 	end
 
 .no:
-	writetext ViridianCityCoffeeGrampsDoubtedText
+	writetext UnknownText_0x1a9bb7
 	waitbutton
 	closetext
 	end
@@ -36,13 +36,13 @@ ViridianCityGrampsNearGym:
 	opentext
 	checkevent EVENT_BLUE_IN_CINNABAR
 	iftrue .BlueReturned
-	writetext ViridianCityGrampsNearGymText
+	writetext UnknownText_0x1a9c11
 	waitbutton
 	closetext
 	end
 
 .BlueReturned:
-	writetext ViridianCityGrampsNearGymBlueReturnedText
+	writetext UnknownText_0x1a9c7e
 	waitbutton
 	closetext
 	end
@@ -52,13 +52,13 @@ ViridianCityDreamEaterFisher:
 	opentext
 	checkevent EVENT_GOT_TM42_DREAM_EATER
 	iftrue .GotDreamEater
-	writetext ViridianCityDreamEaterFisherText
-	promptbutton
+	writetext UnknownText_0x1a9cc4
+	buttonsound
 	verbosegiveitem TM_DREAM_EATER
 	iffalse .NoRoomForDreamEater
 	setevent EVENT_GOT_TM42_DREAM_EATER
 .GotDreamEater:
-	writetext ViridianCityDreamEaterFisherGotDreamEaterText
+	writetext UnknownText_0x1a9d86
 	waitbutton
 .NoRoomForDreamEater:
 	closetext
@@ -80,12 +80,12 @@ TrainerHouseSign:
 	jumptext TrainerHouseSignText
 
 ViridianCityPokecenterSign:
-	jumpstd PokecenterSignScript
+	jumpstd pokecentersign
 
 ViridianCityMartSign:
-	jumpstd MartSignScript
+	jumpstd martsign
 
-ViridianCityCoffeeGrampsQuestionText:
+UnknownText_0x1a9aa5:
 	text "Hey, kid! I just"
 	line "had a double shot"
 
@@ -105,7 +105,7 @@ ViridianCityCoffeeGrampsQuestionText:
 	para "Do you believe me?"
 	done
 
-ViridianCityCoffeeGrampsBelievedText:
+UnknownText_0x1a9b6f:
 	text "Good, good. Yes, I"
 	line "was something out"
 
@@ -113,7 +113,7 @@ ViridianCityCoffeeGrampsBelievedText:
 	line "let me tell you!"
 	done
 
-ViridianCityCoffeeGrampsDoubtedText:
+UnknownText_0x1a9bb7:
 	text "What? You little"
 	line "whelp!"
 
@@ -124,7 +124,7 @@ ViridianCityCoffeeGrampsDoubtedText:
 	line "or two. Humph!"
 	done
 
-ViridianCityGrampsNearGymText:
+UnknownText_0x1a9c11:
 	text "This GYM didn't"
 	line "have a LEADER"
 	cont "until recently."
@@ -136,7 +136,7 @@ ViridianCityGrampsNearGymText:
 	line "often away."
 	done
 
-ViridianCityGrampsNearGymBlueReturnedText:
+UnknownText_0x1a9c7e:
 	text "Are you going to"
 	line "battle the LEADER?"
 
@@ -144,14 +144,14 @@ ViridianCityGrampsNearGymBlueReturnedText:
 	line "You'll need it."
 	done
 
-ViridianCityDreamEaterFisherText:
+UnknownText_0x1a9cc4:
 	text "Yawn!"
 
 	para "I must have dozed"
 	line "off in the sun."
 
 	para "…I had this dream"
-	line "about a DROWZEE"
+	line "about a MUNNA"
 
 	para "eating my dream."
 	line "Weird, huh?"
@@ -167,7 +167,7 @@ ViridianCityDreamEaterFisherText:
 	cont "this TM."
 	done
 
-ViridianCityDreamEaterFisherGotDreamEaterText:
+UnknownText_0x1a9d86:
 	text "TM42 contains"
 	line "DREAM EATER…"
 
@@ -216,16 +216,16 @@ TrainerHouseSignText:
 ViridianCity_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 5 ; warp events
 	warp_event 32,  7, VIRIDIAN_GYM, 1
 	warp_event 21,  9, VIRIDIAN_NICKNAME_SPEECH_HOUSE, 1
 	warp_event 23, 15, TRAINER_HOUSE_1F, 1
 	warp_event 29, 19, VIRIDIAN_MART, 2
 	warp_event 23, 25, VIRIDIAN_POKECENTER_1F, 1
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 6 ; bg events
 	bg_event 17, 17, BGEVENT_READ, ViridianCitySign
 	bg_event 27,  7, BGEVENT_READ, ViridianGymSign
 	bg_event 19,  1, BGEVENT_READ, ViridianCityWelcomeSign
@@ -233,7 +233,7 @@ ViridianCity_MapEvents:
 	bg_event 24, 25, BGEVENT_READ, ViridianCityPokecenterSign
 	bg_event 30, 19, BGEVENT_READ, ViridianCityMartSign
 
-	def_object_events
+	db 4 ; object events
 	object_event 18,  5, SPRITE_GRAMPS, SPRITEMOVEDATA_WANDER, 2, 2, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, ViridianCityCoffeeGramps, -1
 	object_event 30,  8, SPRITE_GRAMPS, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_SCRIPT, 0, ViridianCityGrampsNearGym, -1
 	object_event  6, 23, SPRITE_FISHER, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, ViridianCityDreamEaterFisher, -1

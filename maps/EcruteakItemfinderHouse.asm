@@ -1,11 +1,11 @@
-	object_const_def
+	const_def 2 ; object constants
 	const ECRUTEAKITEMFINDERHOUSE_COOLTRAINER_M
 	const ECRUTEAKITEMFINDERHOUSE_POKEDEX
 
 EcruteakItemfinderHouse_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 0 ; callbacks
 
 EcruteakItemfinderGuy:
 	faceplayer
@@ -16,7 +16,7 @@ EcruteakItemfinderGuy:
 	yesorno
 	iffalse .no
 	writetext EcruteakItemfinderTrueSpiritText
-	promptbutton
+	buttonsound
 	verbosegiveitem ITEMFINDER
 	setevent EVENT_GOT_ITEMFINDER
 .itemfinder:
@@ -53,7 +53,7 @@ EcruteakHistoryBook:
 	end
 
 ItemFinderHouseRadio:
-	jumpstd Radio2Script
+	jumpstd radio2
 
 EcruteakItemfinderAdventureText:
 	text "Ah. You're on an"
@@ -123,7 +123,7 @@ EcruteakTwoTowersText:
 
 	para "Each tower was the"
 	line "roost of powerful"
-	cont "flying #MON."
+	cont "#MON."
 
 	para "But one of the"
 	line "towers burned to"
@@ -138,7 +138,7 @@ EcruteakTwoTowersText:
 
 EcruteakThreeMonText:
 	text "ECRUTEAK was also"
-	line "home to three"
+	line "home to two"
 
 	para "#MON that raced"
 	line "around the town."
@@ -146,32 +146,30 @@ EcruteakThreeMonText:
 	para "They were said to"
 	line "have been born of"
 
-	para "water, lightning"
-	line "and fire."
+	para "lightning"
+	line "and cyclones."
 
 	para "But they could not"
 	line "contain their"
 	cont "excessive power."
 
-	para "So they say the"
-	line "three ran like the"
-
-	para "wind off into the"
-	line "grassland."
+	para "So they caused the"
+	line "destruction of"
+	cont "the BRASS TOWER."
 	done
 
 EcruteakItemfinderHouse_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 2 ; warp events
 	warp_event  3,  7, ECRUTEAK_CITY, 11
 	warp_event  4,  7, ECRUTEAK_CITY, 11
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 1 ; bg events
 	bg_event  2,  1, BGEVENT_READ, ItemFinderHouseRadio
 
-	def_object_events
+	db 2 ; object events
 	object_event  2,  3, SPRITE_COOLTRAINER_M, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, EcruteakItemfinderGuy, -1
 	object_event  3,  3, SPRITE_POKEDEX, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, EcruteakHistoryBook, -1

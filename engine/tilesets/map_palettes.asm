@@ -1,6 +1,6 @@
-_SwapTextboxPalettes::
+SwapTextboxPalettes:: ; 4c000
 	hlcoord 0, 0
-	decoord 0, 0, wAttrmap
+	decoord 0, 0, wAttrMap
 	ld b, SCREEN_HEIGHT
 .loop
 	push bc
@@ -44,7 +44,7 @@ _SwapTextboxPalettes::
 	jr nz, .loop
 	ret
 
-_ScrollBGMapPalettes::
+ScrollBGMapPalettes:: ; 4c03f
 	ld hl, wBGMapBuffer
 	ld de, wBGMapPalBuffer
 .loop

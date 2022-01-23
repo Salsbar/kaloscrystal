@@ -2,12 +2,9 @@
 
 ; Control characters (see home/text.asm)
 
-	charmap "<NULL>",    $00
 	charmap "<PLAY_G>",  $14 ; "<PLAYER>くん" or "<PLAYER>ちゃん"; same as "<PLAYER>" in English
-	charmap "<MOBILE>",  $15
-	charmap "<CR>",      $16
 	charmap "¯",         $1f ; soft linebreak
-	charmap "<LF>",      $22
+	charmap "<LNBRK>",   $22
 	charmap "<POKE>",    $24 ; "<PO><KE>"
 	charmap "%",         $25 ; soft linebreak in landmark names
 	charmap "<RED>",     $38 ; wRedsName
@@ -84,7 +81,7 @@
 
 ; Actual characters (from other graphics files)
 
-	; needed for _LoadFontsExtra1 (see engine/gfx/load_font.asm)
+	; needed for _LoadFontsExtra1 (see engine/load_font.asm)
 	charmap "■",         $60 ; gfx/font/black.2bpp
 	charmap "▲",         $61 ; gfx/font/up_arrow.png
 	charmap "☎",         $62 ; gfx/font/phone_icon.2bpp
@@ -211,7 +208,7 @@
 
 ; Japanese control characters (see home/text.asm)
 
-	charmap "<JP_18>",   $18 ; "ノ゛" (ungrammatical)
+	charmap "<JP_18>",   $18 ; "ノ゛"? (ungrammatical)
 	charmap "<NI>",      $1d ; "に　"
 	charmap "<TTE>",     $1e ; "って"
 	charmap "<WO>",      $1f ; "を　"
@@ -282,7 +279,6 @@
 	charmap "「", $70
 	charmap "」", $71
 	charmap "』", $73
-	charmap "・", $74
 	charmap "⋯", $75
 
 	charmap "　", $7f
@@ -417,8 +413,3 @@
 	charmap "７", $fd
 	charmap "８", $fe
 	charmap "９", $ff
-
-; ASCII charmap, for mobile functions
-pushc
-newcharmap ascii
-popc

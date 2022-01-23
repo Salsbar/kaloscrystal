@@ -1,4 +1,4 @@
-	object_const_def
+	const_def 2 ; object constants
 	const ROUTE27_COOLTRAINER_M1
 	const ROUTE27_COOLTRAINER_M2
 	const ROUTE27_COOLTRAINER_F1
@@ -7,14 +7,15 @@
 	const ROUTE27_YOUNGSTER2
 	const ROUTE27_POKE_BALL1
 	const ROUTE27_POKE_BALL2
+	const ROUTE27_POKE_BALL3
 	const ROUTE27_FISHER
 
 Route27_MapScripts:
-	def_scene_scripts
+	db 2 ; scene scripts
 	scene_script .DummyScene0 ; SCENE_DEFAULT
 	scene_script .DummyScene1 ; SCENE_FINISHED
 
-	def_callbacks
+	db 0 ; callbacks
 
 .DummyScene0:
 	end
@@ -25,18 +26,18 @@ Route27_MapScripts:
 FirstStepIntoKantoLeftScene:
 	turnobject ROUTE27_FISHER, LEFT
 	showemote EMOTE_SHOCK, ROUTE27_FISHER, 15
-	applymovement ROUTE27_FISHER, Route27FisherStepLeftTwiceMovement
-	sjump FirstStepIntoKantoScene_Continue
+	applymovement ROUTE27_FISHER, MovementData_0x1a0a66
+	jump FirstStepIntoKantoScene_Continue
 
 FirstStepIntoKantoRightScene:
 	turnobject ROUTE27_FISHER, LEFT
 	showemote EMOTE_SHOCK, ROUTE27_FISHER, 15
-	applymovement ROUTE27_FISHER, Route27FisherStepLeftOnceMovement
+	applymovement ROUTE27_FISHER, MovementData_0x1a0a69
 FirstStepIntoKantoScene_Continue:
 	turnobject PLAYER, RIGHT
 	opentext
 	writetext Route27FisherHeyText
-	promptbutton
+	buttonsound
 	writetext Route27FisherText
 	waitbutton
 	closetext
@@ -61,10 +62,10 @@ TrainerBirdKeeperJose2:
 	trainer BIRD_KEEPER, JOSE2, EVENT_BEAT_BIRD_KEEPER_JOSE2, BirdKeeperJose2SeenText, BirdKeeperJose2BeatenText, 0, .Script
 
 .Script:
-	loadvar VAR_CALLERID, PHONE_BIRDKEEPER_JOSE
+	writecode VAR_CALLERID, PHONE_BIRDKEEPER_JOSE
 	endifjustbattled
 	opentext
-	checkflag ENGINE_JOSE_READY_FOR_REMATCH
+	checkflag ENGINE_JOSE
 	iftrue .WantsBattle
 	checkflag ENGINE_JOSE_HAS_STAR_PIECE
 	iftrue .HasStarPiece
@@ -73,10 +74,10 @@ TrainerBirdKeeperJose2:
 	checkevent EVENT_JOSE_ASKED_FOR_PHONE_NUMBER
 	iftrue .AskedAlready
 	writetext BirdKeeperJose2AfterBattleText
-	promptbutton
+	buttonsound
 	setevent EVENT_JOSE_ASKED_FOR_PHONE_NUMBER
 	scall .AskNumber1
-	sjump .AskForNumber
+	jump .AskForNumber
 
 .AskedAlready:
 	scall .AskNumber2
@@ -84,14 +85,14 @@ TrainerBirdKeeperJose2:
 	askforphonenumber PHONE_BIRDKEEPER_JOSE
 	ifequal PHONE_CONTACTS_FULL, .PhoneFull
 	ifequal PHONE_CONTACT_REFUSED, .NumberDeclined
-	gettrainername STRING_BUFFER_3, BIRD_KEEPER, JOSE2
+	trainertotext BIRD_KEEPER, JOSE2, MEM_BUFFER_0
 	scall .RegisteredNumber
-	sjump .NumberAccepted
+	jump .NumberAccepted
 
 .WantsBattle:
 	scall .Rematch
 	winlosstext BirdKeeperJose2BeatenText, 0
-	readmem wJoseFightCount
+	copybytetovar wJoseFightCount
 	ifequal 2, .Fight2
 	ifequal 1, .Fight1
 	ifequal 0, .LoadFight0
@@ -105,23 +106,23 @@ TrainerBirdKeeperJose2:
 	loadtrainer BIRD_KEEPER, JOSE2
 	startbattle
 	reloadmapafterbattle
-	loadmem wJoseFightCount, 1
-	clearflag ENGINE_JOSE_READY_FOR_REMATCH
+	loadvar wJoseFightCount, 1
+	clearflag ENGINE_JOSE
 	end
 
 .LoadFight1:
 	loadtrainer BIRD_KEEPER, JOSE1
 	startbattle
 	reloadmapafterbattle
-	loadmem wJoseFightCount, 2
-	clearflag ENGINE_JOSE_READY_FOR_REMATCH
+	loadvar wJoseFightCount, 2
+	clearflag ENGINE_JOSE
 	end
 
 .LoadFight2:
 	loadtrainer BIRD_KEEPER, JOSE3
 	startbattle
 	reloadmapafterbattle
-	clearflag ENGINE_JOSE_READY_FOR_REMATCH
+	clearflag ENGINE_JOSE
 	end
 
 .HasStarPiece:
@@ -129,45 +130,45 @@ TrainerBirdKeeperJose2:
 	verbosegiveitem STAR_PIECE
 	iffalse .NoRoom
 	clearflag ENGINE_JOSE_HAS_STAR_PIECE
-	sjump .NumberAccepted
+	jump .NumberAccepted
 
 .NoRoom:
-	sjump .PackFull
+	jump .PackFull
 
 .AskNumber1:
-	jumpstd AskNumber1MScript
+	jumpstd asknumber1m
 	end
 
 .AskNumber2:
-	jumpstd AskNumber2MScript
+	jumpstd asknumber2m
 	end
 
 .RegisteredNumber:
-	jumpstd RegisteredNumberMScript
+	jumpstd registerednumberm
 	end
 
 .NumberAccepted:
-	jumpstd NumberAcceptedMScript
+	jumpstd numberacceptedm
 	end
 
 .NumberDeclined:
-	jumpstd NumberDeclinedMScript
+	jumpstd numberdeclinedm
 	end
 
 .PhoneFull:
-	jumpstd PhoneFullMScript
+	jumpstd phonefullm
 	end
 
 .Rematch:
-	jumpstd RematchMScript
+	jumpstd rematchm
 	end
 
 .Gift:
-	jumpstd GiftMScript
+	jumpstd giftm
 	end
 
 .PackFull:
-	jumpstd PackFullMScript
+	jumpstd packfullm
 	end
 
 TrainerCooltrainermBlake:
@@ -196,20 +197,20 @@ TrainerCooltrainerfReena:
 	trainer COOLTRAINERF, REENA1, EVENT_BEAT_COOLTRAINERF_REENA, CooltrainerfReenaSeenText, CooltrainerfReenaBeatenText, 0, .Script
 
 .Script:
-	loadvar VAR_CALLERID, PHONE_COOLTRAINERF_REENA
+	writecode VAR_CALLERID, PHONE_COOLTRAINERF_REENA
 	endifjustbattled
 	opentext
-	checkflag ENGINE_REENA_READY_FOR_REMATCH
+	checkflag ENGINE_REENA
 	iftrue .WantsBattle
 	checkcellnum PHONE_COOLTRAINERF_REENA
 	iftrue .NumberAccepted
 	checkevent EVENT_REENA_ASKED_FOR_PHONE_NUMBER
 	iftrue .AskedAlready
 	writetext CooltrainerfReenaAfterBattleText
-	promptbutton
+	buttonsound
 	setevent EVENT_REENA_ASKED_FOR_PHONE_NUMBER
 	scall .AskNumber1
-	sjump .AskForNumber
+	jump .AskForNumber
 
 .AskedAlready:
 	scall .AskNumber2
@@ -217,14 +218,14 @@ TrainerCooltrainerfReena:
 	askforphonenumber PHONE_COOLTRAINERF_REENA
 	ifequal PHONE_CONTACTS_FULL, .PhoneFull
 	ifequal PHONE_CONTACT_REFUSED, .NumberDeclined
-	gettrainername STRING_BUFFER_3, COOLTRAINERF, REENA1
+	trainertotext COOLTRAINERF, REENA1, MEM_BUFFER_0
 	scall .RegisteredNumber
-	sjump .NumberAccepted
+	jump .NumberAccepted
 
 .WantsBattle:
 	scall .Rematch
 	winlosstext CooltrainerfReenaBeatenText, 0
-	readmem wReenaFightCount
+	copybytetovar wReenaFightCount
 	ifequal 2, .Fight2
 	ifequal 1, .Fight1
 	ifequal 0, .LoadFight0
@@ -238,51 +239,51 @@ TrainerCooltrainerfReena:
 	loadtrainer COOLTRAINERF, REENA1
 	startbattle
 	reloadmapafterbattle
-	loadmem wReenaFightCount, 1
-	clearflag ENGINE_REENA_READY_FOR_REMATCH
+	loadvar wReenaFightCount, 1
+	clearflag ENGINE_REENA
 	end
 
 .LoadFight1:
 	loadtrainer COOLTRAINERF, REENA2
 	startbattle
 	reloadmapafterbattle
-	loadmem wReenaFightCount, 2
-	clearflag ENGINE_REENA_READY_FOR_REMATCH
+	loadvar wReenaFightCount, 2
+	clearflag ENGINE_REENA
 	end
 
 .LoadFight2:
 	loadtrainer COOLTRAINERF, REENA3
 	startbattle
 	reloadmapafterbattle
-	clearflag ENGINE_REENA_READY_FOR_REMATCH
+	clearflag ENGINE_REENA
 	end
 
 .AskNumber1:
-	jumpstd AskNumber1FScript
+	jumpstd asknumber1f
 	end
 
 .AskNumber2:
-	jumpstd AskNumber2FScript
+	jumpstd asknumber2f
 	end
 
 .RegisteredNumber:
-	jumpstd RegisteredNumberFScript
+	jumpstd registerednumberf
 	end
 
 .NumberAccepted:
-	jumpstd NumberAcceptedFScript
+	jumpstd numberacceptedf
 	end
 
 .NumberDeclined:
-	jumpstd NumberDeclinedFScript
+	jumpstd numberdeclinedf
 	end
 
 .PhoneFull:
-	jumpstd PhoneFullFScript
+	jumpstd phonefullf
 	end
 
 .Rematch:
-	jumpstd RematchFScript
+	jumpstd rematchf
 	end
 
 TrainerCooltrainerfMegan:
@@ -305,12 +306,15 @@ Route27TMSolarbeam:
 Route27RareCandy:
 	itemball RARE_CANDY
 
-Route27FisherStepLeftTwiceMovement:
+Route27SunStone:
+	itemball SUN_STONE
+
+MovementData_0x1a0a66:
 	step LEFT
 	step LEFT
 	step_end
 
-Route27FisherStepLeftOnceMovement:
+MovementData_0x1a0a69:
 	step LEFT
 	step_end
 
@@ -468,19 +472,19 @@ TohjoFallsSignText:
 Route27_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 3 ; warp events
 	warp_event 33,  7, ROUTE_27_SANDSTORM_HOUSE, 1
 	warp_event 26,  5, TOHJO_FALLS, 1
 	warp_event 36,  5, TOHJO_FALLS, 2
 
-	def_coord_events
+	db 2 ; coord events
 	coord_event 18, 10, SCENE_DEFAULT, FirstStepIntoKantoLeftScene
 	coord_event 19, 10, SCENE_DEFAULT, FirstStepIntoKantoRightScene
 
-	def_bg_events
+	db 1 ; bg events
 	bg_event 25,  7, BGEVENT_READ, TohjoFallsSign
 
-	def_object_events
+	db 10 ; object events
 	object_event 48,  7, SPRITE_COOLTRAINER_M, SPRITEMOVEDATA_STANDING_UP, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_TRAINER, 3, TrainerCooltrainermBlake, -1
 	object_event 58,  6, SPRITE_COOLTRAINER_M, SPRITEMOVEDATA_STANDING_RIGHT, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_TRAINER, 4, TrainerCooltrainermBrian, -1
 	object_event 72, 10, SPRITE_COOLTRAINER_F, SPRITEMOVEDATA_STANDING_UP, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_TRAINER, 4, TrainerCooltrainerfReena, -1
@@ -489,4 +493,5 @@ Route27_MapEvents:
 	object_event 58, 13, SPRITE_YOUNGSTER, SPRITEMOVEDATA_STANDING_RIGHT, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_TRAINER, 3, TrainerBirdKeeperJose2, -1
 	object_event 60, 12, SPRITE_POKE_BALL, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_ITEMBALL, 0, Route27TMSolarbeam, EVENT_ROUTE_27_TM_SOLARBEAM
 	object_event 53, 12, SPRITE_POKE_BALL, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_ITEMBALL, 0, Route27RareCandy, EVENT_ROUTE_27_RARE_CANDY
+	object_event 70,  4, SPRITE_POKE_BALL, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_ITEMBALL, 0, Route27SunStone, EVENT_ROUTE_27_SUN_STONE
 	object_event 21, 10, SPRITE_FISHER, SPRITEMOVEDATA_SPINRANDOM_SLOW, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 3, Route27FisherScript, -1

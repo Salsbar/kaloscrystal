@@ -1,4 +1,4 @@
-LoadObjectMasks:
+LoadObjectMasks: ; 2454f
 	ld hl, wObjectMasks
 	xor a
 	ld bc, NUM_OBJECTS
@@ -19,7 +19,7 @@ LoadObjectMasks:
 	ld [de], a
 	inc de
 	pop bc
-	ld hl, MAPOBJECT_LENGTH
+	ld hl, OBJECT_LENGTH
 	add hl, bc
 	ld b, h
 	ld c, l
@@ -29,7 +29,7 @@ LoadObjectMasks:
 	jr nz, .loop
 	ret
 
-CheckObjectFlag:
+CheckObjectFlag: ; 2457d (9:457d)
 	ld hl, MAPOBJECT_SPRITE
 	add hl, bc
 	ld a, [hl]
@@ -62,7 +62,7 @@ CheckObjectFlag:
 	scf
 	ret
 
-GetObjectTimeMask:
+GetObjectTimeMask: ; 245a7 (9:45a7)
 	call CheckObjectTime
 	ld a, -1
 	ret c

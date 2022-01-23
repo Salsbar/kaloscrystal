@@ -1,11 +1,11 @@
-DrawPlayerHP:
+DrawPlayerHP: ; 50b0a
 	ld a, $1
 	jr DrawHP
 
-DrawEnemyHP:
+DrawEnemyHP: ; 50b0e
 	ld a, $2
 
-DrawHP:
+DrawHP: ; 50b10
 	ld [wWhichHPBar], a
 	push hl
 	push bc
@@ -82,7 +82,7 @@ DrawHP:
 	pop de
 	ret
 
-PrintTempMonStats:
+PrintTempMonStats: ; 50b7b
 ; Print wTempMon's stats at hl, with spacing bc.
 	push bc
 	push hl
@@ -105,7 +105,7 @@ PrintTempMonStats:
 	ld de, wTempMonSpeed
 	jp PrintNum
 
-.PrintStat:
+.PrintStat: ; 50bab
 	push hl
 	call PrintNum
 	pop hl
@@ -113,7 +113,7 @@ PrintTempMonStats:
 	add hl, de
 	ret
 
-.StatNames:
+.StatNames: ; 50bb5
 	db   "ATTACK"
 	next "DEFENSE"
 	next "SPCL.ATK"
@@ -121,7 +121,7 @@ PrintTempMonStats:
 	next "SPEED"
 	next "@"
 
-GetGender:
+GetGender: ; 50bdd
 ; Return the gender of a given monster (wCurPartyMon/wCurOTMon/wCurWildMon).
 ; When calling this function, a should be set to an appropriate wMonType value.
 
@@ -170,11 +170,12 @@ GetGender:
 	call AddNTimes
 
 .DVs:
+
 ; sBoxMon data is read directly from SRAM.
 	ld a, [wMonType]
 	cp BOXMON
 	ld a, BANK(sBox)
-	call z, OpenSRAM
+	call z, GetSRAMBank
 
 ; Attack DV
 	ld a, [hli]
@@ -234,7 +235,7 @@ GetGender:
 	scf
 	ret
 
-ListMovePP:
+ListMovePP: ; 50c50
 	ld a, [wNumMoves]
 	inc a
 	ld c, a
@@ -242,9 +243,9 @@ ListMovePP:
 	sub c
 	ld b, a
 	push hl
-	ld a, [wListMovesLineSpacing]
+	ld a, [wBuffer1]
 	ld e, a
-	ld d, 0
+	ld d, $0
 	ld a, $3e ; P
 	call .load_loop
 	ld a, b
@@ -295,11 +296,11 @@ ListMovePP:
 	call PrintNum
 	ld a, "/"
 	ld [hli], a
-	ld de, wTempPP
+	ld de, wd265
 	lb bc, 1, 2
 	call PrintNum
 	pop hl
-	ld a, [wListMovesLineSpacing]
+	ld a, [wBuffer1]
 	ld e, a
 	ld d, 0
 	add hl, de
@@ -315,7 +316,7 @@ ListMovePP:
 .done
 	ret
 
-.load_loop
+.load_loop ; 50cc9
 	ld [hli], a
 	ld [hld], a
 	add hl, de
@@ -323,15 +324,11 @@ ListMovePP:
 	jr nz, .load_loop
 	ret
 
-BrokenPlacePPUnits: ; unreferenced
-; Probably would have these parameters:
-; hl = starting coordinate
-; de = SCREEN_WIDTH or SCREEN_WIDTH * 2
-; c = the number of moves (1-4)
+Unreferenced_Function50cd0: ; 50cd0
 .loop
-	ld [hl], $32 ; typo for P?
+	ld [hl], $32
 	inc hl
-	ld [hl], $3e ; P
+	ld [hl], $3e
 	dec hl
 	add hl, de
 	dec c
@@ -343,7 +340,7 @@ Unused_PlaceEnemyHPLevel:
 	push hl
 	ld hl, wPartyMonNicknames
 	ld a, [wCurPartyMon]
-	call GetNickname
+	call GetNick
 	pop hl
 	call PlaceString
 	call CopyMonToTempMon
@@ -354,7 +351,7 @@ Unused_PlaceEnemyHPLevel:
 	push hl
 	ld bc, -12
 	add hl, bc
-	ld b, 0
+	ld b, $0
 	call DrawEnemyHP
 	pop hl
 	ld bc, 5
@@ -366,8 +363,7 @@ Unused_PlaceEnemyHPLevel:
 .egg
 	ret
 
-PlaceStatusString:
-; Return nz if the status is not OK
+PlaceStatusString: ; 50d0a
 	push de
 	inc de
 	inc de
@@ -382,14 +378,14 @@ PlaceStatusString:
 	ld de, FntString
 	call CopyStatusString
 	pop de
-	ld a, TRUE
+	ld a, $1
 	and a
 	ret
 
-FntString:
+FntString: ; 50d22
 	db "FNT@"
 
-CopyStatusString:
+CopyStatusString: ; 50d25
 	ld a, [de]
 	inc de
 	ld [hli], a
@@ -400,7 +396,7 @@ CopyStatusString:
 	ld [hl], a
 	ret
 
-PlaceNonFaintStatus:
+PlaceNonFaintStatus: ; 50d2e
 	push de
 	ld a, [de]
 	ld de, PsnString
@@ -421,7 +417,7 @@ PlaceNonFaintStatus:
 
 .place
 	call CopyStatusString
-	ld a, TRUE
+	ld a, $1
 	and a
 
 .no_status
@@ -434,10 +430,10 @@ BrnString: db "BRN@"
 FrzString: db "FRZ@"
 ParString: db "PAR@"
 
-ListMoves:
-; List moves at hl, spaced every [wListMovesLineSpacing] tiles.
+ListMoves: ; 50d6f
+; List moves at hl, spaced every [wBuffer1] tiles.
 	ld de, wListMoves_MoveIndicesBuffer
-	ld b, 0
+	ld b, $0
 .moves_loop
 	ld a, [de]
 	inc de
@@ -448,7 +444,7 @@ ListMoves:
 	push hl
 	ld [wCurSpecies], a
 	ld a, MOVE_NAME
-	ld [wNamedObjectType], a
+	ld [wNamedObjectTypeBuffer], a
 	call GetName
 	ld de, wStringBuffer1
 	pop hl
@@ -460,7 +456,7 @@ ListMoves:
 	inc b
 	pop hl
 	push bc
-	ld a, [wListMovesLineSpacing]
+	ld a, [wBuffer1]
 	ld c, a
 	ld b, 0
 	add hl, bc
@@ -476,7 +472,7 @@ ListMoves:
 .nonmove_loop
 	push af
 	ld [hl], "-"
-	ld a, [wListMovesLineSpacing]
+	ld a, [wBuffer1]
 	ld c, a
 	ld b, 0
 	add hl, bc

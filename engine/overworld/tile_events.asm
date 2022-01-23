@@ -1,4 +1,4 @@
-CheckWarpCollision::
+CheckWarpCollision:: ; 1499a
 ; Is this tile a warp?
 	ld a, [wPlayerStandingTile]
 	cp COLL_PIT
@@ -14,8 +14,9 @@ CheckWarpCollision::
 .warp
 	scf
 	ret
+; 149af
 
-CheckDirectionalWarp::
+CheckDirectionalWarp:: ; 149af
 ; If this is a directional warp, clear carry (press the designated button to warp).
 ; Else, set carry (immediate warp).
 	ld a, [wPlayerStandingTile]
@@ -33,15 +34,17 @@ CheckDirectionalWarp::
 .directional
 	xor a
 	ret
+; 149c6
 
-CheckWarpFacingDown:
+CheckWarpFacingDown: ; 149c6
 	ld de, 1
 	ld hl, .blocks
 	ld a, [wPlayerStandingTile]
 	call IsInArray
 	ret
+; 149d3
 
-.blocks
+.blocks ; 149d3
 	db COLL_DOOR
 	db COLL_DOOR_79
 	db COLL_STAIRCASE
@@ -52,15 +55,17 @@ CheckWarpFacingDown:
 	db COLL_DOOR_75
 	db COLL_DOOR_7D
 	db -1
+; 149dd
 
-CheckGrassCollision::
+CheckGrassCollision:: ; 149dd
 	ld a, [wPlayerStandingTile]
 	ld hl, .blocks
 	ld de, 1
 	call IsInArray
 	ret
+; 149ea
 
-.blocks
+.blocks ; 149ea
 	db COLL_CUT_08
 	db COLL_TALL_GRASS
 	db COLL_LONG_GRASS
@@ -72,15 +77,17 @@ CheckGrassCollision::
 	db COLL_GRASS_4B
 	db COLL_GRASS_4C
 	db -1
+; 149f5
 
-CheckCutCollision:
+CheckCutCollision: ; 149f5
 	ld a, c
 	ld hl, .blocks
 	ld de, 1
 	call IsInArray
 	ret
+; 14a00
 
-.blocks
+.blocks ; 14a00
 	db COLL_CUT_TREE
 	db COLL_CUT_TREE_1A
 	db COLL_TALL_GRASS_10
@@ -88,8 +95,9 @@ CheckCutCollision:
 	db COLL_LONG_GRASS
 	db COLL_LONG_GRASS_1C
 	db -1
+; 14a07
 
-GetWarpSFX::
+GetWarpSFX:: ; 14a07
 	ld a, [wPlayerStandingTile]
 	ld de, SFX_ENTER_DOOR
 	cp COLL_DOOR
@@ -99,3 +107,4 @@ GetWarpSFX::
 	ret z
 	ld de, SFX_EXIT_BUILDING
 	ret
+; 14a1a

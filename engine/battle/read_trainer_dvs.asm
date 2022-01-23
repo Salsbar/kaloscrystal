@@ -1,4 +1,4 @@
-GetTrainerDVs:
+GetTrainerDVs: ; 270c4
 ; Return the DVs of wOtherTrainerClass in bc
 
 	push hl
@@ -17,5 +17,4 @@ GetTrainerDVs:
 
 	pop hl
 	ret
-
-INCLUDE "data/trainers/dvs.asm"
+; 270d6

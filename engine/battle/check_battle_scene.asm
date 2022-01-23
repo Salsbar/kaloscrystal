@@ -1,4 +1,4 @@
-CheckBattleScene:
+CheckBattleScene: ; 4ea44
 ; Return carry if battle scene is turned off.
 
 	ld a, BANK(wLinkMode)
@@ -19,9 +19,9 @@ CheckBattleScene:
 	and a
 	jr nz, .from_wram
 
-	ld a, BANK(s4_a60c) ; MBC30 bank used by JP Crystal; inaccessible by MBC3
-	call OpenSRAM
-	ld a, [s4_a60c]
+	ld a, 4 ; MBC30 bank used by JP Crystal; inaccessible by MBC3
+	call GetSRAMBank
+	ld a, [$a60c] ; address of MBC30 bank
 	ld c, a
 	call CloseSRAM
 

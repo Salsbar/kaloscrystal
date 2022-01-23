@@ -1,8 +1,8 @@
-LoadFishingGFX:
-	ldh a, [rVBK]
+LoadFishingGFX: ; b84b3
+	ld a, [rVBK]
 	push af
 	ld a, $1
-	ldh [rVBK], a
+	ld [rVBK], a
 
 	ld de, FishingGFX
 	ld a, [wPlayerGender]
@@ -17,14 +17,15 @@ LoadFishingGFX:
 	call .LoadGFX
 	ld hl, vTiles0 tile $0a
 	call .LoadGFX
-	ld hl, vTiles0 tile $fc
+	ld hl, vTiles1 tile $7c
 	call .LoadGFX
 
 	pop af
-	ldh [rVBK], a
+	ld [rVBK], a
 	ret
+; b84e3
 
-.LoadGFX:
+.LoadGFX: ; b84e3
 	lb bc, BANK(FishingGFX), 2
 	push de
 	call Get2bpp
@@ -34,9 +35,12 @@ LoadFishingGFX:
 	ld d, h
 	ld e, l
 	ret
+; b84f2
 
-FishingGFX:
+FishingGFX: ; b84f2
 INCBIN "gfx/overworld/chris_fish.2bpp"
+; b8582
 
-KrisFishingGFX:
+KrisFishingGFX: ; b8582
 INCBIN "gfx/overworld/kris_fish.2bpp"
+; b8612

@@ -1,32 +1,23 @@
 .PHONY: all clean
 
 CC := gcc
-CFLAGS := -O3 -std=c11 -Wall -Wextra -pedantic -Wno-missing-field-initializers
+CFLAGS := -O3 -std=c99 -Wall -Wextra
 
 tools := \
 	lzcomp \
-	gfx \
 	png_dimensions \
+	scan_includes \
+	palette \
 	pokemon_animation \
 	pokemon_animation_graphics \
-	scan_includes \
-	stadium
+	gfx \
+	md5
 all: $(tools)
 	@:
 
 clean:
 	rm -f $(tools)
 
-gfx: common.h
-png_dimensions: common.h
-pokemon_animation: common.h
-pokemon_animation_graphics: common.h
-scan_includes: common.h
-stadium: common.h
-
-lzcomp: CFLAGS = -O3 -flto -std=c11 -Wall -Wextra -pedantic -Wno-strict-overflow -Wno-sign-compare
-lzcomp: $(wildcard lz/*.c) $(wildcard lz/*.h)
-	$(CC) $(CFLAGS) -o $@ lz/*.c
-
+gfx md5: common.h
 %: %.c
 	$(CC) $(CFLAGS) -o $@ $<

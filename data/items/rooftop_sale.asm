@@ -1,4 +1,4 @@
-RooftopSaleMart1:
+RooftopSaleMart1: ; 15aee
 	db 5
 	dbw POKE_BALL,     150
 	dbw GREAT_BALL,    500
@@ -7,7 +7,7 @@ RooftopSaleMart1:
 	dbw REVIVE,       1200
 	db -1
 
-RooftopSaleMart2:
+RooftopSaleMart2: ; 15aff
 	db 5
 	dbw HYPER_POTION, 1000
 	dbw FULL_RESTORE, 2000
@@ -15,3 +15,4 @@ RooftopSaleMart2:
 	dbw ULTRA_BALL,   1000
 	dbw PROTEIN,      7800
 	db -1
+; 15b10

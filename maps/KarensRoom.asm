@@ -1,16 +1,16 @@
-	object_const_def
+	const_def 2 ; object constants
 	const KARENSROOM_KAREN
 
 KarensRoom_MapScripts:
-	def_scene_scripts
+	db 2 ; scene scripts
 	scene_script .LockDoor ; SCENE_DEFAULT
 	scene_script .DummyScene ; SCENE_FINISHED
 
-	def_callbacks
+	db 1 ; callbacks
 	callback MAPCALLBACK_TILES, .KarensRoomDoors
 
 .LockDoor:
-	sdefer .KarensDoorLocksBehindYou
+	priorityjump .KarensDoorLocksBehindYou
 	end
 
 .DummyScene:
@@ -25,7 +25,7 @@ KarensRoom_MapScripts:
 	iffalse .KeepExitClosed
 	changeblock 4, 2, $16 ; open door
 .KeepExitClosed:
-	endcallback
+	return
 
 .KarensDoorLocksBehindYou:
 	applymovement PLAYER, KarensRoom_EnterMovement
@@ -48,9 +48,19 @@ KarenScript_Battle:
 	writetext KarenScript_KarenBeforeText
 	waitbutton
 	closetext
+	checkevent EVENT_OPENED_MT_SILVER
+	iftrue .Karen2
 	winlosstext KarenScript_KarenBeatenText, 0
 	loadtrainer KAREN, KAREN1
 	startbattle
+	jump .KarenPostBattle
+	
+.Karen2
+	winlosstext KarenScript_KarenBeatenText, 0
+	loadtrainer KAREN, KAREN2
+	startbattle
+	
+.KarenPostBattle:
 	reloadmapafterbattle
 	setevent EVENT_BEAT_ELITE_4_KAREN
 	opentext
@@ -133,15 +143,15 @@ KarenScript_KarenDefeatText:
 KarensRoom_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 4 ; warp events
 	warp_event  4, 17, BRUNOS_ROOM, 3
 	warp_event  5, 17, BRUNOS_ROOM, 4
 	warp_event  4,  2, LANCES_ROOM, 1
 	warp_event  5,  2, LANCES_ROOM, 2
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 0 ; bg events
 
-	def_object_events
+	db 1 ; object events
 	object_event  5,  7, SPRITE_KAREN, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, KarenScript_Battle, -1

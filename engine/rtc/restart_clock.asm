@@ -1,11 +1,4 @@
-; RestartClock_GetWraparoundTime.WrapAroundTimes indexes
-	const_def 1
-	const RESTART_CLOCK_DAY
-	const RESTART_CLOCK_HOUR
-	const RESTART_CLOCK_MIN
-NUM_RESTART_CLOCK_DIVISIONS EQU const_value - 1
-
-RestartClock_GetWraparoundTime:
+RestartClock_GetWraparoundTime: ; 20000 (8:4000)
 	push hl
 	dec a
 	ld e, a
@@ -23,29 +16,30 @@ endr
 	ld c, [hl]
 	pop hl
 	ret
+; 20015 (8:4015)
 
-.WrapAroundTimes:
-; entries correspond to RESTART_CLOCK_* constants
-wraparound_time: MACRO
-	dw \1 ; value pointer
-	db \2 ; maximum value
-	db \3 ; up/down arrow x coord (pairs with wRestartClockUpArrowYCoord)
-ENDM
-	wraparound_time wRestartClockDay,   7,  4
-	wraparound_time wRestartClockHour, 24, 12
-	wraparound_time wRestartClockMin,  60, 15
+.WrapAroundTimes: ; 20015
+	dw wBuffer4
+	db 7, 4
 
-RestartClock:
+	dw wBuffer5
+	db 24, 12
+
+	dw wBuffer6
+	db 60, 15
+; 20021
+
+RestartClock: ; 20021 (8:4021)
 ; If we're here, we had an RTC overflow.
-	ld hl, .ClockTimeMayBeWrongText
+	ld hl, .Text_ClockTimeMayBeWrong
 	call PrintText
 	ld hl, wOptions
 	ld a, [hl]
 	push af
 	set NO_TEXT_SCROLL, [hl]
 	call LoadStandardMenuHeader
-	call ClearTilemap
-	ld hl, .ClockSetWithControlPadText
+	call ClearTileMap
+	ld hl, .Text_SetWithControlPad
 	call PrintText
 	call .SetClock
 	call ExitMenu
@@ -54,28 +48,33 @@ RestartClock:
 	ld [hl], b
 	ld c, a
 	ret
+; 20047 (8:4047)
 
-.ClockTimeMayBeWrongText:
-	text_far _ClockTimeMayBeWrongText
-	text_end
+.Text_ClockTimeMayBeWrong: ; 0x20047
+	; The clock's time may be wrong. Please reset the time.
+	text_jump UnknownText_0x1c40e6
+	db "@"
+; 0x2004c
 
-.ClockSetWithControlPadText:
-	text_far _ClockSetWithControlPadText
-	text_end
+.Text_SetWithControlPad: ; 0x2004c
+	; Set with the Control Pad. Confirm: A Button Cancel:  B Button
+	text_jump UnknownText_0x1c411c
+	db "@"
+; 0x20051
 
-.SetClock:
-	ld a, RESTART_CLOCK_DAY
-	ld [wRestartClockCurDivision], a
-	ld [wRestartClockPrevDivision], a
+.SetClock: ; 20051 (8:4051)
+	ld a, 1
+	ld [wBuffer1], a ; which digit
+	ld [wBuffer2], a
 	ld a, 8
-	ld [wRestartClockUpArrowYCoord], a
+	ld [wBuffer3], a
 	call UpdateTime
 	call GetWeekday
-	ld [wRestartClockDay], a
-	ldh a, [hHours]
-	ld [wRestartClockHour], a
-	ldh a, [hMinutes]
-	ld [wRestartClockMin], a
+	ld [wBuffer4], a
+	ld a, [hHours]
+	ld [wBuffer5], a
+	ld a, [hMinutes]
+	ld [wBuffer6], a
 
 .loop
 	call .joy_loop
@@ -83,37 +82,42 @@ RestartClock:
 	and a
 	ret nz
 	call .PrintTime
-	ld hl, .ClockIsThisOKText
+	ld hl, .Text_IsThisOK
 	call PrintText
 	call YesNoBox
 	jr c, .cancel
-	ld a, [wRestartClockDay]
+	ld a, [wBuffer4]
 	ld [wStringBuffer2], a
-	ld a, [wRestartClockHour]
+	ld a, [wBuffer5]
 	ld [wStringBuffer2 + 1], a
-	ld a, [wRestartClockMin]
+	ld a, [wBuffer6]
 	ld [wStringBuffer2 + 2], a
 	xor a
 	ld [wStringBuffer2 + 3], a
 	call InitTime
 	call .PrintTime
-	ld hl, .ClockHasResetText
+	ld hl, .Text_ClockReset
 	call PrintText
 	call WaitPressAorB_BlinkCursor
-	xor a ; FALSE
+	xor a
 	ret
 
 .cancel
-	ld a, TRUE
+	ld a, $1
 	ret
+; 200b0 (8:40b0)
 
-.ClockIsThisOKText:
-	text_far _ClockIsThisOKText
-	text_end
+.Text_IsThisOK: ; 0x200b0
+	; Is this OK?
+	text_jump UnknownText_0x1c415b
+	db "@"
+; 0x200b5
 
-.ClockHasResetText:
-	text_far _ClockHasResetText
-	text_end
+.Text_ClockReset: ; 0x200b5
+	; The clock has been reset.
+	text_jump UnknownText_0x1c4168
+	db "@"
+; 0x200ba
 
 .joy_loop
 	call JoyTextDelay_ForcehJoyDown
@@ -136,29 +140,29 @@ RestartClock:
 	jr .joy_loop
 
 .press_A
-	ld a, FALSE
+	ld a, $0
 	scf
 	ret
 
 .press_B
-	ld a, TRUE
+	ld a, $1
 	scf
 	ret
 
 .pressed_up
-	ld a, [wRestartClockCurDivision]
+	ld a, [wBuffer1]
 	call RestartClock_GetWraparoundTime
 	ld a, [de]
 	inc a
 	ld [de], a
 	cp b
 	jr c, .done_scroll
-	ld a, 0
+	ld a, $0
 	ld [de], a
 	jr .done_scroll
 
 .pressed_down
-	ld a, [wRestartClockCurDivision]
+	ld a, [wBuffer1]
 	call RestartClock_GetWraparoundTime
 	ld a, [de]
 	dec a
@@ -171,59 +175,62 @@ RestartClock:
 	jr .done_scroll
 
 .pressed_left
-	ld hl, wRestartClockCurDivision
+	ld hl, wBuffer1
 	dec [hl]
 	jr nz, .done_scroll
-	ld [hl], RESTART_CLOCK_MIN
+	ld [hl], $3
 	jr .done_scroll
 
 .pressed_right
-	ld hl, wRestartClockCurDivision
+	ld hl, wBuffer1
 	inc [hl]
 	ld a, [hl]
-	cp NUM_RESTART_CLOCK_DIVISIONS + 1
+	cp $4
 	jr c, .done_scroll
-	ld [hl], RESTART_CLOCK_DAY
+	ld [hl], $1
 
 .done_scroll
-	xor a ; FALSE
+	xor a
 	ret
 
-.PrintTime:
+.PrintTime: ; 2011f (8:411f)
 	hlcoord 0, 5
 	ld b, 5
 	ld c, 18
-	call Textbox
+	call TextBox
 	decoord 1, 8
-	ld a, [wRestartClockDay]
+	ld a, [wBuffer4]
 	ld b, a
 	farcall PrintDayOfWeek
-	ld a, [wRestartClockHour]
+	ld a, [wBuffer5]
 	ld b, a
-	ld a, [wRestartClockMin]
+	ld a, [wBuffer6]
 	ld c, a
 	decoord 11, 8
 	farcall PrintHoursMins
-	ld a, [wRestartClockPrevDivision]
+	ld a, [wBuffer2]
 	lb de, " ", " "
 	call .PlaceChars
-	ld a, [wRestartClockCurDivision]
+	ld a, [wBuffer1]
 	lb de, "▲", "▼"
 	call .PlaceChars
-	ld a, [wRestartClockCurDivision]
-	ld [wRestartClockPrevDivision], a
+	ld a, [wBuffer1]
+	ld [wBuffer2], a
 	ret
+; 20160 (8:4160)
 
-.UnusedPlaceCharsFragment: ; unreferenced
-	ld a, [wRestartClockUpArrowYCoord]
+.unreferenced ; 20160
+; unused
+	ld a, [wBuffer3]
 	ld b, a
 	call Coord2Tile
 	ret
+; 20168
 
-.PlaceChars:
+.PlaceChars: ; 20168 (8:4168)
 	push de
 	call RestartClock_GetWraparoundTime
-	ld a, [wRestartClockUpArrowYCoord]
+	ld a, [wBuffer3]
 	dec a
 	ld b, a
 	call Coord2Tile
@@ -233,9 +240,14 @@ RestartClock:
 	add hl, bc
 	ld [hl], e
 	ret
+; 2017c (8:417c)
 
-JPHourString: ; unreferenced
+UnreferencedString_HourJP: ; 2017c
+; unused
 	db "じ@" ; HR
+; 2017e
 
-JPMinuteString: ; unreferenced
+UnreferencedString_MinuteJP: ; 2017e
+; unused
 	db "ふん@" ; MIN
+; 20181

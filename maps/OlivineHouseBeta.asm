@@ -1,11 +1,11 @@
-	object_const_def
+	const_def 2 ; object constants
 	const OLIVINEHOUSEBETA_TEACHER
 	const OLIVINEHOUSEBETA_RHYDON
 
 OlivineHouseBeta_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 0 ; callbacks
 
 OlivineHouseBetaTeacherScript:
 	jumptextfaceplayer OlivineHouseBetaTeacherText
@@ -13,16 +13,16 @@ OlivineHouseBetaTeacherScript:
 OlivineHouseBetaRhydonScript:
 	opentext
 	writetext OlivineHouseBetaRhydonText
-	cry RHYDON
+	cry PATRAT
 	waitbutton
 	closetext
 	end
 
 OlivineHouseBetaBookshelf1:
-	jumpstd PictureBookshelfScript
+	jumpstd picturebookshelf
 
 OlivineHouseBetaBookshelf2:
-	jumpstd MagazineBookshelfScript
+	jumpstd magazinebookshelf
 
 OlivineHouseBetaTeacherText:
 	text "When my #MON"
@@ -40,16 +40,16 @@ OlivineHouseBetaRhydonText:
 OlivineHouseBeta_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 2 ; warp events
 	warp_event  2,  7, OLIVINE_CITY, 4
 	warp_event  3,  7, OLIVINE_CITY, 4
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 2 ; bg events
 	bg_event  0,  1, BGEVENT_READ, OlivineHouseBetaBookshelf1
 	bg_event  1,  1, BGEVENT_READ, OlivineHouseBetaBookshelf2
 
-	def_object_events
+	db 2 ; object events
 	object_event  2,  3, SPRITE_TEACHER, SPRITEMOVEDATA_SPINRANDOM_SLOW, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, OlivineHouseBetaTeacherScript, -1
 	object_event  6,  4, SPRITE_RHYDON, SPRITEMOVEDATA_WALK_UP_DOWN, 0, 2, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, OlivineHouseBetaRhydonScript, -1

@@ -1,4 +1,4 @@
-ShowLinkBattleParticipants:
+ShowLinkBattleParticipants: ; 2ee18
 ; If we're not in a communications room,
 ; we don't need to be here.
 	ld a, [wLinkMode]
@@ -8,15 +8,15 @@ ShowLinkBattleParticipants:
 	farcall _ShowLinkBattleParticipants
 	ld c, 150
 	call DelayFrames
-	call ClearTilemap
+	call ClearTileMap
 	call ClearSprites
 	ret
 
-FindFirstAliveMonAndStartBattle:
+FindFirstAliveMonAndStartBattle: ; 2ee2f
 	xor a
-	ldh [hMapAnims], a
+	ld [hMapAnims], a
 	call DelayFrame
-	ld b, PARTY_LENGTH
+	ld b, 6
 	ld hl, wPartyMon1HP
 	ld de, PARTYMON_STRUCT_LENGTH - 1
 
@@ -36,17 +36,17 @@ FindFirstAliveMonAndStartBattle:
 	predef DoBattleTransition
 	farcall _LoadBattleFontsHPBar
 	ld a, 1
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call ClearSprites
-	call ClearTilemap
+	call ClearTileMap
 	xor a
-	ldh [hBGMapMode], a
-	ldh [hWY], a
-	ldh [rWY], a
-	ldh [hMapAnims], a
+	ld [hBGMapMode], a
+	ld [hWY], a
+	ld [rWY], a
+	ld [hMapAnims], a
 	ret
 
-PlayBattleMusic:
+PlayBattleMusic: ; 2ee6c
 	push hl
 	push de
 	push bc
@@ -99,6 +99,12 @@ PlayBattleMusic:
 	jr z, .done
 	cp GRUNTF
 	jr z, .done
+	cp EXECUTIVEM
+	jr z, .done
+	cp EXECUTIVEF
+	jr z, .done
+	cp SCIENTIST
+	jr z, .done
 
 	ld de, MUSIC_KANTO_GYM_LEADER_BATTLE
 	farcall IsKantoGymLeader
@@ -148,7 +154,7 @@ PlayBattleMusic:
 	pop hl
 	ret
 
-ClearBattleRAM:
+ClearBattleRAM: ; 2ef18
 	xor a
 	ld [wBattlePlayerAction], a
 	ld [wBattleResult], a

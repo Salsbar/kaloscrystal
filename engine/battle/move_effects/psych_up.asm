@@ -1,9 +1,9 @@
-BattleCommand_PsychUp:
+BattleCommand_PsychUp: ; 37c55
 ; psychup
 
 	ld hl, wEnemyStatLevels
 	ld de, wPlayerStatLevels
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
 	jr z, .pointers_correct
 ; It's the enemy's turn, so swap the pointers.
@@ -35,7 +35,7 @@ BattleCommand_PsychUp:
 	inc de
 	dec b
 	jr nz, .loop2
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
 	jr nz, .calc_enemy_stats
 	call CalcPlayerStats
@@ -46,4 +46,6 @@ BattleCommand_PsychUp:
 .merge
 	call AnimateCurrentMove
 	ld hl, CopiedStatsText
-	jp StdBattleTextbox
+	jp StdBattleTextBox
+
+; 37c95

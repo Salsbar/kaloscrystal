@@ -1,4 +1,4 @@
-BattleCommand_Foresight:
+BattleCommand_Foresight: ; 376a0
 ; foresight
 
 	ld a, [wAttackMissed]
@@ -16,7 +16,8 @@ BattleCommand_Foresight:
 	set SUBSTATUS_IDENTIFIED, [hl]
 	call AnimateCurrentMove
 	ld hl, IdentifiedText
-	jp StdBattleTextbox
+	jp StdBattleTextBox
 
 .failed
 	jp FailMove
+; 376c2

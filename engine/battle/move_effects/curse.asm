@@ -1,9 +1,9 @@
-BattleCommand_Curse:
+BattleCommand_Curse: ; 37588
 ; curse
 
 	ld de, wBattleMonType1
 	ld bc, wPlayerStatLevels
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
 	jr z, .go
 	ld de, wEnemyMonType1
@@ -20,6 +20,7 @@ BattleCommand_Curse:
 	ld a, [de]
 	cp GHOST
 	jr z, .ghost
+
 
 ; If no stats can be increased, don't.
 
@@ -39,7 +40,7 @@ BattleCommand_Curse:
 ; Raise Attack and Defense, and lower Speed.
 
 	ld a, $1
-	ld [wBattleAnimParam], a
+	ld [wKickCounter], a
 	call AnimateCurrentMove
 	ld a, SPEED
 	call LowerStat
@@ -52,6 +53,7 @@ BattleCommand_Curse:
 	call ResetMiss
 	call BattleCommand_DefenseUp
 	jp BattleCommand_StatUpMessage
+
 
 .ghost
 
@@ -76,18 +78,20 @@ BattleCommand_Curse:
 	call CallBattleCore
 	call UpdateUserInParty
 	ld hl, PutACurseText
-	jp StdBattleTextbox
+	jp StdBattleTextBox
 
 .failed
 	call AnimateFailedMove
 	jp PrintButItFailed
 
+
 .cantraise
 
 ; Can't raise either stat.
 
-	ld b, ABILITY + 1
+	ld b, MULTIPLE_STATS + 1
 	call GetStatName
 	call AnimateFailedMove
 	ld hl, WontRiseAnymoreText
-	jp StdBattleTextbox
+	jp StdBattleTextBox
+; 37618

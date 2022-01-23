@@ -1,4 +1,4 @@
-	object_const_def
+	const_def 2 ; object constants
 	const CELADONGAMECORNER_CLERK
 	const CELADONGAMECORNER_RECEPTIONIST
 	const CELADONGAMECORNER_POKEFAN_M
@@ -6,16 +6,16 @@
 	const CELADONGAMECORNER_FISHING_GURU
 	const CELADONGAMECORNER_FISHER1
 	const CELADONGAMECORNER_FISHER2
-	const CELADONGAMECORNER_GYM_GUIDE
+	const CELADONGAMECORNER_GYM_GUY
 	const CELADONGAMECORNER_GRAMPS
 
 CeladonGameCorner_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 0 ; callbacks
 
 CeladonGameCornerClerkScript:
-	jumpstd GameCornerCoinVendorScript
+	jumpstd gamecornercoinvendor
 
 CeladonGameCornerReceptionistScript:
 	jumptextfaceplayer CeladonGameCornerReceptionistText
@@ -53,12 +53,12 @@ CeladonGameCornerFisherScript:
 	checkevent EVENT_GOT_COINS_FROM_GAMBLER_AT_CELADON
 	iftrue .GotCoins
 	writetext CeladonGameCornerFisherText1
-	promptbutton
+	buttonsound
 	checkitem COIN_CASE
 	iffalse .NoCoinCase
 	checkcoins MAX_COINS - 1
 	ifequal HAVE_MORE, .FullCoinCase
-	getstring STRING_BUFFER_4, .coinname
+	stringtotext .coinname, MEM_BUFFER_1
 	scall .GiveCoins
 	givecoins 18
 	setevent EVENT_GOT_COINS_FROM_GAMBLER_AT_CELADON
@@ -70,7 +70,7 @@ CeladonGameCornerFisherScript:
 	end
 
 .GiveCoins:
-	jumpstd ReceiveItemScript
+	jumpstd receiveitem
 	end
 
 .coinname
@@ -90,8 +90,8 @@ CeladonGameCornerFisherScript:
 	turnobject LAST_TALKED, LEFT
 	end
 
-CeladonGymGuideScript:
-	jumptextfaceplayer CeladonGymGuideText
+CeladonGymGuyScript:
+	jumptextfaceplayer CeladonGymGuyText
 
 CeladonGameCornerGrampsScript:
 	faceplayer
@@ -112,14 +112,14 @@ CeladonGameCornerLuckySlotMachineScript:
 	random 6
 	ifequal 0, CeladonGameCornerSlotMachineScript
 	refreshscreen
-	setval FALSE
+	writebyte FALSE
 	special SlotMachine
 	closetext
 	end
 
 CeladonGameCornerSlotMachineScript:
 	refreshscreen
-	setval TRUE
+	writebyte TRUE
 	special SlotMachine
 	closetext
 	end
@@ -141,7 +141,8 @@ CeladonGameCornerSodaCanScript:
 	closetext
 	end
 
-CeladonGameCornerUnusedMovementData: ; unreferenced
+CeladonGameCornerUnusedMovementData:
+; unreferenced
 	step RIGHT
 	turn_head LEFT
 	step_end
@@ -163,12 +164,6 @@ CeladonGameCornerPokefanMText:
 	done
 
 CeladonGameCornerTeacherText:
-if DEF(_CRYSTAL_AU)
-	text "The weather"
-	line "outside is very"
-	cont "nice."
-	done
-else
 	text "It's this machine"
 	line "I want."
 
@@ -178,15 +173,8 @@ else
 	para "should pay out"
 	line "today."
 	done
-endc
 
 CeladonGameCornerFishingGuruText:
-if DEF(_CRYSTAL_AU)
-	text "This machine looks"
-	line "the same as the"
-	cont "others."
-	done
-else
 	text "I think this slot"
 	line "machine will pay"
 	cont "out…"
@@ -194,19 +182,8 @@ else
 	para "The odds vary"
 	line "among machines."
 	done
-endc
 
 CeladonGameCornerFisherText1:
-if DEF(_CRYSTAL_AU)
-	text "Whoa!"
-
-	para "What? You want to"
-	line "play this machine?"
-
-	para "Here, take my"
-	line "coins."
-	done
-else
 	text "Gahahaha!"
 
 	para "The coins just"
@@ -218,7 +195,6 @@ else
 	para "I'll share my luck"
 	line "with you!"
 	done
-endc
 
 CeladonGameCornerFisherText2:
 	text "Gahahaha!"
@@ -240,11 +216,6 @@ CeladonGameCornerFisherNoCoinCaseText:
 	done
 
 CeladonGameCornerFisherFullCoinCaseText:
-if DEF(_CRYSTAL_AU)
-	text "Your COIN CASE is"
-	line "full."
-	done
-else
 	text "Hey, your COIN"
 	line "CASE is full, kid."
 
@@ -252,18 +223,13 @@ else
 	line "a winning streak"
 	cont "too."
 	done
-endc
 
-CeladonGymGuideText:
+CeladonGymGuyText:
 	text "Hey! CHAMP in"
 	line "making!"
 
 	para "Are you playing"
-if DEF(_CRYSTAL_AU)
-	line "too?"
-else
 	line "the slots too?"
-endc
 
 	para "I'm trying to get"
 	line "enough coins for a"
@@ -274,19 +240,12 @@ endc
 	done
 
 CeladonGameCornerGrampsText:
-if DEF(_CRYSTAL_AU)
-	text "Is there any"
-	line "difference between"
-	cont "these lines?"
-	done
-else
 	text "Hmmm… The odds are"
 	line "surely better for"
 
 	para "PIKACHU's line,"
 	line "but… What to do?"
 	done
-endc
 
 CeladonGameCornerPoster1Text:
 	text "Hey!"
@@ -323,13 +282,13 @@ CeladonGameCornerSodaCanText:
 CeladonGameCorner_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 2 ; warp events
 	warp_event 14, 13, CELADON_CITY, 6
 	warp_event 15, 13, CELADON_CITY, 6
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 38 ; bg events
 	bg_event  1,  6, BGEVENT_READ, CeladonGameCornerCardFlipScript
 	bg_event  1,  7, BGEVENT_READ, CeladonGameCornerCardFlipScript
 	bg_event  1,  8, BGEVENT_READ, CeladonGameCornerCardFlipScript
@@ -369,7 +328,7 @@ CeladonGameCorner_MapEvents:
 	bg_event 15,  0, BGEVENT_READ, CeladonGameCornerPoster1Script
 	bg_event  9,  0, BGEVENT_READ, CeladonGameCornerPoster2Script
 
-	def_object_events
+	db 9 ; object events
 	object_event  5,  2, SPRITE_CLERK, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_GREEN, OBJECTTYPE_SCRIPT, 0, CeladonGameCornerClerkScript, -1
 	object_event  3,  2, SPRITE_RECEPTIONIST, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_GREEN, OBJECTTYPE_SCRIPT, 0, CeladonGameCornerReceptionistScript, -1
 	object_event 14, 10, SPRITE_POKEFAN_M, SPRITEMOVEDATA_STANDING_LEFT, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, CeladonGameCornerPokefanMScript, -1
@@ -377,5 +336,5 @@ CeladonGameCorner_MapEvents:
 	object_event 11,  7, SPRITE_FISHING_GURU, SPRITEMOVEDATA_STANDING_RIGHT, 0, 0, -1, -1, PAL_NPC_GREEN, OBJECTTYPE_SCRIPT, 0, CeladonGameCornerFishingGuruScript, -1
 	object_event  8, 10, SPRITE_FISHER, SPRITEMOVEDATA_STANDING_LEFT, 0, 0, -1, DAY, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, CeladonGameCornerFisherScript, -1
 	object_event  8, 10, SPRITE_FISHER, SPRITEMOVEDATA_STANDING_LEFT, 0, 0, -1, NITE, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, CeladonGameCornerFisherScript, -1
-	object_event 11,  3, SPRITE_GYM_GUIDE, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, CeladonGymGuideScript, -1
+	object_event 11,  3, SPRITE_GYM_GUY, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, CeladonGymGuyScript, -1
 	object_event  2,  8, SPRITE_GRAMPS, SPRITEMOVEDATA_STANDING_LEFT, 0, 0, -1, -1, PAL_NPC_GREEN, OBJECTTYPE_SCRIPT, 0, CeladonGameCornerGrampsScript, -1

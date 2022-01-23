@@ -1,34 +1,14 @@
 FleeMons:
 ; referenced by TryEnemyFlee and FastBallMultiplier
 
-SometimesFleeMons:
-	db MAGNEMITE
-	db GRIMER
-	db TANGELA
-	db MR__MIME
-	db EEVEE
-	db PORYGON
-	db DRATINI
-	db DRAGONAIR
-	db TOGETIC
-	db UMBREON
-	db UNOWN
-	db SNUBBULL
-	db HERACROSS
+SometimesFleeMons: ; 3c59a
 	db -1
 
-OftenFleeMons:
-	db CUBONE
-	db ARTICUNO
-	db ZAPDOS
-	db MOLTRES
-	db QUAGSIRE
-	db DELIBIRD
-	db PHANPY
-	db TEDDIURSA
+OftenFleeMons: ; 3c5a8
 	db -1
 
-AlwaysFleeMons:
-	db RAIKOU
-	db ENTEI
+AlwaysFleeMons: ; 3c5b1
+	db TORNADUS
+	db THUNDURUS
 	db -1
+; 3c5b4

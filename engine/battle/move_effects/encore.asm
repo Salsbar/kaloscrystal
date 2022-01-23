@@ -1,9 +1,9 @@
-BattleCommand_Encore:
+BattleCommand_Encore: ; 35864
 ; encore
 
 	ld hl, wEnemyMonMoves
 	ld de, wEnemyEncoreCount
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
 	jr z, .ok
 	ld hl, wBattleMonMoves
@@ -47,7 +47,7 @@ BattleCommand_Encore:
 	ld [de], a
 	call CheckOpponentWentFirst
 	jr nz, .finish_move
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
 	jr z, .force_last_enemy_move
 
@@ -114,7 +114,9 @@ BattleCommand_Encore:
 .finish_move
 	call AnimateCurrentMove
 	ld hl, GotAnEncoreText
-	jp StdBattleTextbox
+	jp StdBattleTextBox
 
 .failed
 	jp PrintDidntAffect2
+
+; 35926

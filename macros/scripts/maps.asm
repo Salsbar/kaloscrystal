@@ -1,42 +1,19 @@
 map_id: MACRO
 ;\1: map id
-	assert DEF(GROUP_\1) && DEF(MAP_\1), \
-		"Missing 'map_const \1' in constants/map_constants.asm"
 	db GROUP_\1, MAP_\1
 ENDM
 
-object_const_def EQUS "const_def 2"
-
-def_scene_scripts: MACRO
-REDEF _NUM_SCENE_SCRIPTS EQUS "_NUM_SCENE_SCRIPTS_\@"
-	db {_NUM_SCENE_SCRIPTS}
-{_NUM_SCENE_SCRIPTS} = 0
-ENDM
 
 scene_script: MACRO
 ;\1: script pointer
 	dw \1
 	dw 0 ; filler
-{_NUM_SCENE_SCRIPTS} += 1
-ENDM
-
-def_callbacks: MACRO
-REDEF _NUM_CALLBACKS EQUS "_NUM_CALLBACKS_\@"
-	db {_NUM_CALLBACKS}
-{_NUM_CALLBACKS} = 0
 ENDM
 
 callback: MACRO
 ;\1: type: a MAPCALLBACK_* constant
 ;\2: script pointer
 	dbw \1, \2
-{_NUM_CALLBACKS} += 1
-ENDM
-
-def_warp_events: MACRO
-REDEF _NUM_WARP_EVENTS EQUS "_NUM_WARP_EVENTS_\@"
-	db {_NUM_WARP_EVENTS}
-{_NUM_WARP_EVENTS} = 0
 ENDM
 
 warp_event: MACRO
@@ -46,13 +23,6 @@ warp_event: MACRO
 ;\4: warp destination: starts at 1
 	db \2, \1, \4
 	map_id \3
-{_NUM_WARP_EVENTS} += 1
-ENDM
-
-def_coord_events: MACRO
-REDEF _NUM_COORD_EVENTS EQUS "_NUM_COORD_EVENTS_\@"
-	db {_NUM_COORD_EVENTS}
-{_NUM_COORD_EVENTS} = 0
 ENDM
 
 coord_event: MACRO
@@ -63,14 +33,7 @@ coord_event: MACRO
 	db \3, \2, \1
 	db 0 ; filler
 	dw \4
-	dw 0 ; filler
-{_NUM_COORD_EVENTS} += 1
-ENDM
-
-def_bg_events: MACRO
-REDEF _NUM_BG_EVENTS EQUS "_NUM_BG_EVENTS_\@"
-	db {_NUM_BG_EVENTS}
-{_NUM_BG_EVENTS} = 0
+	db 0, 0 ; filler
 ENDM
 
 bg_event: MACRO
@@ -80,13 +43,6 @@ bg_event: MACRO
 ;\4: script pointer
 	db \2, \1, \3
 	dw \4
-{_NUM_BG_EVENTS} += 1
-ENDM
-
-def_object_events: MACRO
-REDEF _NUM_OBJECT_EVENTS EQUS "_NUM_OBJECT_EVENTS_\@"
-	db {_NUM_OBJECT_EVENTS}
-{_NUM_OBJECT_EVENTS} = 0
 ENDM
 
 object_event: MACRO
@@ -102,21 +58,23 @@ object_event: MACRO
 ;  * if h1 == -1, h2 is treated as a time-of-day value:
 ;    a combo of MORN, DAY, and/or NITE, or -1 to always appear
 ;\9: color: a PAL_NPC_* constant, or 0 for sprite default
-;\<10>: function: a OBJECTTYPE_* constant
-;\<11>: sight range: applies to OBJECTTYPE_TRAINER
-;\<12>: script pointer
-;\<13>: event flag: an EVENT_* constant, or -1 to always appear
+;\10: function: a OBJECTTYPE_* constant
+;\11: sight range: applies to OBJECTTYPE_TRAINER
+;\12: script pointer
+;\13: event flag: an EVENT_* constant, or -1 to always appear
 	db \3, \2 + 4, \1 + 4, \4
 	dn \6, \5
 	db \7, \8
-	dn \9, \<10>
-	db \<11>
-	dw \<12>, \<13>
-; the dummy PlayerObjectTemplate object_event has no def_object_events
-if DEF(_NUM_OBJECT_EVENTS)
-{_NUM_OBJECT_EVENTS} += 1
-endc
+	shift
+	dn \8, \9
+	shift
+	db \9
+	shift
+	dw \9
+	shift
+	dw \9
 ENDM
+
 
 trainer: MACRO
 ;\1: trainer group
@@ -172,6 +130,5 @@ stonetable: MACRO
 ;\1: warp id
 ;\2: object_event id
 ;\3: script pointer
-	db \1, \2
-	dw \3
+	dbbw \1, \2, \3
 ENDM

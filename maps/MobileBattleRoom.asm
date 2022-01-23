@@ -1,12 +1,12 @@
 MobileBattleRoom_MapScripts:
-	def_scene_scripts
+	db 2 ; scene scripts
 	scene_script .InitializeMobileBattleRoom ; SCENE_DEFAULT
 	scene_script .DummyScene ; SCENE_FINISHED
 
-	def_callbacks
+	db 0 ; callbacks
 
 .InitializeMobileBattleRoom:
-	sdefer .InitializeAndPreparePokecenter2F
+	priorityjump .InitializeAndPreparePokecenter2F
 	end
 
 .DummyScene:
@@ -25,7 +25,7 @@ MobileBattleRoomConsoleScript:
 	iffalse .false
 	ifequal $1, .one_
 	ifequal $2, .two_
-	sjump .false
+	jump .false
 
 .one_
 	writetext MobileBattleRoom_HealText
@@ -67,13 +67,13 @@ MobileBattleRoom_HealText:
 MobileBattleRoom_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 2 ; warp events
 	warp_event  4,  7, POKECENTER_2F, 6
 	warp_event  5,  7, POKECENTER_2F, 6
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 1 ; bg events
 	bg_event  4,  2, BGEVENT_UP, MobileBattleRoomConsoleScript
 
-	def_object_events
+	db 0 ; object events

@@ -1,4 +1,4 @@
-CorrectNickErrors::
+CorrectNickErrors:: ; 669f
 ; error-check monster nick before use
 ; must be a peace offering to gamesharkers
 
@@ -60,11 +60,11 @@ CorrectNickErrors::
 	pop bc
 	ret
 
-.textcommands
+.textcommands ; 66cf
 ; table defining which characters are actually text commands
 ; format:
 	;      ≥           <
-	db "<NULL>",   "ガ"
+	db TX_START,   TX_BOX    + 1
 	db "<PLAY_G>", "<JP_18>" + 1
 	db "<NI>",     "<NO>"    + 1
 	db "<ROUTE>",  "<GREEN>" + 1

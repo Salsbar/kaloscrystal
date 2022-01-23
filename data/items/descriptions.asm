@@ -1,6 +1,5 @@
 ItemDescriptions:
-; entries correspond to item ids (see constants/item_constants.asm)
-	table_width 2, ItemDescriptions
+; entries correspond to item ids
 	dw MasterBallDesc
 	dw UltraBallDesc
 	dw BrightpowderDesc
@@ -189,9 +188,8 @@ ItemDescriptions:
 	dw MorphMailDesc
 	dw BlueSkyMailDesc
 	dw MusicMailDesc
-	dw MirageMailDesc
+	dw MewMailDesc
 	dw TeruSama25Desc
-	assert_table_length NUM_ITEMS
 	dw TeruSama26Desc
 	dw TeruSama26Desc
 	dw TeruSama26Desc
@@ -257,7 +255,6 @@ ItemDescriptions:
 	dw TeruSama31Desc
 	dw TeruSama32Desc
 	dw TeruSama33Desc
-	assert_table_length $ff
 
 MasterBallDesc:
 	db   "The best BALL. It"
@@ -355,7 +352,8 @@ WaterStoneDesc:
 	next "kinds of #MON.@"
 
 TeruSama2Desc:
-	db   "?@"
+	db   "Evolves certain"
+	next "kinds of #MON.@"
 
 HPUpDesc:
 	db   "Raises the HP of"
@@ -535,8 +533,8 @@ ClearBellDesc:
 	next "ringing.@"
 
 SilverWingDesc:
-	db   "A strange, silver-"
-	next "colored feather.@"
+	db   "A strange, black"
+	next "and red feather.@"
 
 MoomooMilkDesc:
 	db   "Restores #MON"
@@ -660,7 +658,7 @@ SlowpokeTailDesc:
 	next "high.@"
 
 PinkBowDesc:
-	db   "Powers up normal-"
+	db   "Powers up fairy-"
 	next "type moves. (HOLD)@"
 
 StickDesc:
@@ -704,8 +702,8 @@ RageCandyBarDesc:
 	next "HP by 20.@"
 
 GSBallDesc:
-	db   "The mysterious"
-	next "BALL.@"
+	db   "A mysterious"
+	next "bottle.@"
 
 BlueCardDesc:
 	db   "Card to save"
@@ -878,7 +876,8 @@ FastBallDesc:
 	next "ing fast #MON.@"
 
 TeruSama21Desc:
-	db   "?@"
+	db   "Sacred ash from"
+	next "CINNABAR ISLAND.@"
 
 LightBallDesc:
 	db   "An odd, electrical"
@@ -913,7 +912,8 @@ PolkadotBowDesc:
 	next "type moves. (HOLD)@"
 
 TeruSama22Desc:
-	db   "?@"
+	db   "Powers up normal-"
+	next "type moves. (HOLD)@"
 
 UpGradeDesc:
 	db   "A mysterious box"
@@ -928,8 +928,8 @@ GoldBerryDesc:
 	next "item. (30HP, HOLD)@"
 
 SquirtBottleDesc:
-	db   "A bottle used for"
-	next "watering plants.@"
+	db   "A bottle of weed"
+	next "poison.@"
 
 TeruSama23Desc:
 	db   "?@"
@@ -939,7 +939,7 @@ ParkBallDesc:
 	next "Contest BALL.@"
 
 RainbowWingDesc:
-	db   "A mystical feather"
+	db   "A mystical horn"
 	next "of rainbow colors.@"
 
 TeruSama24Desc:
@@ -981,7 +981,7 @@ MusicMailDesc:
 	db   "NATU-print MAIL."
 	next "(HOLD)@"
 
-MirageMailDesc:
+MewMailDesc:
 	db   "MEW-print MAIL."
 	next "(HOLD)@"
 

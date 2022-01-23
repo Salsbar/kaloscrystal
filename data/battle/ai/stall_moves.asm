@@ -1,7 +1,7 @@
 ; AI_OPPORTUNIST discourages these moves
 ; when the player's HP is low.
 
-StallMoves:
+StallMoves: ; 39348
 	db SWORDS_DANCE
 	db TAIL_WHIP
 	db LEER
@@ -20,18 +20,19 @@ StallMoves:
 	db HARDEN
 	db WITHDRAW
 	db DEFENSE_CURL
-	db BARRIER
+	db NASTY_PLOT
 	db LIGHT_SCREEN
 	db HAZE
 	db REFLECT
 	db FOCUS_ENERGY
 	db BIDE
 	db AMNESIA
-	db TRANSFORM
-	db SPLASH
+	db QUIVER_DANCE
+	db SHIFT_GEAR
 	db ACID_ARMOR
 	db SHARPEN
-	db CONVERSION
+	db NOBLE_ROAR
 	db SUBSTITUTE
 	db FLAME_WHEEL
 	db -1 ; end
+; 39369

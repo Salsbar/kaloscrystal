@@ -1,28 +1,28 @@
-Music_MobileAdapterMenu:
-	channel_count 3
-	channel 1, Music_MobileAdapterMenu_Ch1
-	channel 2, Music_MobileAdapterMenu_Ch2
-	channel 3, Music_MobileAdapterMenu_Ch3
+Music_MobileAdapterMenu: ; 17801f
+	musicheader 3, 1, Music_MobileAdapterMenu_Ch1
+	musicheader 1, 2, Music_MobileAdapterMenu_Ch2
+	musicheader 1, 3, Music_MobileAdapterMenu_Ch3
+; 178028
 
-Music_MobileAdapterMenu_Ch1:
+Music_MobileAdapterMenu_Ch1: ; 178028
 	tempo 168
-	volume 7, 7
-	pitch_offset 1
-	stereo_panning FALSE, TRUE
-	duty_cycle 2
-	note_type 12, 6, 6
-	rest 2
-.mainloop:
-	sound_call .sub1
-	sound_call .sub2
+	volume $77
+	tone $0001
+	stereopanning $f
+	dutycycle $2
+	notetype $c, $66
+	note __, 2
+Music_MobileAdapterMenu_branch_178038: ; 178038
+	callchannel Music_MobileAdapterMenu_branch_178057
+	callchannel Music_MobileAdapterMenu_branch_178076
 	octave 3
 	note F#, 4
 	note B_, 4
 	note F#, 2
 	note B_, 1
-	rest 1
+	note __, 1
 	note D#, 4
-	sound_call .sub2
+	callchannel Music_MobileAdapterMenu_branch_178076
 	octave 3
 	note F#, 2
 	octave 2
@@ -31,47 +31,49 @@ Music_MobileAdapterMenu_Ch1:
 	note D#, 3
 	note E_, 1
 	note D#, 8
-	sound_call .sub1
-	sound_loop 0, .mainloop
+	callchannel Music_MobileAdapterMenu_branch_178057
+	loopchannel 0, Music_MobileAdapterMenu_branch_178038
+; 178057
 
-.sub1:
+Music_MobileAdapterMenu_branch_178057: ; 178057
 	octave 3
 	note G#, 7
 	octave 4
 	note E_, 1
 	note D#, 1
-	rest 1
+	note __, 1
 	octave 3
 	note B_, 1
-	rest 1
+	note __, 1
 	note F#, 4
 	note E_, 8
 	note D#, 1
-	rest 1
+	note __, 1
 	note C#, 1
-	rest 1
+	note __, 1
 	note D#, 4
 	note G#, 7
 	octave 4
 	note E_, 1
 	note D#, 1
-	rest 1
+	note __, 1
 	octave 3
 	note B_, 1
-	rest 1
+	note __, 1
 	note F#, 4
 	note A_, 2
 	note E_, 2
 	note A_, 3
 	note A_, 1
 	note G#, 8
-	sound_ret
+	endchannel
+; 178076
 
-.sub2:
+Music_MobileAdapterMenu_branch_178076: ; 178076
 	note E_, 1
-	rest 1
+	note __, 1
 	note A_, 1
-	rest 1
+	note __, 1
 	octave 4
 	note C#, 3
 	octave 3
@@ -79,27 +81,28 @@ Music_MobileAdapterMenu_Ch1:
 	note A_, 2
 	octave 4
 	note E_, 1
-	rest 1
+	note __, 1
 	note C#, 4
-	sound_ret
+	endchannel
+; 178084
 
-Music_MobileAdapterMenu_Ch2:
-	stereo_panning TRUE, FALSE
-	note_type 12, 8, 4
-	duty_cycle 2
+Music_MobileAdapterMenu_Ch2: ; 178084
+	stereopanning $f0
+	notetype $c, $84
+	dutycycle $2
 	octave 4
 	note E_, 1
 	note G#, 1
-.mainloop:
-	sound_call .sub1
+Music_MobileAdapterMenu_branch_17808e: ; 17808e
+	callchannel Music_MobileAdapterMenu_branch_1780ae
 	note E_, 8
-	sound_call .sub2
+	callchannel Music_MobileAdapterMenu_branch_1780d7
 	note D#, 2
 	note C#, 2
 	note D#, 3
 	note E_, 1
 	note F#, 8
-	sound_call .sub2
+	callchannel Music_MobileAdapterMenu_branch_1780d7
 	note D#, 2
 	note E_, 2
 	note F#, 3
@@ -107,24 +110,25 @@ Music_MobileAdapterMenu_Ch2:
 	note F#, 6
 	note E_, 1
 	note G#, 1
-	sound_call .sub1
+	callchannel Music_MobileAdapterMenu_branch_1780ae
 	note E_, 6
 	note E_, 1
 	note G#, 1
-	sound_loop 0, .mainloop
+	loopchannel 0, Music_MobileAdapterMenu_branch_17808e
+; 1780ae
 
-.sub1:
+Music_MobileAdapterMenu_branch_1780ae: ; 1780ae
 	octave 4
 	note B_, 1
-	rest 1
+	note __, 1
 	note B_, 1
-	rest 1
+	note __, 1
 	note A_, 3
 	note G#, 1
 	note F#, 1
-	rest 1
+	note __, 1
 	note D#, 1
-	rest 1
+	note __, 1
 	octave 3
 	note B_, 4
 	octave 4
@@ -136,15 +140,15 @@ Music_MobileAdapterMenu_Ch2:
 	note E_, 1
 	note G#, 1
 	note B_, 1
-	rest 1
+	note __, 1
 	note B_, 1
-	rest 1
+	note __, 1
 	note A_, 3
 	note G#, 1
 	note F#, 1
-	rest 1
+	note __, 1
 	note D#, 1
-	rest 1
+	note __, 1
 	octave 3
 	note B_, 4
 	octave 4
@@ -154,120 +158,125 @@ Music_MobileAdapterMenu_Ch2:
 	octave 4
 	note C#, 3
 	note D#, 1
-	sound_ret
+	endchannel
+; 1780d7
 
-.sub2:
+Music_MobileAdapterMenu_branch_1780d7: ; 1780d7
 	note A_, 1
-	rest 1
+	note __, 1
 	note A_, 1
-	rest 1
+	note __, 1
 	note G#, 3
 	note F#, 1
 	note E_, 2
 	note A_, 1
-	rest 1
+	note __, 1
 	note E_, 4
-	sound_ret
+	endchannel
+; 1780e2
 
-Music_MobileAdapterMenu_Ch3:
-	vibrato 8, 3, 4
-	note_type 12, 2, 5
-	rest 2
-.mainloop:
-	sound_call .sub1
+Music_MobileAdapterMenu_Ch3: ; 1780e2
+	vibrato $8, $34
+	notetype $c, $25
+	note __, 2
+Music_MobileAdapterMenu_branch_1780e9: ; 1780e9
+	callchannel Music_MobileAdapterMenu_branch_178119
 	octave 2
 	note B_, 1
 	note G#, 1
-	sound_call .sub2
+	callchannel Music_MobileAdapterMenu_branch_178146
 	octave 2
 	note B_, 2
-	rest 2
+	note __, 2
 	octave 3
 	note F#, 2
-	rest 1
+	note __, 1
 	note D#, 1
 	note F#, 2
 	note D#, 1
-	rest 1
+	note __, 1
 	octave 2
 	note B_, 2
 	note F#, 1
 	note G#, 1
-	sound_call .sub2
+	callchannel Music_MobileAdapterMenu_branch_178146
 	octave 2
 	note B_, 2
-	rest 2
+	note __, 2
 	octave 3
 	note F#, 2
-	rest 1
+	note __, 1
 	note D#, 1
 	octave 2
 	note B_, 1
-	rest 1
+	note __, 1
 	octave 3
 	note D#, 1
-	rest 1
+	note __, 1
 	note F#, 4
-	sound_call .sub1
-	rest 2
-	sound_loop 0, .mainloop
+	callchannel Music_MobileAdapterMenu_branch_178119
+	note __, 2
+	loopchannel 0, Music_MobileAdapterMenu_branch_1780e9
+; 178119
 
-.sub1:
+Music_MobileAdapterMenu_branch_178119: ; 178119
 	octave 3
 	note E_, 2
-	rest 2
+	note __, 2
 	note B_, 2
-	rest 1
+	note __, 1
 	note G#, 1
 	note D#, 1
-	rest 1
+	note __, 1
 	note B_, 1
-	rest 1
+	note __, 1
 	note D#, 4
 	note C#, 2
-	rest 2
+	note __, 2
 	note A_, 2
-	rest 1
+	note __, 1
 	note F#, 1
 	octave 2
 	note B_, 1
-	rest 1
+	note __, 1
 	octave 3
 	note D#, 1
-	rest 1
+	note __, 1
 	note F#, 4
 	note E_, 2
-	rest 2
+	note __, 2
 	note B_, 2
-	rest 1
+	note __, 1
 	note G#, 1
 	note D#, 1
-	rest 1
+	note __, 1
 	note B_, 1
-	rest 1
+	note __, 1
 	note D#, 4
 	note C#, 2
-	rest 2
+	note __, 2
 	note A_, 2
-	rest 1
+	note __, 1
 	note C#, 1
 	note E_, 3
-	volume_envelope 3, 5
+	intensity $35
 	note E_, 3
-	volume_envelope 2, 5
-	sound_ret
+	intensity $25
+	endchannel
+; 178146
 
-.sub2:
+Music_MobileAdapterMenu_branch_178146: ; 178146
 	note A_, 2
-	rest 2
+	note __, 2
 	octave 3
 	note A_, 2
-	rest 1
+	note __, 1
 	note C#, 1
 	note A_, 2
 	octave 4
 	note C#, 1
-	rest 1
+	note __, 1
 	octave 3
 	note A_, 4
-	sound_ret
+	endchannel
+; 178153

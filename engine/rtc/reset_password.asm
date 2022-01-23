@@ -1,4 +1,4 @@
-_ResetClock:
+_ResetClock: ; 4d3b1
 	farcall BlankScreen
 	ld b, SCGB_DIPLOMA
 	call GetSGBLayout
@@ -6,71 +6,74 @@ _ResetClock:
 	call LoadFontsExtra
 	ld de, MUSIC_MAIN_MENU
 	call PlayMusic
-	ld hl, .PasswordAskResetClockText
+	ld hl, .text_askreset
 	call PrintText
 	ld hl, .NoYes_MenuHeader
 	call CopyMenuHeader
 	call VerticalMenu
 	ret c
 	ld a, [wMenuCursorY]
-	cp 1
+	cp $1
 	ret z
 	call ClockResetPassword
 	jr c, .wrongpassword
 	ld a, BANK(sRTCStatusFlags)
-	call OpenSRAM
+	call GetSRAMBank
 	ld a, $80
 	ld [sRTCStatusFlags], a
 	call CloseSRAM
-	ld hl, .PasswordAskResetText
+	ld hl, .text_okay
 	call PrintText
 	ret
 
 .wrongpassword
-	ld hl, .PasswordWrongText
+	ld hl, .text_wrong
 	call PrintText
 	ret
 
-.PasswordAskResetText:
-	text_far _PasswordAskResetText
-	text_end
+.text_okay ; 0x4d3fe
+	; Password OK. Select CONTINUE & reset settings.
+	text_jump UnknownText_0x1c55db
+	db "@"
 
-.PasswordWrongText:
-	text_far _PasswordWrongText
-	text_end
+.text_wrong ; 0x4d403
+	; Wrong password!
+	text_jump UnknownText_0x1c560b
+	db "@"
 
-.PasswordAskResetClockText:
-	text_far _PasswordAskResetClockText
-	text_end
+.text_askreset ; 0x4d408
+	; Reset the clock?
+	text_jump UnknownText_0x1c561c
+	db "@"
 
-.NoYes_MenuHeader:
+.NoYes_MenuHeader: ; 0x4d40d
 	db 0 ; flags
 	menu_coords 14, 7, SCREEN_WIDTH - 1, TEXTBOX_Y - 1
 	dw .NoYes_MenuData
 	db 1 ; default option
 
-.NoYes_MenuData:
+.NoYes_MenuData: ; 0x4d415
 	db STATICMENU_CURSOR | STATICMENU_NO_TOP_SPACING ; flags
 	db 2 ; items
 	db "NO@"
 	db "YES@"
 
-ClockResetPassword:
+ClockResetPassword: ; 4d41e
 	call .CalculatePassword
 	push de
 	ld hl, wStringBuffer2
 	ld bc, 5
 	xor a
 	call ByteFill
-	ld a, 4
+	ld a, $4
 	ld [wStringBuffer2 + 5], a
-	ld hl, .PasswordAskEnterText
+	ld hl, .pleaseenterpasswordtext
 	call PrintText
 .loop
 	call .updateIDdisplay
 .loop2
 	call JoyTextDelay
-	ldh a, [hJoyLast]
+	ld a, [hJoyLast]
 	ld b, a
 	and A_BUTTON
 	jr nz, .confirm
@@ -98,11 +101,12 @@ ClockResetPassword:
 	scf
 	ret
 
-.PasswordAskEnterText:
-	text_far _PasswordAskEnterText
-	text_end
+.pleaseenterpasswordtext ; 0x4d463
+	; Please enter the password.
+	text_jump UnknownText_0x1c562e
+	db "@"
 
-.updateIDdisplay
+.updateIDdisplay ; 4d468
 	hlcoord 14, 15
 	ld de, wStringBuffer2
 	ld c, 5
@@ -120,12 +124,12 @@ ClockResetPassword:
 	hlcoord 14, 16
 	ld a, [wStringBuffer2 + 5]
 	ld e, a
-	ld d, 0
+	ld d, $0
 	add hl, de
 	ld [hl], "▲"
 	ret
 
-.dpadinput
+.dpadinput ; 4d490
 	ld a, b
 	and D_LEFT
 	jr nz, .left
@@ -150,7 +154,7 @@ ClockResetPassword:
 
 .right
 	ld a, [wStringBuffer2 + 5]
-	cp 4
+	cp $4
 	ret z
 	inc a
 	ld [wStringBuffer2 + 5], a
@@ -166,7 +170,7 @@ ClockResetPassword:
 	ret
 
 .wraparound_up
-	ld [hl], 0
+	ld [hl], $0
 	ret
 
 .down
@@ -182,15 +186,15 @@ ClockResetPassword:
 	ld [hl], 9
 	ret
 
-.getcurrentdigit
+.getcurrentdigit ; 4d4d5
 	ld a, [wStringBuffer2 + 5]
 	ld e, a
-	ld d, 0
+	ld d, $0
 	ld hl, wStringBuffer2
 	add hl, de
 	ret
 
-.ConvertDecIDToBytes:
+.ConvertDecIDToBytes: ; 4d4e0
 	ld hl, 0
 	ld de, wStringBuffer2 + 4
 	ld bc, 1
@@ -202,7 +206,7 @@ ClockResetPassword:
 	ld bc, 1000
 	call .ConvertToBytes
 	ld bc, 10000
-.ConvertToBytes:
+.ConvertToBytes: ; 4d501
 	ld a, [de]
 	dec de
 	push hl
@@ -214,40 +218,40 @@ ClockResetPassword:
 	add hl, bc
 	ret
 
-.CalculatePassword:
+.CalculatePassword: ; 4d50f
 	ld a, BANK(sPlayerData)
-	call OpenSRAM
+	call GetSRAMBank
 	ld de, 0
 	ld hl, sPlayerData + (wPlayerID - wPlayerData)
-	ld c, 2
+	ld c, $2
 	call .ComponentFromNumber
 	ld hl, sPlayerData + (wPlayerName - wPlayerData)
 	ld c, NAME_LENGTH_JAPANESE - 1
 	call .ComponentFromString
 	ld hl, sPlayerData + (wMoney - wPlayerData)
-	ld c, 3
+	ld c, $3
 	call .ComponentFromNumber
 	call CloseSRAM
 	ret
 
-.ComponentFromNumber:
+.ComponentFromNumber: ; 4d533
 	ld a, [hli]
 	add e
 	ld e, a
-	ld a, 0
+	ld a, $0
 	adc d
 	ld d, a
 	dec c
 	jr nz, .ComponentFromNumber
 	ret
 
-.ComponentFromString:
+.ComponentFromString: ; 4d53e
 	ld a, [hli]
 	cp "@"
 	ret z
 	add e
 	ld e, a
-	ld a, 0
+	ld a, $0
 	adc d
 	ld d, a
 	dec c

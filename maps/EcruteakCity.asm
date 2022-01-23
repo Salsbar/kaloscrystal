@@ -1,4 +1,4 @@
-	object_const_def
+	const_def 2 ; object constants
 	const ECRUTEAKCITY_GRAMPS1
 	const ECRUTEAKCITY_GRAMPS2
 	const ECRUTEAKCITY_LASS1
@@ -8,14 +8,14 @@
 	const ECRUTEAKCITY_GRAMPS3
 
 EcruteakCity_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 1 ; callbacks
 	callback MAPCALLBACK_NEWMAP, .FlyPoint
 
 .FlyPoint:
 	setflag ENGINE_FLYPOINT_ECRUTEAK
-	endcallback
+	return
 
 EcruteakCityGramps1Script:
 	jumptextfaceplayer EcruteakCityGramps1Text
@@ -80,15 +80,16 @@ BurnedTowerSign:
 	jumptext BurnedTowerSignText
 
 EcruteakCityPokecenterSign:
-	jumpstd PokecenterSignScript
+	jumpstd pokecentersign
 
 EcruteakCityMartSign:
-	jumpstd MartSignScript
+	jumpstd martsign
 
 EcruteakCityHiddenHyperPotion:
 	hiddenitem HYPER_POTION, EVENT_ECRUTEAK_CITY_HIDDEN_HYPER_POTION
 
-UnusedMissingDaughterText: ; unreferenced
+UnusedMissingDaughterText:
+; unused
 	text "Oh, no. Oh, no…"
 
 	para "My daughter is"
@@ -190,17 +191,20 @@ EcruteakCityGramps3Text:
 	text "In the distant"
 	line "past…"
 
-	para "This tower burned"
-	line "in a fire. Three"
+	para "Two storm spirits"
+	line "were causing"
+	cont "trouble."
 
-	para "nameless #MON"
-	line "perished in it."
+	para "They caused the"
+	line "BRASS TOWER to"
+	cont "burn down."
 
-	para "A rainbow-colored"
-	line "#MON descended"
+	para "A great green"
+	line "#MON rose up"
 
-	para "from the sky and"
-	line "resurrected them…"
+	para "from the ground"
+	line "and sealed them"
+	cont "in the ruins…"
 
 	para "It's a legend that"
 	line "has been passed"
@@ -228,7 +232,7 @@ TinTowerSignText:
 
 	para "A legendary #-"
 	line "MON is said to"
-	cont "roost here."
+	cont "dwell here."
 	done
 
 EcruteakGymSignText:
@@ -259,7 +263,7 @@ BurnedTowerSignText:
 EcruteakCity_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 15 ; warp events
 	warp_event 35, 26, ROUTE_42_ECRUTEAK_GATE, 1
 	warp_event 35, 27, ROUTE_42_ECRUTEAK_GATE, 2
 	warp_event 18, 11, ECRUTEAK_TIN_TOWER_ENTRANCE, 1
@@ -276,9 +280,9 @@ EcruteakCity_MapEvents:
 	warp_event  0, 18, ROUTE_38_ECRUTEAK_GATE, 3
 	warp_event  0, 19, ROUTE_38_ECRUTEAK_GATE, 4
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 8 ; bg events
 	bg_event 15, 21, BGEVENT_READ, EcruteakCitySign
 	bg_event 38, 10, BGEVENT_READ, TinTowerSign
 	bg_event  8, 28, BGEVENT_READ, EcruteakGymSign
@@ -288,7 +292,7 @@ EcruteakCity_MapEvents:
 	bg_event 30, 21, BGEVENT_READ, EcruteakCityMartSign
 	bg_event 23, 14, BGEVENT_ITEM, EcruteakCityHiddenHyperPotion
 
-	def_object_events
+	db 7 ; object events
 	object_event 18, 15, SPRITE_GRAMPS, SPRITEMOVEDATA_WANDER, 1, 1, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, EcruteakCityGramps1Script, -1
 	object_event 20, 21, SPRITE_GRAMPS, SPRITEMOVEDATA_SPINRANDOM_SLOW, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, EcruteakCityGramps2Script, -1
 	object_event 21, 29, SPRITE_LASS, SPRITEMOVEDATA_WALK_LEFT_RIGHT, 2, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_SCRIPT, 0, EcruteakCityLass1Script, -1

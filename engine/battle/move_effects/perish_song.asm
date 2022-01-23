@@ -1,5 +1,6 @@
-BattleCommand_PerishSong:
+BattleCommand_PerishSong: ; 376c2
 ; perishsong
+
 
 	ld hl, wPlayerSubStatus1
 	ld de, wEnemySubStatus1
@@ -31,8 +32,9 @@ BattleCommand_PerishSong:
 .done
 	call AnimateCurrentMove
 	ld hl, StartPerishText
-	jp StdBattleTextbox
+	jp StdBattleTextBox
 
 .failed
 	call AnimateFailedMove
 	jp PrintButItFailed
+; 376f8

@@ -1,4 +1,4 @@
-	object_const_def
+	const_def 2 ; object constants
 	const BURNEDTOWER1F_ROCK
 	const BURNEDTOWER1F_EUSINE
 	const BURNEDTOWER1F_SILVER
@@ -6,16 +6,16 @@
 	const BURNEDTOWER1F_POKE_BALL
 
 BurnedTower1F_MapScripts:
-	def_scene_scripts
+	db 3 ; scene scripts
 	scene_script .EusineScene ; SCENE_DEFAULT
 	scene_script .DummyScene1 ; SCENE_BURNEDTOWER1F_RIVAL_BATTLE
 	scene_script .DummyScene2 ; SCENE_BURNEDTOWER1F_NOTHING
 
-	def_callbacks
+	db 1 ; callbacks
 	callback MAPCALLBACK_TILES, .HoleAndLadder
 
 .EusineScene:
-	sdefer .MeetEusine
+	priorityjump .MeetEusine
 	end
 
 .DummyScene1:
@@ -33,7 +33,7 @@ BurnedTower1F_MapScripts:
 	iftrue .HideBasement
 	changeblock 6, 14, $09 ; ladder
 .HideBasement:
-	endcallback
+	return
 
 .MeetEusine:
 	turnobject BURNEDTOWER1F_EUSINE, DOWN
@@ -70,7 +70,7 @@ BurnedTowerRivalBattleScript:
 	startbattle
 	dontrestartmapmusic
 	reloadmapafterbattle
-	sjump .returnfrombattle
+	jump .returnfrombattle
 
 .totodile
 	winlosstext BurnedTowerSilver_WinText, BurnedTowerSilver_LossText
@@ -79,7 +79,7 @@ BurnedTowerRivalBattleScript:
 	startbattle
 	dontrestartmapmusic
 	reloadmapafterbattle
-	sjump .returnfrombattle
+	jump .returnfrombattle
 
 .chikorita
 	winlosstext BurnedTowerSilver_WinText, BurnedTowerSilver_LossText
@@ -88,7 +88,7 @@ BurnedTowerRivalBattleScript:
 	startbattle
 	dontrestartmapmusic
 	reloadmapafterbattle
-	sjump .returnfrombattle
+	jump .returnfrombattle
 
 .returnfrombattle
 	playmusic MUSIC_RIVAL_AFTER
@@ -126,7 +126,7 @@ BurnedTower1FMortyScript:
 	jumptextfaceplayer BurnedTower1FMortyText
 
 BurnedTower1FRock:
-	jumpstd SmashRockScript
+	jumpstd smashrock
 
 BurnedTower1FHiddenEther:
 	hiddenitem ETHER, EVENT_BURNED_TOWER_1F_HIDDEN_ETHER
@@ -135,7 +135,7 @@ BurnedTower1FHiddenUltraBall:
 	hiddenitem ULTRA_BALL, EVENT_BURNED_TOWER_1F_HIDDEN_ULTRA_BALL
 
 BurnedTower1FHPUp:
-	itemball HP_UP
+	itemball FIRE_STONE
 
 BurnedTowerMovement_PlayerWalksToSilver:
 	step LEFT
@@ -229,7 +229,7 @@ BurnedTower1FEusineIntroText:
 
 	para "I'm on the trail"
 	line "of a #MON named"
-	cont "SUICUNE."
+	cont "ZYGARDE."
 
 	para "And you are…?"
 
@@ -237,7 +237,7 @@ BurnedTower1FEusineIntroText:
 	line "meet you!"
 
 	para "I heard rumors"
-	line "that SUICUNE is in"
+	line "that ZYGARDE is in"
 
 	para "this BURNED TOWER,"
 	line "so I came to look."
@@ -248,7 +248,7 @@ BurnedTower1FEusineIntroText:
 
 BurnedTower1FEusineText:
 	text "EUSINE: I heard"
-	line "that SUICUNE is in"
+	line "that ZYGARDE is in"
 
 	para "this BURNED TOWER,"
 	line "so I came to look."
@@ -263,11 +263,8 @@ BurnedTower1FMortyText:
 
 	para "study what are"
 	line "said to be the"
-
-	para "legendary #MON"
-	line "--SUICUNE, ENTEI"
-	cont "and RAIKOU."
-
+	cont "legendary #MON"
+	
 	para "EUSINE is here, so"
 	line "I've decided to"
 
@@ -278,7 +275,7 @@ BurnedTower1FMortyText:
 BurnedTower1F_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 14 ; warp events
 	warp_event  9, 15, ECRUTEAK_CITY, 13
 	warp_event 10, 15, ECRUTEAK_CITY, 13
 	warp_event 10,  9, BURNED_TOWER_B1F, 1
@@ -294,14 +291,14 @@ BurnedTower1F_MapEvents:
 	warp_event 15, 14, BURNED_TOWER_B1F, 5 ; inaccessible, left over from G/S
 	warp_event  7, 15, BURNED_TOWER_B1F, 6 ; inaccessible, left over from G/S
 
-	def_coord_events
+	db 1 ; coord events
 	coord_event 11,  9, SCENE_BURNEDTOWER1F_RIVAL_BATTLE, BurnedTowerRivalBattleScript
 
-	def_bg_events
+	db 2 ; bg events
 	bg_event  8,  7, BGEVENT_ITEM, BurnedTower1FHiddenEther
 	bg_event 13, 11, BGEVENT_ITEM, BurnedTower1FHiddenUltraBall
 
-	def_object_events
+	db 5 ; object events
 	object_event 15,  4, SPRITE_ROCK, SPRITEMOVEDATA_SMASHABLE_ROCK, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, BurnedTower1FRock, -1
 	object_event 12, 12, SPRITE_SUPER_NERD, SPRITEMOVEDATA_SPINRANDOM_SLOW, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_SCRIPT, 0, BurnedTower1FEusineScript, EVENT_BURNED_TOWER_1F_EUSINE
 	object_event  8,  9, SPRITE_SILVER, SPRITEMOVEDATA_STANDING_LEFT, 0, 0, -1, -1, 0, OBJECTTYPE_TRAINER, 3, ObjectEvent, EVENT_RIVAL_BURNED_TOWER

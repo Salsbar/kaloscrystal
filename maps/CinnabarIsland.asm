@@ -1,15 +1,63 @@
-	object_const_def
+	const_def 2 ; object constants
+	const CINNABARISLAND_VOLCANION
 	const CINNABARISLAND_BLUE
 
 CinnabarIsland_MapScripts:
-	def_scene_scripts
+	db 1 ; scene scripts
+	scene_script .DummyScene ; SCENE_DEFAULT
 
-	def_callbacks
+	db 1 ; callbacks
 	callback MAPCALLBACK_NEWMAP, .FlyPoint
 
+.DummyScene:
+	end
+	
 .FlyPoint:
 	setflag ENGINE_FLYPOINT_CINNABAR
-	endcallback
+	setevent EVENT_CINNABAR_ISLAND_VOLCANION
+	return
+	
+Volcanion:
+	checkevent EVENT_FOUGHT_VOLCANION
+	iftrue .Done
+	checkevent EVENT_VIRIDIAN_GYM_BLUE
+	iftrue .Done
+	checkitem VOLCANIC_ASH
+	iffalse .Done
+	playmusic MUSIC_NONE
+	pause 10
+	turnobject PLAYER, RIGHT
+	pause 20
+	cry VOLCANION
+	pause 15
+	appear CINNABARISLAND_VOLCANION
+	playsound SFX_WARP_FROM
+	applymovement CINNABARISLAND_VOLCANION, CinnabarIslandVolcanionMovement
+	waitsfx
+	opentext
+	writetext VolcanionText
+	cry VOLCANION
+	pause 15
+	closetext
+	setevent EVENT_FOUGHT_VOLCANION
+	writecode VAR_BATTLETYPE, BATTLETYPE_FORCEITEM
+	loadwildmon VOLCANION, 40
+	startbattle
+	disappear CINNABARISLAND_VOLCANION
+	reloadmapafterbattle
+	setscene SCENE_DEFAULT
+	end
+	
+.Done:
+	disappear CINNABARISLAND_VOLCANION
+	end
+	
+CinnabarIslandVolcanionMovement:
+	set_sliding
+	fast_jump_step LEFT
+	fast_jump_step LEFT
+	remove_sliding
+	step_end
 
 CinnabarIslandBlue:
 	faceplayer
@@ -30,7 +78,7 @@ CinnabarIslandSign:
 	jumptext CinnabarIslandSignText
 
 CinnabarIslandPokecenterSign:
-	jumpstd PokecenterSignScript
+	jumpstd pokecentersign
 
 CinnabarIslandHiddenRareCandy:
 	hiddenitem RARE_CANDY, EVENT_CINNABAR_ISLAND_HIDDEN_RARE_CANDY
@@ -38,6 +86,10 @@ CinnabarIslandHiddenRareCandy:
 CinnabarIslandBlueTeleport:
 	teleport_from
 	step_end
+
+VolcanionText:
+	text "Vohhhrgh!"
+	done
 
 CinnabarIslandBlueText:
 	text "Who are you?"
@@ -128,16 +180,18 @@ CinnabarIslandSignText:
 CinnabarIsland_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 1 ; warp events
 	warp_event 11, 11, CINNABAR_POKECENTER_1F, 1
 
-	def_coord_events
+	db 1 ; coord events
+	coord_event 6, 8, SCENE_DEFAULT, Volcanion
 
-	def_bg_events
+	db 4 ; bg events
 	bg_event 12, 11, BGEVENT_READ, CinnabarIslandPokecenterSign
 	bg_event  9, 11, BGEVENT_READ, CinnabarIslandGymSign
 	bg_event  7,  7, BGEVENT_READ, CinnabarIslandSign
 	bg_event  9,  1, BGEVENT_ITEM, CinnabarIslandHiddenRareCandy
 
-	def_object_events
+	db 2 ; object events
+	object_event 11,  8, SPRITE_DRAGON, SPRITEMOVEDATA_STANDING_LEFT, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, ObjectEvent, EVENT_CINNABAR_ISLAND_VOLCANION
 	object_event  9,  6, SPRITE_BLUE, SPRITEMOVEDATA_SPINRANDOM_SLOW, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, CinnabarIslandBlue, EVENT_BLUE_IN_CINNABAR

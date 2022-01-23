@@ -1,11 +1,12 @@
-_Diploma:
+_Diploma: ; 1dd702
 	call PlaceDiplomaOnScreen
 	call WaitPressAorB_BlinkCursor
 	ret
+; 1dd709
 
-PlaceDiplomaOnScreen:
+PlaceDiplomaOnScreen: ; 1dd709
 	call ClearBGPalettes
-	call ClearTilemap
+	call ClearTileMap
 	call ClearSprites
 	call DisableLCD
 	ld hl, DiplomaGFX
@@ -34,6 +35,7 @@ PlaceDiplomaOnScreen:
 	call SetPalettes
 	call DelayFrame
 	ret
+; 1dd760
 
 .Player:
 	db "PLAYER@"
@@ -48,11 +50,12 @@ PlaceDiplomaOnScreen:
 	next "new #DEX."
 	next "Congratulations!"
 	db   "@"
+; 1dd7ae
 
-PrintDiplomaPage2:
+PrintDiplomaPage2: ; 1dd7ae
 	hlcoord 0, 0
 	ld bc, SCREEN_WIDTH * SCREEN_HEIGHT
-	ld a, " "
+	ld a, $7f
 	call ByteFill
 	ld hl, DiplomaPage2Tilemap
 	decoord 0, 0
@@ -74,18 +77,17 @@ PrintDiplomaPage2:
 	lb bc, PRINTNUM_LEADINGZEROS | 1, 2
 	call PrintNum
 	ret
+; 1dd7f0
 
 .PlayTime: db "PLAY TIME@"
 .GameFreak: db "GAME FREAK@"
+; 1dd805
 
-DiplomaGFX:
+DiplomaGFX: ; 1dd805
 INCBIN "gfx/diploma/diploma.2bpp.lz"
 
-DiplomaPage1Tilemap:
+DiplomaPage1Tilemap: ; 1ddc4b
 INCBIN "gfx/diploma/page1.tilemap"
 
-DiplomaPage2Tilemap:
+DiplomaPage2Tilemap: ; 1dddb3
 INCBIN "gfx/diploma/page2.tilemap"
-
-Diploma_DummyFunction: ; unreferenced
-	ret

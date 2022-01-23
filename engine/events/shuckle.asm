@@ -1,12 +1,13 @@
 MANIA_OT_ID EQU 00518
 
-GiveShuckle:
+GiveShuckle: ; 7305
+
 ; Adding to the party.
-	xor a ; PARTYMON
+	xor a
 	ld [wMonType], a
 
 ; Level 15 Shuckle.
-	ld a, SHUCKLE
+	ld a, KLINK
 	ld [wCurPartySpecies], a
 	ld a, 15
 	ld [wCurPartyLevel], a
@@ -15,7 +16,7 @@ GiveShuckle:
 	jr nc, .NotGiven
 
 ; Caught data.
-	ld b, CAUGHT_BY_UNKNOWN
+	ld b, 0
 	farcall SetGiftPartyMonCaughtData
 
 ; Holding a Berry.
@@ -42,20 +43,20 @@ GiveShuckle:
 	dec a
 	ld hl, wPartyMonNicknames
 	call SkipNames
-	ld de, SpecialShuckleNickname
+	ld de, SpecialShuckleNick
 	call CopyName2
 
 ; OT.
 	ld a, [wPartyCount]
 	dec a
-	ld hl, wPartyMonOTs
+	ld hl, wPartyMonOT
 	call SkipNames
 	ld de, SpecialShuckleOT
 	call CopyName2
 
 ; Engine flag for this event.
-	ld hl, wDailyFlags1
-	set DAILYFLAGS1_GOT_SHUCKIE_TODAY_F, [hl]
+	ld hl, wDailyFlags
+	set DAILYFLAGS_GOT_SHUCKIE_TODAY_F, [hl]
 	ld a, 1
 	ld [wScriptVar], a
 	ret
@@ -67,16 +68,15 @@ GiveShuckle:
 
 SpecialShuckleOT:
 	db "MANIA@"
+SpecialShuckleNick:
+	db "GIGEAR@"
 
-SpecialShuckleNickname:
-	db "SHUCKIE@"
-
-ReturnShuckie:
+ReturnShuckle: ; 737e
 	farcall SelectMonFromParty
 	jr c, .refused
 
 	ld a, [wCurPartySpecies]
-	cp SHUCKLE
+	cp KLINK
 	jr nz, .DontReturn
 
 	ld a, [wCurPartyMon]
@@ -94,7 +94,7 @@ ReturnShuckie:
 
 ; OT
 	ld a, [wCurPartyMon]
-	ld hl, wPartyMonOTs
+	ld hl, wPartyMonOT
 	call SkipNames
 	ld de, SpecialShuckleOT
 .CheckOT:

@@ -1,25 +1,25 @@
-InsertPokemonIntoBox:
+InsertPokemonIntoBox: ; 51322
 	ld a, BANK(sBoxCount)
-	call OpenSRAM
+	call GetSRAMBank
 	ld hl, sBoxCount
 	call InsertSpeciesIntoBoxOrParty
 	ld a, [sBoxCount]
 	dec a
-	ld [wNextBoxOrPartyIndex], a
+	ld [wd265], a
 	ld hl, sBoxMonNicknames
 	ld bc, MON_NAME_LENGTH
-	ld de, wBufferMonNickname
+	ld de, wBufferMonNick
 	call InsertDataIntoBoxOrParty
 	ld a, [sBoxCount]
 	dec a
-	ld [wNextBoxOrPartyIndex], a
-	ld hl, sBoxMonOTs
+	ld [wd265], a
+	ld hl, sBoxMonOT
 	ld bc, NAME_LENGTH
 	ld de, wBufferMonOT
 	call InsertDataIntoBoxOrParty
 	ld a, [sBoxCount]
 	dec a
-	ld [wNextBoxOrPartyIndex], a
+	ld [wd265], a
 	ld hl, sBoxMons
 	ld bc, BOXMON_STRUCT_LENGTH
 	ld de, wBufferMon
@@ -34,36 +34,36 @@ InsertPokemonIntoBox:
 	call CopyBytes
 	ld a, [wCurPartyMon]
 	ld b, a
-	farcall RestorePPOfDepositedPokemon
+	farcall RestorePPofDepositedPokemon
 	jp CloseSRAM
 
-InsertPokemonIntoParty:
+InsertPokemonIntoParty: ; 5138b
 	ld hl, wPartyCount
 	call InsertSpeciesIntoBoxOrParty
 	ld a, [wPartyCount]
 	dec a
-	ld [wNextBoxOrPartyIndex], a
+	ld [wd265], a
 	ld hl, wPartyMonNicknames
 	ld bc, MON_NAME_LENGTH
-	ld de, wBufferMonNickname
+	ld de, wBufferMonNick
 	call InsertDataIntoBoxOrParty
 	ld a, [wPartyCount]
 	dec a
-	ld [wNextBoxOrPartyIndex], a
-	ld hl, wPartyMonOTs
+	ld [wd265], a
+	ld hl, wPartyMonOT
 	ld bc, NAME_LENGTH
 	ld de, wBufferMonOT
 	call InsertDataIntoBoxOrParty
 	ld a, [wPartyCount]
 	dec a
-	ld [wNextBoxOrPartyIndex], a
+	ld [wd265], a
 	ld hl, wPartyMons
 	ld bc, PARTYMON_STRUCT_LENGTH
 	ld de, wBufferMon
 	call InsertDataIntoBoxOrParty
 	ret
 
-InsertSpeciesIntoBoxOrParty:
+InsertSpeciesIntoBoxOrParty: ; 513cb
 	inc [hl]
 	inc hl
 	ld a, [wCurPartyMon]
@@ -81,11 +81,11 @@ InsertSpeciesIntoBoxOrParty:
 	jr nz, .loop
 	ret
 
-InsertDataIntoBoxOrParty:
+InsertDataIntoBoxOrParty: ; 513e0
 	push de
 	push hl
 	push bc
-	ld a, [wNextBoxOrPartyIndex]
+	ld a, [wd265]
 	dec a
 	call AddNTimes
 	push hl
@@ -95,7 +95,7 @@ InsertDataIntoBoxOrParty:
 	pop hl
 .loop
 	push bc
-	ld a, [wNextBoxOrPartyIndex]
+	ld a, [wd265]
 	ld b, a
 	ld a, [wCurPartyMon]
 	cp b
@@ -116,9 +116,9 @@ InsertDataIntoBoxOrParty:
 	sbc b
 	ld h, a
 	pop de
-	ld a, [wNextBoxOrPartyIndex]
+	ld a, [wd265]
 	dec a
-	ld [wNextBoxOrPartyIndex], a
+	ld [wd265], a
 	jr .loop
 
 .insert

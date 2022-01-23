@@ -8,11 +8,10 @@ ENDM
 ; Associated data:
 ; - The *GFX, *Meta, and *Coll are defined in gfx/tilesets.asm
 ; - The *PalMap are defined in gfx/tileset_palette_maps.asm
-; - The *Anim are defined in engine/tilesets/tileset_anims.asm
+; - The *Anim are defined in engine/tileset_anims.asm
 
-Tilesets::
-; entries correspond to TILESET_* constants (see constants/tileset_constants.asm)
-	table_width TILESET_LENGTH, Tilesets
+Tilesets:: ; 4d596
+; entries correspond to TILESET_* constants
 	tileset Tileset0
 	tileset TilesetJohto
 	tileset TilesetJohtoModern
@@ -35,7 +34,7 @@ Tilesets::
 	tileset TilesetLighthouse
 	tileset TilesetPlayersRoom
 	tileset TilesetPokeComCenter
-	tileset TilesetBattleTowerInside
+	tileset TilesetBattleTower
 	tileset TilesetTower
 	tileset TilesetCave
 	tileset TilesetPark
@@ -50,4 +49,4 @@ Tilesets::
 	tileset TilesetKabutoWordRoom
 	tileset TilesetOmanyteWordRoom
 	tileset TilesetAerodactylWordRoom
-	assert_table_length NUM_TILESETS + 1
+; 4d7c1

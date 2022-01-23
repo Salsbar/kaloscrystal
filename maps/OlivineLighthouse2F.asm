@@ -1,11 +1,11 @@
-	object_const_def
+	const_def 2 ; object constants
 	const OLIVINELIGHTHOUSE2F_SAILOR
 	const OLIVINELIGHTHOUSE2F_GENTLEMAN
 
 OlivineLighthouse2F_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 0 ; callbacks
 
 TrainerGentlemanAlfred:
 	trainer GENTLEMAN, ALFRED, EVENT_BEAT_GENTLEMAN_ALFRED, GentlemanAlfredSeenText, GentlemanAlfredBeatenText, 0, .Script
@@ -22,10 +22,10 @@ TrainerSailorHuey:
 	trainer SAILOR, HUEY1, EVENT_BEAT_SAILOR_HUEY, SailorHueySeenText, SailorHueyBeatenText, 0, .Script
 
 .Script:
-	loadvar VAR_CALLERID, PHONE_SAILOR_HUEY
+	writecode VAR_CALLERID, PHONE_SAILOR_HUEY
 	endifjustbattled
 	opentext
-	checkflag ENGINE_HUEY_READY_FOR_REMATCH
+	checkflag ENGINE_HUEY
 	iftrue .WantsBattle
 	checkcellnum PHONE_SAILOR_HUEY
 	iftrue .NumberAccepted
@@ -33,7 +33,7 @@ TrainerSailorHuey:
 	iftrue .AskedBefore
 	setevent EVENT_HUEY_ASKED_FOR_PHONE_NUMBER
 	scall .AskNumber1
-	sjump .AskForNumber
+	jump .AskForNumber
 
 .AskedBefore:
 	scall .AskNumber2
@@ -41,14 +41,14 @@ TrainerSailorHuey:
 	askforphonenumber PHONE_SAILOR_HUEY
 	ifequal PHONE_CONTACTS_FULL, .PhoneFull
 	ifequal PHONE_CONTACT_REFUSED, .NumberDeclined
-	gettrainername STRING_BUFFER_3, SAILOR, HUEY1
+	trainertotext SAILOR, HUEY1, MEM_BUFFER_0
 	scall .RegisteredNumber
-	sjump .NumberAccepted
+	jump .NumberAccepted
 
 .WantsBattle:
 	scall .Rematch
 	winlosstext SailorHueyBeatenText, 0
-	readmem wHueyFightCount
+	copybytetovar wHueyFightCount
 	ifequal 3, .Fight3
 	ifequal 2, .Fight2
 	ifequal 1, .Fight1
@@ -66,31 +66,31 @@ TrainerSailorHuey:
 	loadtrainer SAILOR, HUEY1
 	startbattle
 	reloadmapafterbattle
-	loadmem wHueyFightCount, 1
-	clearflag ENGINE_HUEY_READY_FOR_REMATCH
+	loadvar wHueyFightCount, 1
+	clearflag ENGINE_HUEY
 	end
 
 .LoadFight1:
 	loadtrainer SAILOR, HUEY2
 	startbattle
 	reloadmapafterbattle
-	loadmem wHueyFightCount, 2
-	clearflag ENGINE_HUEY_READY_FOR_REMATCH
+	loadvar wHueyFightCount, 2
+	clearflag ENGINE_HUEY
 	end
 
 .LoadFight2:
 	loadtrainer SAILOR, HUEY3
 	startbattle
 	reloadmapafterbattle
-	loadmem wHueyFightCount, 3
-	clearflag ENGINE_HUEY_READY_FOR_REMATCH
+	loadvar wHueyFightCount, 3
+	clearflag ENGINE_HUEY
 	end
 
 .LoadFight3:
 	loadtrainer SAILOR, HUEY4
 	startbattle
 	reloadmapafterbattle
-	clearflag ENGINE_HUEY_READY_FOR_REMATCH
+	clearflag ENGINE_HUEY
 	checkevent EVENT_HUEY_PROTEIN
 	iftrue .HasProtein
 	checkevent EVENT_GOT_PROTEIN_FROM_HUEY
@@ -99,7 +99,7 @@ TrainerSailorHuey:
 	verbosegiveitem PROTEIN
 	iffalse .PackFull
 	setevent EVENT_GOT_PROTEIN_FROM_HUEY
-	sjump .NumberAccepted
+	jump .NumberAccepted
 
 .SkipGift:
 	end
@@ -112,43 +112,43 @@ TrainerSailorHuey:
 	iffalse .PackFull
 	clearevent EVENT_HUEY_PROTEIN
 	setevent EVENT_GOT_PROTEIN_FROM_HUEY
-	sjump .NumberAccepted
+	jump .NumberAccepted
 
 .AskNumber1:
-	jumpstd AskNumber1MScript
+	jumpstd asknumber1m
 	end
 
 .AskNumber2:
-	jumpstd AskNumber2MScript
+	jumpstd asknumber2m
 	end
 
 .RegisteredNumber:
-	jumpstd RegisteredNumberMScript
+	jumpstd registerednumberm
 	end
 
 .NumberAccepted:
-	jumpstd NumberAcceptedMScript
+	jumpstd numberacceptedm
 	end
 
 .NumberDeclined:
-	jumpstd NumberDeclinedMScript
+	jumpstd numberdeclinedm
 	end
 
 .PhoneFull:
-	jumpstd PhoneFullMScript
+	jumpstd phonefullm
 	end
 
 .Rematch:
-	jumpstd RematchMScript
+	jumpstd rematchm
 	end
 
 .PackFull:
 	setevent EVENT_HUEY_PROTEIN
-	jumpstd PackFullMScript
+	jumpstd packfullm
 	end
 
 .RematchGift:
-	jumpstd RematchGiftMScript
+	jumpstd rematchgiftm
 	end
 
 SailorHueySeenText:
@@ -162,7 +162,8 @@ SailorHueyBeatenText:
 	line "I lose!"
 	done
 
-SailorHueyUnusedText: ; unreferenced
+SailorHueyUnusedText:
+; unused
 	text "What power!"
 	line "How would you like"
 
@@ -204,7 +205,7 @@ SailorHueyGiveProteinText:
 OlivineLighthouse2F_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 6 ; warp events
 	warp_event  3, 11, OLIVINE_LIGHTHOUSE_1F, 3
 	warp_event  5,  3, OLIVINE_LIGHTHOUSE_3F, 2
 	warp_event 16, 13, OLIVINE_LIGHTHOUSE_1F, 4
@@ -212,10 +213,10 @@ OlivineLighthouse2F_MapEvents:
 	warp_event 16, 11, OLIVINE_LIGHTHOUSE_3F, 4
 	warp_event 17, 11, OLIVINE_LIGHTHOUSE_3F, 5
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 0 ; bg events
 
-	def_object_events
+	db 2 ; object events
 	object_event  9,  3, SPRITE_SAILOR, SPRITEMOVEDATA_STANDING_RIGHT, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_TRAINER, 3, TrainerSailorHuey, -1
 	object_event 17,  8, SPRITE_GENTLEMAN, SPRITEMOVEDATA_STANDING_LEFT, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_TRAINER, 3, TrainerGentlemanAlfred, -1

@@ -1,10 +1,10 @@
-	object_const_def
+	const_def 2 ; object constants
 	const TINTOWERROOF_HO_OH
 
 TinTowerRoof_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 1 ; callbacks
 	callback MAPCALLBACK_OBJECTS, .HoOh
 
 .HoOh:
@@ -12,26 +12,26 @@ TinTowerRoof_MapScripts:
 	iftrue .NoAppear
 	checkitem RAINBOW_WING
 	iftrue .Appear
-	sjump .NoAppear
+	jump .NoAppear
 
 .Appear:
 	appear TINTOWERROOF_HO_OH
-	endcallback
+	return
 
 .NoAppear:
 	disappear TINTOWERROOF_HO_OH
-	endcallback
+	return
 
 TinTowerHoOh:
 	faceplayer
 	opentext
 	writetext HoOhText
-	cry HO_OH
+	cry XERNEAS
 	pause 15
 	closetext
 	setevent EVENT_FOUGHT_HO_OH
-	loadvar VAR_BATTLETYPE, BATTLETYPE_FORCEITEM
-	loadwildmon HO_OH, 60
+	writecode VAR_BATTLETYPE, BATTLETYPE_FORCEITEM
+	loadwildmon XERNEAS, 60
 	startbattle
 	disappear TINTOWERROOF_HO_OH
 	reloadmapafterbattle
@@ -45,12 +45,12 @@ HoOhText:
 TinTowerRoof_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 1 ; warp events
 	warp_event  9, 13, TIN_TOWER_9F, 4
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 0 ; bg events
 
-	def_object_events
-	object_event  9,  5, SPRITE_HO_OH, SPRITEMOVEDATA_POKEMON, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, TinTowerHoOh, EVENT_TIN_TOWER_ROOF_HO_OH
+	db 1 ; object events
+	object_event  9,  5, SPRITE_LUGIA, SPRITEMOVEDATA_POKEMON, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_SCRIPT, 0, TinTowerHoOh, EVENT_TIN_TOWER_ROOF_HO_OH

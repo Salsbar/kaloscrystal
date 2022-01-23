@@ -1,10 +1,10 @@
-	object_const_def
+	const_def 2 ; object constants
 	const MANIASHOUSE_ROCKER
 
 ManiasHouse_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 0 ; callbacks
 
 ManiaScript:
 	faceplayer
@@ -19,7 +19,7 @@ ManiaScript:
 	special GiveShuckle
 	iffalse .partyfull
 	writetext ManiaText_TakeCareOfShuckle
-	promptbutton
+	buttonsound
 	waitsfx
 	writetext ManiaText_GotShuckle
 	playsound SFX_KEY_ITEM
@@ -29,8 +29,8 @@ ManiaScript:
 	end
 
 .alreadyhaveshuckie
-	checkflag ENGINE_GOT_SHUCKIE_TODAY
-	iffalse .returnshuckie
+	;checkflag ENGINE_GOT_SHUCKIE_TODAY
+	;iffalse .returnshuckie
 	writetext ManiaText_TakeCareOfShuckle
 	waitbutton
 	closetext
@@ -52,7 +52,7 @@ ManiaScript:
 	writetext ManiaText_CanIHaveMyMonBack
 	yesorno
 	iffalse .refused
-	special ReturnShuckie
+	special ReturnShuckle
 	ifequal SHUCKIE_WRONG_MON, .wrong
 	ifequal SHUCKIE_REFUSED, .refused
 	ifequal SHUCKIE_HAPPY, .superhappy
@@ -83,7 +83,7 @@ ManiaScript:
 	closetext
 	end
 
-.nothingleft ; unreferenced
+.nothingleft
 	writetext ManiaText_ShuckleIsYourLastMon
 	waitbutton
 	closetext
@@ -95,8 +95,9 @@ ManiaScript:
 	closetext
 	end
 
-ManiasHouseUnusedBookshelf: ; unreferenced
-	jumpstd PictureBookshelfScript
+ManiasHouseUnusedBookshelf:
+; unused
+	jumpstd picturebookshelf
 
 ManiaText_AskLookAfterShuckle:
 	text "I, I'm in shock!"
@@ -116,10 +117,10 @@ ManiaText_AskLookAfterShuckle:
 	cont "he comes back?"
 
 	para "You look strong."
-	line "Could you look"
+	line "Could you take"
 
-	para "after my #MON"
-	line "for a while?"
+	para "my #MON with"
+	line "you?"
 	done
 
 ManiaText_TakeCareOfShuckle:
@@ -200,13 +201,13 @@ ManiaText_ShuckleIsYourLastMon:
 ManiasHouse_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 2 ; warp events
 	warp_event  2,  7, CIANWOOD_CITY, 1
 	warp_event  3,  7, CIANWOOD_CITY, 1
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 0 ; bg events
 
-	def_object_events
+	db 1 ; object events
 	object_event  2,  4, SPRITE_ROCKER, SPRITEMOVEDATA_SPINRANDOM_SLOW, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, ManiaScript, -1

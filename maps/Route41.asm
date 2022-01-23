@@ -1,4 +1,4 @@
-	object_const_def
+	const_def 2 ; object constants
 	const ROUTE41_OLIVINE_RIVAL1
 	const ROUTE41_OLIVINE_RIVAL2
 	const ROUTE41_OLIVINE_RIVAL3
@@ -11,9 +11,9 @@
 	const ROUTE41_SWIMMER_GIRL5
 
 Route41_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 0 ; callbacks
 
 TrainerSwimmerfKaylee:
 	trainer SWIMMERF, KAYLEE, EVENT_BEAT_SWIMMERF_KAYLEE, SwimmerfKayleeSeenText, SwimmerfKayleeBeatenText, 0, .Script
@@ -125,8 +125,9 @@ TrainerSwimmermMathew:
 	closetext
 	end
 
-Route41Rock: ; unreferenced
-	jumpstd SmashRockScript
+Route41Rock:
+; unused
+	jumpstd smashrock
 
 Route41HiddenMaxEther:
 	hiddenitem MAX_ETHER, EVENT_ROUTE_41_HIDDEN_MAX_ETHER
@@ -196,7 +197,7 @@ SwimmermBerkeAfterBattleText:
 
 	para "It was scattering"
 	line "feathers from its"
-	cont "silver wings."
+	cont "black wings."
 	done
 
 SwimmermKirkSeenText:
@@ -272,7 +273,7 @@ SwimmerfSusieBeatenText:
 SwimmerfSusieAfterBattleText:
 	text "Wasn't there a hit"
 	line "song about a boy"
-	cont "riding a LAPRAS?"
+	cont "riding a SWANNA?"
 	done
 
 SwimmerfDeniseSeenText:
@@ -320,7 +321,7 @@ SwimmerfKaraAfterBattleText:
 	done
 
 SwimmerfWendySeenText:
-	text "At night, STARYU"
+	text "At night, INKAY"
 	line "gather near the"
 	cont "water's surface."
 	done
@@ -331,7 +332,7 @@ SwimmerfWendyBeatenText:
 
 SwimmerfWendyAfterBattleText:
 	text "The clusters of"
-	line "STARYU light up"
+	line "INKAY light up"
 	cont "at the same time."
 
 	para "It's so beautiful,"
@@ -341,18 +342,18 @@ SwimmerfWendyAfterBattleText:
 Route41_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 4 ; warp events
 	warp_event 12, 17, WHIRL_ISLAND_NW, 1
 	warp_event 36, 19, WHIRL_ISLAND_NE, 1
 	warp_event 12, 37, WHIRL_ISLAND_SW, 1
 	warp_event 36, 45, WHIRL_ISLAND_SE, 1
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 1 ; bg events
 	bg_event  9, 35, BGEVENT_ITEM, Route41HiddenMaxEther
 
-	def_object_events
+	db 10 ; object events
 	object_event 32,  6, SPRITE_OLIVINE_RIVAL, SPRITEMOVEDATA_SPINRANDOM_FAST, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_TRAINER, 3, TrainerSwimmermCharlie, -1
 	object_event 46,  8, SPRITE_OLIVINE_RIVAL, SPRITEMOVEDATA_SPINRANDOM_FAST, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_TRAINER, 3, TrainerSwimmermGeorge, -1
 	object_event 20, 26, SPRITE_OLIVINE_RIVAL, SPRITEMOVEDATA_SPINCOUNTERCLOCKWISE, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_TRAINER, 3, TrainerSwimmermBerke, -1

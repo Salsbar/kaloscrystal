@@ -1,7 +1,7 @@
 ; These functions seem to be related to the selection of preset phrases
 ; for use in mobile communications.  Annoyingly, they separate the
 ; Battle Tower function above from the data it references.
-Function11c05d:
+Function11c05d: ; 11c05d
 	ld a, e
 	or d
 	jr z, .error
@@ -21,8 +21,9 @@ Function11c05d:
 	ld b, h
 	scf
 	ret
+; 11c075
 
-Function11c075:
+Function11c075: ; 11c075
 	push de
 	ld a, c
 	call Function11c254
@@ -30,8 +31,9 @@ Function11c075:
 	ld bc, wcd36
 	call Function11c08f
 	ret
+; 11c082
 
-Function11c082: ; unreferenced
+Unreferenced_Function11c082: ; 11c082
 	push de
 	ld a, c
 	call Function11c254
@@ -39,8 +41,9 @@ Function11c082: ; unreferenced
 	ld bc, wcd36
 	call PrintEZChatBattleMessage
 	ret
+; 11c08f
 
-Function11c08f:
+Function11c08f: ; 11c08f
 	ld l, e
 	ld h, d
 	push hl
@@ -90,28 +93,29 @@ Function11c08f:
 	dec a
 	jr nz, .loop2
 	ret
+; 11c0c6
 
-PrintEZChatBattleMessage:
+PrintEZChatBattleMessage: ; 11c0c6
 ; Use up to 6 words from bc to print text starting at de.
-	; Preserve [wJumptableIndex], [wcf64]
+	; Preserve $cf63, $cf64
 	ld a, [wJumptableIndex]
 	ld l, a
 	ld a, [wcf64]
 	ld h, a
 	push hl
-	; reset value at [wc618] (not preserved)
-	ld hl, wc618
+	; reset value at c618 (not preserved)
+	ld hl, $c618
 	ld a, $0
 	ld [hli], a
 	; preserve de
 	push de
-	; [wJumptableIndex] keeps track of which line we're on (0, 1, or 2)
-	; [wcf64] keeps track of how much room we have left in the current line
+	; $cf63 keeps track of which line we're on (0, 1, or 2)
+	; $cf64 keeps track of how much room we have left in the current line
 	xor a
 	ld [wJumptableIndex], a
 	ld a, 18
 	ld [wcf64], a
-	ld a, 6
+	ld a, $6 ; up to 6 times
 .loop
 	push af
 	; load the 2-byte word data pointed to by bc
@@ -178,7 +182,7 @@ PrintEZChatBattleMessage:
 	; deduct the length of the word
 	sub e
 	ld [wcf64], a
-	ld de, wc608
+	ld de, $c608
 .place_string_loop
 	; load the string from de to hl
 	ld a, [de]
@@ -195,35 +199,37 @@ PrintEZChatBattleMessage:
 	jr nz, .loop
 	; we're finished, place "<DONE>"
 	ld [hl], "<DONE>"
-	; now, let's place the string from wc618 to bc
+	; now, let's place the string from c618 to bc
 	pop bc
-	ld hl, wc618
+	ld hl, $c618
 	call PlaceHLTextAtBC
-	; restore the original values of [wJumptableIndex] and [wcf64]
+	; restore the original values of $cf63 and $cf64
 	pop hl
 	ld a, l
 	ld [wJumptableIndex], a
 	ld a, h
 	ld [wcf64], a
 	ret
+; 11c14a
 
-GetLengthOfWordAtC608:
+GetLengthOfWordAtC608: ; 11c14a
 	ld c, $0
-	ld hl, wc608
+	ld hl, $c608
 .loop
 	ld a, [hli]
 	cp "@"
 	ret z
 	inc c
 	jr .loop
+; 11c156
 
-CopyMobileEZChatToC608:
-	ldh a, [rSVBK]
+CopyMobileEZChatToC608: ; 11c156
+	ld a, [rSVBK]
 	push af
 	ld a, $1
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	ld a, "@"
-	ld hl, wc608
+	ld hl, $c608
 	ld bc, NAME_LENGTH
 	call ByteFill
 	ld a, d
@@ -252,43 +258,46 @@ CopyMobileEZChatToC608:
 	add hl, bc
 	ld bc, NAME_LENGTH_JAPANESE - 1
 .copy_string
-	ld de, wc608
+	ld de, $c608
 	call CopyBytes
-	ld de, wc608
+	ld de, $c608
 	pop af
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	ret
 
 .get_name
 	ld a, e
-	ld [wNamedObjectIndex], a
+	ld [wd265], a
 	call GetPokemonName
 	ld hl, wStringBuffer1
 	ld bc, MON_NAME_LENGTH - 1
 	jr .copy_string
+; 11c1ab
 
-Function11c1ab:
-	ldh a, [hInMenu]
+Function11c1ab: ; 11c1ab
+	ld a, [hInMenu]
 	push af
 	ld a, $1
-	ldh [hInMenu], a
+	ld [hInMenu], a
 	call Function11c1b9
 	pop af
-	ldh [hInMenu], a
+	ld [hInMenu], a
 	ret
+; 11c1b9
 
-Function11c1b9:
+Function11c1b9: ; 11c1b9
 	call .InitKanaMode
-	ldh a, [rSVBK]
+	ld a, [rSVBK]
 	push af
 	ld a, $5
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	call EZChat_MasterLoop
 	pop af
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	ret
+; 11c1ca
 
-.InitKanaMode:
+.InitKanaMode: ; 11c1ca
 	xor a
 	ld [wJumptableIndex], a
 	ld [wcf64], a
@@ -311,11 +320,11 @@ Function11c1b9:
 	call Function11d323
 	call SetPalettes
 	call DisableLCD
-	ld hl, SelectStartGFX
+	ld hl, GFX_11d67e
 	ld de, vTiles2
 	ld bc, $60
 	call CopyBytes
-	ld hl, EZChatSlowpokeLZ
+	ld hl, LZ_11d6de
 	ld de, vTiles0
 	call Decompress
 	call EnableLCD
@@ -323,25 +332,26 @@ Function11c1b9:
 	farcall ClearSpriteAnims
 	farcall LoadPokemonData
 	farcall Pokedex_ABCMode
-	ldh a, [rSVBK]
+	ld a, [rSVBK]
 	push af
 	ld a, $5
-	ldh [rSVBK], a
-	ld hl, wc6d0
+	ld [rSVBK], a
+	ld hl, $c6d0
 	ld de, wLYOverrides
 	ld bc, $100
 	call CopyBytes
 	pop af
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	call EZChat_GetCategoryWordsByKana
 	call EZChat_GetSeenPokemonByKana
 	ret
+; 11c254
 
-Function11c254:
+Function11c254: ; 11c254
 	push af
-	ld a, BANK(s4_a007)
-	call OpenSRAM
-	ld hl, s4_a007
+	ld a, $4
+	call GetSRAMBank
+	ld hl, $a007
 	pop af
 	sla a
 	sla a
@@ -349,26 +359,27 @@ Function11c254:
 	sla a
 	add c
 	ld c, a
-	ld b, 0
+	ld b, $0
 	add hl, bc
 	ld de, wcd36
 	ld bc, 12
 	call CopyBytes
 	call CloseSRAM
 	ret
+; 11c277
 
-EZChat_ClearBottom12Rows:
+EZChat_ClearBottom12Rows: ; 11c277 (47:4277)
 	ld a, "　"
 	hlcoord 0, 6
 	ld bc, (SCREEN_HEIGHT - 6) * SCREEN_WIDTH
 	call ByteFill
 	ret
 
-EZChat_MasterLoop:
+EZChat_MasterLoop: ; 11c283
 .loop
 	call JoyTextDelay
-	ldh a, [hJoyPressed]
-	ldh [hJoypadPressed], a
+	ld a, [hJoyPressed]
+	ld [hJoypadPressed], a
 	ld a, [wJumptableIndex]
 	bit 7, a
 	jr nz, .exit
@@ -381,11 +392,13 @@ EZChat_MasterLoop:
 	farcall ClearSpriteAnims
 	call ClearSprites
 	ret
+; 11c2ac
 
-.DoJumptableFunction:
+.DoJumptableFunction: ; 11c2ac
 	jumptable .Jumptable, wJumptableIndex
+; 11c2bb
 
-.Jumptable:
+.Jumptable: ; 11c2bb (47:42bb)
 	dw .SpawnObjects ; 00
 	dw .InitRAM ; 01
 	dw Function11c35f ; 02
@@ -410,47 +423,47 @@ EZChat_MasterLoop:
 	dw Function11ce0b ; 15
 	dw Function11ce2b ; 16
 
-.SpawnObjects:
+.SpawnObjects: ; 11c2e9 (47:42e9)
 	depixel 3, 1, 2, 5
 	ld a, SPRITE_ANIM_INDEX_EZCHAT_CURSOR
-	call InitSpriteAnimStruct
+	call _InitSpriteAnimStruct
 	depixel 8, 1, 2, 5
 
 	ld a, SPRITE_ANIM_INDEX_EZCHAT_CURSOR
-	call InitSpriteAnimStruct
-	ld hl, SPRITEANIMSTRUCT_VAR1
+	call _InitSpriteAnimStruct
+	ld hl, SPRITEANIMSTRUCT_0C
 	add hl, bc
 	ld a, $1
 	ld [hl], a
 
 	depixel 9, 2, 2, 0
 	ld a, SPRITE_ANIM_INDEX_EZCHAT_CURSOR
-	call InitSpriteAnimStruct
-	ld hl, SPRITEANIMSTRUCT_VAR1
+	call _InitSpriteAnimStruct
+	ld hl, SPRITEANIMSTRUCT_0C
 	add hl, bc
 	ld a, $3
 	ld [hl], a
 
 	depixel 10, 16
 	ld a, SPRITE_ANIM_INDEX_EZCHAT_CURSOR
-	call InitSpriteAnimStruct
-	ld hl, SPRITEANIMSTRUCT_VAR1
+	call _InitSpriteAnimStruct
+	ld hl, SPRITEANIMSTRUCT_0C
 	add hl, bc
 	ld a, $4
 	ld [hl], a
 
 	depixel 10, 4
 	ld a, SPRITE_ANIM_INDEX_EZCHAT_CURSOR
-	call InitSpriteAnimStruct
-	ld hl, SPRITEANIMSTRUCT_VAR1
+	call _InitSpriteAnimStruct
+	ld hl, SPRITEANIMSTRUCT_0C
 	add hl, bc
 	ld a, $5
 	ld [hl], a
 
 	depixel 10, 2
 	ld a, SPRITE_ANIM_INDEX_EZCHAT_CURSOR
-	call InitSpriteAnimStruct
-	ld hl, SPRITEANIMSTRUCT_VAR1
+	call _InitSpriteAnimStruct
+	ld hl, SPRITEANIMSTRUCT_0C
 	add hl, bc
 	ld a, $2
 	ld [hl], a
@@ -460,7 +473,7 @@ EZChat_MasterLoop:
 	set 2, [hl]
 	jp Function11cfb5
 
-.InitRAM:
+.InitRAM: ; 11c346 (47:4346)
 	ld a, $9
 	ld [wcd2d], a
 	ld a, $2
@@ -471,7 +484,7 @@ EZChat_MasterLoop:
 	call Function11cfce
 	jp Function11cfb5
 
-Function11c35f:
+Function11c35f: ; 11c35f (47:435f)
 	ld hl, wcd2f
 	inc [hl]
 	inc [hl]
@@ -485,7 +498,7 @@ Function11c35f:
 	ret nz
 	jp Function11cfb5
 
-Function11c373:
+Function11c373: ; 11c373 (47:4373)
 	ld hl, wcd30
 	inc [hl]
 	inc [hl]
@@ -500,7 +513,7 @@ Function11c373:
 	call Function11c38a
 	jp Function11cfb5
 
-Function11c38a:
+Function11c38a: ; 11c38a (47:438a)
 	ld hl, Unknown_11c986
 	ld bc, wcd36
 	ld a, $6
@@ -538,11 +551,13 @@ Function11c38a:
 	dec a
 	jr nz, .asm_11c392
 	ret
+; 11c3bc (47:43bc)
 
-String_11c3bc:
+String_11c3bc: ; 11c3bc
 	db "ーーーーー@"
+; 11c3c2
 
-Function11c3c2:
+Function11c3c2: ; 11c3c2 (47:43c2)
 	call EZChat_ClearBottom12Rows
 	ld de, Unknown_11cfbe
 	call Function11d035
@@ -559,9 +574,9 @@ Function11c3c2:
 	res 0, [hl]
 	call Function11cfb5
 
-Function11c3ed:
-	ld hl, wcd20
-	ld de, hJoypadPressed
+Function11c3ed: ; 11c3ed (47:43ed)
+	ld hl, wcd20 ; wcd20
+	ld de, hJoypadPressed ; $ffa3
 	ld a, [de]
 	and $8
 	jr nz, .asm_11c426
@@ -595,11 +610,11 @@ Function11c3ed:
 	jr .asm_11c475
 .asm_11c426
 	ld a, $8
-	ld [wcd20], a
+	ld [wcd20], a ; wcd20
 	ret
 
 .asm_11c42c
-	ld a, [wcd20]
+	ld a, [wcd20] ; wcd20
 	cp $6
 	jr c, .asm_11c472
 	sub $6
@@ -677,7 +692,7 @@ Function11c3ed:
 	ld [hl], a
 	ret
 
-Function11c4a5:
+Function11c4a5: ; 11c4a5 (47:44a5)
 	ld hl, wcd23
 	res 0, [hl]
 	ld a, [wcd2b]
@@ -694,29 +709,32 @@ Function11c4a5:
 	ld a, $15
 	ret
 
-Function11c4be:
+Function11c4be: ; 11c4be (47:44be)
 	ld a, $1
-	hlcoord 0, 6, wAttrmap
+	hlcoord 0, 6, wAttrMap
 	ld bc, $a0
 	call ByteFill
 	ld a, $7
-	hlcoord 0, 14, wAttrmap
+	hlcoord 0, 14, wAttrMap
 	ld bc, $28
 	call ByteFill
 	farcall ReloadMapPart
 	ret
+; 11c4db (47:44db)
 
-String_11c4db:
+String_11c4db: ; 11c4db
 	db   "６つのことば¯くみあわせます"
 	next "かえたいところ¯えらぶと　でてくる"
 	next "ことばのグループから　いれかえたい"
 	next "たんご¯えらんでください"
 	db   "@"
+; 11c51b
 
-String_11c51b:
+String_11c51b: ; 11c51b
 	db "ぜんぶけす　やめる　　　けってい@"
+; 11c52c
 
-Function11c52c:
+Function11c52c: ; 11c52c (47:452c)
 	call EZChat_ClearBottom12Rows
 	call EZChat_PlaceCategoryNames
 	call Function11c618
@@ -724,9 +742,9 @@ Function11c52c:
 	res 1, [hl]
 	call Function11cfb5
 
-Function11c53d:
+Function11c53d: ; 11c53d (47:453d)
 	ld hl, wcd21
-	ld de, hJoypadPressed
+	ld de, hJoypadPressed ; $ffa3
 
 	ld a, [de]
 	and START
@@ -778,7 +796,7 @@ Function11c53d:
 	ld hl, wcd24
 	set 0, [hl]
 	ld a, $8
-	ld [wcd20], a
+	ld [wcd20], a ; wcd20
 
 .b
 	ld a, $4
@@ -806,7 +824,7 @@ Function11c53d:
 	ret
 
 .done
-	ld a, [wcd20]
+	ld a, [wcd20] ; wcd20
 	call Function11ca6a
 	call PlayClickSFX
 	ret
@@ -861,8 +879,9 @@ Function11c53d:
 .finish_dpad
 	ld [hl], a
 	ret
+; 11c5f0
 
-EZChat_PlaceCategoryNames:
+EZChat_PlaceCategoryNames: ; 11c5f0 (47:45f0)
 	ld de, MobileEZChatCategoryNames
 	ld bc, Coords_11c63a
 	ld a, 15
@@ -893,18 +912,20 @@ EZChat_PlaceCategoryNames:
 	call PlaceString
 	ret
 
-Function11c618:
+Function11c618: ; 11c618 (47:4618)
 	ld a, $2
-	hlcoord 0, 6, wAttrmap
+	hlcoord 0, 6, wAttrMap
 	ld bc, $c8
 	call ByteFill
 	farcall ReloadMapPart
 	ret
+; 11c62a (47:462a)
 
-EZChatString_Stop_Mode_Cancel:
+EZChatString_Stop_Mode_Cancel: ; 11c62a
 	db "けす　　　　モード　　　やめる@"
+; 11c63a
 
-Coords_11c63a:
+Coords_11c63a: ; 11c63a
 	dwcoord  1,  7
 	dwcoord  7,  7
 	dwcoord 13,  7
@@ -920,8 +941,9 @@ Coords_11c63a:
 	dwcoord  1, 15
 	dwcoord  7, 15
 	dwcoord 13, 15
+; 11c658
 
-Function11c658:
+Function11c658: ; 11c658 (47:4658)
 	call EZChat_ClearBottom12Rows
 	call Function11c770
 	ld de, Unknown_11cfc2
@@ -933,9 +955,9 @@ Function11c658:
 	res 3, [hl]
 	call Function11cfb5
 
-Function11c675:
+Function11c675: ; 11c675 (47:4675)
 	ld hl, wMobileCommsJumptableIndex
-	ld de, hJoypadPressed
+	ld de, hJoypadPressed ; $ffa3
 	ld a, [de]
 	and A_BUTTON
 	jr nz, .a
@@ -1092,7 +1114,7 @@ Function11c675:
 	ld [hl], a
 	ret
 
-Function11c770:
+Function11c770: ; 11c770 (47:4770)
 	xor a
 	ld [wMobileCommsJumptableIndex], a
 	ld [wcd26], a
@@ -1132,8 +1154,8 @@ Function11c770:
 	jr .load
 
 .cd2b_is_nonzero
-	; compute from [wc6a8 + 2 * [wcd22]]
-	ld hl, wc6a8
+	; compute from [c6a8 + 2 * [cd22]]
+	ld hl, $c6a8 ; $c68a + 30
 	ld a, [wcd22]
 	ld c, a
 	ld b, 0
@@ -1143,7 +1165,7 @@ Function11c770:
 	ld [wcd28], a
 	jr .div_12
 
-Function11c7bc:
+Function11c7bc: ; 11c7bc (47:47bc)
 	ld bc, Unknown_11c854
 	ld a, [wcd2b]
 	and a
@@ -1184,7 +1206,7 @@ Function11c7bc:
 	push de
 	ld a, [hli]
 	ld e, a
-	ld d, 0
+	ld d, $0
 	push hl
 	ld a, [bc]
 	ld l, a
@@ -1212,10 +1234,10 @@ Function11c7bc:
 	ret
 
 .asm_11c814
-	ld hl, wc648
+	ld hl, $c648
 	ld a, [wcd22]
 	ld e, a
-	ld d, 0
+	ld d, $0
 	add hl, de
 	add hl, de
 	ld a, [hli]
@@ -1226,7 +1248,7 @@ Function11c7bc:
 	pop hl
 	ld a, [wcd26]
 	ld e, a
-	ld d, 0
+	ld d, $0
 	add hl, de
 	add hl, de
 	ld a, [wcd26]
@@ -1262,8 +1284,9 @@ Function11c7bc:
 	pop hl
 	pop de
 	ret
+; 11c854 (47:4854)
 
-Unknown_11c854:
+Unknown_11c854: ; 11c854
 	dwcoord  2,  8
 	dwcoord  8,  8
 	dwcoord 14,  8
@@ -1277,8 +1300,9 @@ Unknown_11c854:
 	dwcoord  8, 14
 	dwcoord 14, 14
 	dw -1
+; 11c86e
 
-Function11c86e:
+Function11c86e: ; 11c86e (47:486e)
 	ld a, [wcd26]
 	and a
 	jr z, .asm_11c88a
@@ -1333,18 +1357,19 @@ Function11c86e:
 	dec c
 	jr nz, .asm_11c8c2
 	ret
+; 11c8c7 (47:48c7)
 
-BCD2String: ; unreferenced
+BCD2String: ; 11c8c7
 	inc a
 	push af
 	and $f
-	ldh [hDividend], a
+	ld [hDividend], a
 	pop af
 	and $f0
 	swap a
-	ldh [hDividend + 1], a
+	ld [hDividend + 1], a
 	xor a
-	ldh [hDividend + 2], a
+	ld [hDividend + 2], a
 	push hl
 	farcall Function11a80c
 	pop hl
@@ -1355,18 +1380,22 @@ BCD2String: ; unreferenced
 	add "０"
 	ld [hli], a
 	ret
+; 11c8ec
 
-MobileString_Page: ; unreferenced
+MobileString_Page: ; 11c8ec
 	db "ぺージ@"
+; 11c8f0
 
-MobileString_Prev:
+MobileString_Prev: ; 11c8f0
 	db "まえ@"
+; 11c8f3
 
-MobileString_Next:
+MobileString_Next: ; 11c8f3
 	db "つぎ@"
+; 11c8f6
 
-Function11c8f6:
-	ld a, [wcd20]
+Function11c8f6: ; 11c8f6 (47:48f6)
+	ld a, [wcd20] ; wcd20
 	call Function11c95d
 	push hl
 	ld a, [wcd2b]
@@ -1386,9 +1415,9 @@ Function11c8f6:
 	push de
 	call Function11c05d
 	pop de
-	ld a, [wcd20]
+	ld a, [wcd20] ; wcd20
 	ld c, a
-	ld b, 0
+	ld b, $0
 	ld hl, wcd36
 	add hl, bc
 	add hl, bc
@@ -1402,16 +1431,16 @@ Function11c8f6:
 	ld a, [wMobileCommsJumptableIndex]
 	add [hl]
 	ld c, a
-	ld b, 0
+	ld b, $0
 	ld hl, wListPointer
 	add hl, bc
 	ld a, [hl]
 	jr .asm_11c911
 .asm_11c938
-	ld hl, wc648
+	ld hl, $c648
 	ld a, [wcd22]
 	ld e, a
-	ld d, 0
+	ld d, $0
 	add hl, de
 	add hl, de
 	ld a, [hli]
@@ -1422,7 +1451,7 @@ Function11c8f6:
 	pop hl
 	ld a, [wcd26]
 	ld e, a
-	ld d, 0
+	ld d, $0
 	add hl, de
 	add hl, de
 	ld a, [wMobileCommsJumptableIndex]
@@ -1435,7 +1464,7 @@ Function11c8f6:
 	ld d, a
 	jr .asm_11c912
 
-Function11c95d:
+Function11c95d: ; 11c95d (47:495d)
 	sla a
 	ld c, a
 	ld b, 0
@@ -1467,6 +1496,7 @@ Function11c95d:
 	jr nz, .asm_11c980
 	pop hl
 	ret
+; 11c986 (47:4986)
 
 Unknown_11c986:
 	dwcoord  1,  2
@@ -1475,8 +1505,9 @@ Unknown_11c986:
 	dwcoord  1,  4
 	dwcoord  7,  4
 	dwcoord 13,  4
+; 11c992
 
-Function11c992:
+Function11c992: ; 11c992 (47:4992)
 	ld a, $8
 	hlcoord 2, 7
 .asm_11c997
@@ -1493,21 +1524,21 @@ Function11c992:
 	jr nz, .asm_11c997
 	ret
 
-Function11c9ab:
+Function11c9ab: ; 11c9ab (47:49ab)
 	ld a, $7
-	hlcoord 0, 6, wAttrmap
+	hlcoord 0, 6, wAttrMap
 	ld bc, $c8
 	call ByteFill
 	farcall ReloadMapPart
 	ret
 
-Function11c9bd:
+Function11c9bd: ; 11c9bd (47:49bd)
 	ld de, String_11ca38
 	call Function11ca7f
 
-Function11c9c3:
+Function11c9c3: ; 11c9c3 (47:49c3)
 	ld hl, wcd2a
-	ld de, hJoypadPressed
+	ld de, hJoypadPressed ; $ffa3
 	ld a, [de]
 	and $1
 	jr nz, .asm_11c9de
@@ -1528,7 +1559,7 @@ Function11c9c3:
 	jr nz, .asm_11c9e9
 	call Function11ca5e
 	xor a
-	ld [wcd20], a
+	ld [wcd20], a ; wcd20
 .asm_11c9e9
 	ld hl, wcd24
 	set 4, [hl]
@@ -1551,8 +1582,8 @@ Function11c9c3:
 	inc [hl]
 	ret
 
-Function11ca01:
-	hlcoord 14, 7, wAttrmap
+Function11ca01: ; 11ca01 (47:4a01)
+	hlcoord 14, 7, wAttrMap
 	ld de, $14
 	ld a, $5
 	ld c, a
@@ -1570,8 +1601,8 @@ Function11ca01:
 	dec c
 	jr nz, .asm_11ca0a
 
-Function11ca19:
-	hlcoord 0, 12, wAttrmap
+Function11ca19: ; 11ca19 (47:4a19)
+	hlcoord 0, 12, wAttrMap
 	ld de, $14
 	ld a, $6
 	ld c, a
@@ -1590,16 +1621,19 @@ Function11ca19:
 	jr nz, .asm_11ca22
 	farcall ReloadMapPart
 	ret
+; 11ca38 (47:4a38)
 
-String_11ca38:
+String_11ca38: ; 11ca38
 	db   "とうろくちゅう<NO>あいさつ¯ぜんぶ"
 	next "けしても　よろしいですか？@"
+; 11ca57
 
-String_11ca57:
+String_11ca57: ; 11ca57
 	db   "はい"
 	next "いいえ@"
+; 11ca5e
 
-Function11ca5e:
+Function11ca5e: ; 11ca5e (47:4a5e)
 	xor a
 .loop
 	push af
@@ -1610,10 +1644,10 @@ Function11ca5e:
 	jr nz, .loop
 	ret
 
-Function11ca6a:
+Function11ca6a: ; 11ca6a (47:4a6a)
 	ld hl, wcd36
 	ld c, a
-	ld b, 0
+	ld b, $0
 	add hl, bc
 	add hl, bc
 	ld [hl], b
@@ -1624,7 +1658,7 @@ Function11ca6a:
 	call PlaceString
 	ret
 
-Function11ca7f:
+Function11ca7f: ; 11ca7f (47:4a7f)
 	push de
 	ld de, Unknown_11cfc6
 	call Function11cfce
@@ -1644,13 +1678,13 @@ Function11ca7f:
 	call Function11cfb5
 	ret
 
-Function11caad:
+Function11caad: ; 11caad (47:4aad)
 	ld de, String_11cb1c
 	call Function11ca7f
 
-Function11cab3:
+Function11cab3: ; 11cab3 (47:4ab3)
 	ld hl, wcd2a
-	ld de, hJoypadPressed
+	ld de, hJoypadPressed ; $ffa3
 	ld a, [de]
 	and $1
 	jr nz, .asm_11cace
@@ -1716,16 +1750,19 @@ Function11cab3:
 	ret nz
 	inc [hl]
 	ret
+; 11cb1c (47:4b1c)
 
-String_11cb1c:
+String_11cb1c: ; 11cb1c
 	db   "あいさつ<NO>とうろく¯ちゅうし"
 	next "しますか？@"
+; 11cb31
 
-String_11cb31:
+String_11cb31: ; 11cb31
 	db   "とうろくちゅう<NO>あいさつ<WA>ほぞん"
 	next "されません<GA>よろしい　ですか？@"
+; 11cb52
 
-Function11cb52:
+Function11cb52: ; 11cb52 (47:4b52)
 	ld hl, Unknown_11cc01
 	ld a, [wMenuCursorY]
 .asm_11cb58
@@ -1741,9 +1778,9 @@ Function11cb52:
 	ld d, a
 	call Function11ca7f
 
-Function11cb66:
+Function11cb66: ; 11cb66 (47:4b66)
 	ld hl, wcd2a
-	ld de, hJoypadPressed
+	ld de, hJoypadPressed ; $ffa3
 	ld a, [de]
 	and $1
 	jr nz, .asm_11cb81
@@ -1762,9 +1799,9 @@ Function11cb66:
 	ld a, [hl]
 	and a
 	jr nz, .asm_11cbd4
-	ld a, BANK(s4_a007)
-	call OpenSRAM
-	ld hl, s4_a007
+	ld a, $4
+	call GetSRAMBank
+	ld hl, $a007
 	ld a, [wMenuCursorY]
 	dec a
 	sla a
@@ -1773,10 +1810,10 @@ Function11cb66:
 	sla a
 	add c
 	ld c, a
-	ld b, 0
+	ld b, $0
 	add hl, bc
 	ld de, wcd36
-	ld c, 12
+	ld c, $c
 .asm_11cba2
 	ld a, [de]
 	ld [hli], a
@@ -1835,7 +1872,7 @@ Function11cb66:
 	inc [hl]
 	ret
 
-Function11cbf5:
+Function11cbf5: ; 11cbf5 (47:4bf5)
 	call WaitSFX
 	ld hl, wcf64
 	dec [hl]
@@ -1843,52 +1880,55 @@ Function11cbf5:
 	dec hl
 	set 7, [hl]
 	ret
+; 11cc01 (47:4c01)
 
-Unknown_11cc01:
+Unknown_11cc01: ; 11cc01
 	dw String_11cc09
 	dw String_11cc23
 	dw String_11cc42
 	dw String_11cc60
 
-String_11cc09:
+String_11cc09: ; 11cc09
 	db   "じこしょうかい　は"
 	next "この　あいさつで　いいですか？@"
 
-String_11cc23:
+String_11cc23: ; 11cc23
 	db   "たいせん　<GA>はじまるとき　は"
 	next "この　あいさつで　いいですか？@"
 
-String_11cc42:
+String_11cc42: ; 11cc42
 	db   "たいせん　<NI>かったとき　は"
 	next "この　あいさつで　いいですか？@"
 
-String_11cc60:
+String_11cc60: ; 11cc60
 	db   "たいせん　<NI>まけたとき　は"
 	next "この　あいさつで　いいですか？@"
+; 11cc7e
 
-Unknown_11cc7e:
+Unknown_11cc7e: ; 11cc7e
 	dw String_11cc86
 	dw String_11cc9d
 	dw String_11ccb9
 	dw String_11ccd4
 
-String_11cc86:
+String_11cc86: ; 11cc86
 	db   "じこしょうかい　の"
 	next "あいさつ¯とうろくした！@"
 
-String_11cc9d:
+String_11cc9d: ; 11cc9d
 	db   "たいせん　<GA>はじまるとき　の"
 	next "あいさつ¯とうろくした！@"
 
-String_11ccb9:
+String_11ccb9: ; 11ccb9
 	db   "たいせん　<NI>かったとき　の"
 	next "あいさつ¯とうろくした！@"
 
-String_11ccd4:
+String_11ccd4: ; 11ccd4
 	db   "たいせん　<NI>まけたとき　の"
 	next "あいさつ¯とうろくした！@"
+; 11ccef
 
-Function11ccef:
+Function11ccef: ; 11ccef (47:4cef)
 	ld de, Unknown_11cfc6
 	call Function11cfce
 	hlcoord 1, 14
@@ -1897,19 +1937,21 @@ Function11ccef:
 	call Function11ca19
 	call Function11cfb5
 
-Function11cd04:
-	ld de, hJoypadPressed
+Function11cd04: ; 11cd04 (47:4d04)
+	ld de, hJoypadPressed ; $ffa3
 	ld a, [de]
 	and a
 	ret z
 	ld a, $4
 	ld [wJumptableIndex], a
 	ret
+; 11cd10 (47:4d10)
 
-String_11cd10:
+String_11cd10: ; 11cd10
 	db "なにか　ことば¯いれてください@"
+; 11cd20
 
-Function11cd20:
+Function11cd20: ; 11cd20 (47:4d20)
 	call EZChat_ClearBottom12Rows
 	ld de, Unknown_11cfc6
 	call Function11cfce
@@ -1932,9 +1974,9 @@ Function11cd20:
 	res 5, [hl]
 	call Function11cfb5
 
-Function11cd54:
+Function11cd54: ; 11cd54 (47:4d54)
 	ld hl, wcd2c
-	ld de, hJoypadPressed
+	ld de, hJoypadPressed ; $ffa3
 	ld a, [de]
 	and A_BUTTON
 	jr nz, .asm_11cd6f
@@ -1991,33 +2033,37 @@ Function11cd54:
 	call PlaceString
 	ret
 
-Function11cdaa:
+Function11cdaa: ; 11cdaa (47:4daa)
 	ld a, $2
-	hlcoord 0, 6, wAttrmap
+	hlcoord 0, 6, wAttrMap
 	ld bc, 6 * SCREEN_WIDTH
 	call ByteFill
 	ld a, $7
-	hlcoord 0, 12, wAttrmap
+	hlcoord 0, 12, wAttrMap
 	ld bc, 4 * SCREEN_WIDTH
 	call ByteFill
 	farcall ReloadMapPart
 	ret
+; 11cdc7 (47:4dc7)
 
-String_11cdc7:
+String_11cdc7: ; 11cdc7
 ; Words will be displayed by category
 	db   "ことば¯しゅるいべつに"
 	next "えらべます@"
+; 11cdd9
 
-String_11cdd9:
+String_11cdd9: ; 11cdd9
 ; Words will be displayed in alphabetical order
 	db   "ことば¯アイウエオ　の"
 	next "じゅんばんで　ひょうじ　します@"
+; 11cdf5
 
-String_11cdf5:
+String_11cdf5: ; 11cdf5
 	db   "しゅるいべつ　モード"  ; Category mode
 	next "アイウエオ　　モード@" ; ABC mode
+; 11ce0b
 
-Function11ce0b:
+Function11ce0b: ; 11ce0b (47:4e0b)
 	call EZChat_ClearBottom12Rows
 	hlcoord 1, 7
 	ld de, String_11cf79
@@ -2030,7 +2076,7 @@ Function11ce0b:
 	res 2, [hl]
 	call Function11cfb5
 
-Function11ce2b:
+Function11ce2b: ; 11ce2b (47:4e2b)
 	ld a, [wcd22]
 	sla a
 	sla a
@@ -2039,7 +2085,7 @@ Function11ce2b:
 	ld hl, Unknown_11ceb9
 	add hl, bc
 
-	ld de, hJoypadPressed
+	ld de, hJoypadPressed ; $ffa3
 	ld a, [de]
 	and START
 	jr nz, .start
@@ -2083,7 +2129,7 @@ Function11ce2b:
 	ld hl, wcd24
 	set 0, [hl]
 	ld a, $8
-	ld [wcd20], a
+	ld [wcd20], a ; wcd20
 .b
 	ld a, $4
 	jr .load
@@ -2109,7 +2155,7 @@ Function11ce2b:
 	ret
 
 .done
-	ld a, [wcd20]
+	ld a, [wcd20] ; wcd20
 	call Function11ca6a
 	call PlayClickSFX
 	ret
@@ -2126,8 +2172,9 @@ Function11ce2b:
 	ret z
 	ld [wcd22], a
 	ret
+; 11ceb9 (47:4eb9)
 
-Unknown_11ceb9:
+Unknown_11ceb9: ; 11ceb9
 	; up left down right
 	db $ff, $01
 	db $05, $ff
@@ -2225,19 +2272,22 @@ Unknown_11ceb9:
 	db $ff, $2d
 	db $2c, $ff
 	db $ff, $2e
+; 11cf79
 
-String_11cf79:
+String_11cf79: ; 11cf79
 ; Hiragana table
 	db   "あいうえお　なにぬねの　や　ゆ　よ"
 	next "かきくけこ　はひふへほ　わ"
 	next "さしすせそ　まみむめも　そのた"
 	next "たちつてと　らりるれろ"
 	db   "@"
+; 11cfb5
 
-Function11cfb5:
+Function11cfb5: ; 11cfb5 (47:4fb5)
 	ld hl, wJumptableIndex
 	inc [hl]
 	ret
+; 11cfba (47:4fba)
 
 Unknown_11cfba:
 	db  0,  0 ; start coords
@@ -2258,8 +2308,9 @@ Unknown_11cfc6:
 Unknown_11cfca:
 	db 14,  7 ; start coords
 	db  6,  5 ; end coords
+; 11cfce
 
-Function11cfce:
+Function11cfce: ; 11cfce (47:4fce)
 	hlcoord 0, 0
 	ld bc, SCREEN_WIDTH
 	ld a, [de]
@@ -2346,7 +2397,7 @@ Function11cfce:
 	ld [hl], a
 	ret
 
-Function11d035:
+Function11d035: ; 11d035 (47:5035)
 	hlcoord 0, 0
 	ld bc, SCREEN_WIDTH
 	ld a, [de]
@@ -2363,7 +2414,7 @@ Function11d035:
 .done_add_n_times
 	pop af
 	ld c, a
-	ld b, 0
+	ld b, $0
 	add hl, bc
 	push hl
 	ld a, $79
@@ -2414,7 +2465,7 @@ Function11d035:
 	ld a, [de]
 	dec a
 	ld c, a
-	ld b, 0
+	ld b, $0
 	add hl, bc
 	pop bc
 	inc de
@@ -2442,7 +2493,7 @@ Function11d035:
 	jr nz, .loop3
 	ret
 
-.AddNMinusOneTimes:
+.AddNMinusOneTimes: ; 11d0ac (47:50ac)
 	ld a, [de]
 	dec a
 	ld bc, SCREEN_WIDTH
@@ -2452,10 +2503,19 @@ Function11d035:
 	jr nz, .add_n_minus_one_times
 	ret
 
-AnimateEZChatCursor:
-	ld hl, SPRITEANIMSTRUCT_VAR1
+AnimateEZChatCursor: ; 11d0b6 (47:50b6)
+	ld hl, SPRITEANIMSTRUCT_0C
 	add hl, bc
-	jumptable .Jumptable, hl
+	ld a, [hl]
+	ld e, a
+	ld d, 0
+	ld hl, .Jumptable
+	add hl, de
+	add hl, de
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	jp hl
 
 .Jumptable:
 	dw .zero
@@ -2470,25 +2530,25 @@ AnimateEZChatCursor:
 	dw .nine
 	dw .ten
 
-.zero
-	ld a, [wcd20]
+.zero ; 11d0dd (47:50dd)
+	ld a, [wcd20] ; wcd20
 	sla a
 	ld hl, .Coords_Zero
 	ld e, $1
 	jr .load
 
-.one
+.one ; 11d0e9 (47:50e9)
 	ld a, [wcd21]
 	sla a
 	ld hl, .Coords_One
 	ld e, $2
 	jr .load
 
-.two
+.two ; 11d0f5 (47:50f5)
 	ld hl, .FramesetsIDs_Two
 	ld a, [wcd22]
 	ld e, a
-	ld d, 0
+	ld d, $0
 	add hl, de
 	ld a, [hl]
 	call ReinitSpriteAnimFrame
@@ -2499,17 +2559,17 @@ AnimateEZChatCursor:
 	ld e, $4
 	jr .load
 
-.three
+.three ; 11d10f (47:510f)
 	ld a, SPRITE_ANIM_FRAMESET_EZCHAT_CURSOR_2
 	call ReinitSpriteAnimFrame
 	ld a, [wMobileCommsJumptableIndex]
 	sla a
 	ld hl, .Coords_Three
 	ld e, $8
-.load
+.load ; 11d11e (47:511e)
 	push de
 	ld e, a
-	ld d, 0
+	ld d, $0
 	add hl, de
 	push hl
 	pop de
@@ -2525,7 +2585,7 @@ AnimateEZChatCursor:
 	call .UpdateObjectFlags
 	ret
 
-.four
+.four ; 11d134 (47:5134)
 	ld a, SPRITE_ANIM_FRAMESET_EZCHAT_CURSOR_2
 	call ReinitSpriteAnimFrame
 	ld a, [wcd2a]
@@ -2534,7 +2594,7 @@ AnimateEZChatCursor:
 	ld e, $10
 	jr .load
 
-.five
+.five ; 11d145 (47:5145)
 	ld a, SPRITE_ANIM_FRAMESET_EZCHAT_CURSOR_2
 	call ReinitSpriteAnimFrame
 	ld a, [wcd2c]
@@ -2543,7 +2603,7 @@ AnimateEZChatCursor:
 	ld e, $20
 	jr .load
 
-.six
+.six ; 11d156 (47:5156)
 	ld a, SPRITE_ANIM_FRAMESET_EZCHAT_CURSOR_5
 	call ReinitSpriteAnimFrame
 	; X = [wcd4a] * 8 + 24
@@ -2564,7 +2624,7 @@ AnimateEZChatCursor:
 	call .UpdateObjectFlags
 	ret
 
-.seven
+.seven ; 11d175 (47:5175)
 	ld a, [wEZChatCursorYCoord]
 	cp $4
 	jr z, .cursor0
@@ -2622,15 +2682,15 @@ AnimateEZChatCursor:
 	call .UpdateObjectFlags
 	ret
 
-.nine
+.nine ; 11d1d1 (47:51d1)
 	ld d, -13 * 8
 	ld a, SPRITE_ANIM_FRAMESET_EZCHAT_CURSOR_7
 	jr .eight_nine_load
 
-.eight
+.eight ; 11d1d7 (47:51d7)
 	ld d, 2 * 8
 	ld a, SPRITE_ANIM_FRAMESET_EZCHAT_CURSOR_6
-.eight_nine_load
+.eight_nine_load ; 11d1db (47:51db)
 	push de
 	call ReinitSpriteAnimFrame
 	ld a, [wcd4a]
@@ -2651,15 +2711,16 @@ AnimateEZChatCursor:
 	call .UpdateObjectFlags
 	ret
 
-.ten
+.ten ; 11d1fc (47:51fc)
 	ld a, SPRITE_ANIM_FRAMESET_EZCHAT_CURSOR_1
 	call ReinitSpriteAnimFrame
 	ld a, $8
 	ld e, a
 	call .UpdateObjectFlags
 	ret
+; 11d208 (47:5208)
 
-.Coords_Zero:
+.Coords_Zero: ; 11d208
 	dbpixel  1,  3, 5, 2
 	dbpixel  7,  3, 5, 2
 	dbpixel 13,  3, 5, 2
@@ -2670,7 +2731,7 @@ AnimateEZChatCursor:
 	dbpixel  7, 17, 5, 2
 	dbpixel 13, 17, 5, 2
 
-.Coords_One:
+.Coords_One: ; 11d21a
 	dbpixel  1,  8, 5, 2
 	dbpixel  7,  8, 5, 2
 	dbpixel 13,  8, 5, 2
@@ -2690,7 +2751,7 @@ AnimateEZChatCursor:
 	dbpixel  7, 18, 5, 2
 	dbpixel 13, 18, 5, 2
 
-.Coords_Two:
+.Coords_Two: ; 11d23e
 	dbpixel  2,  9       ; 00
 	dbpixel  3,  9       ; 01
 	dbpixel  4,  9       ; 02
@@ -2740,7 +2801,7 @@ AnimateEZChatCursor:
 	dbpixel  7, 18, 5, 2 ; 2e
 	dbpixel 13, 18, 5, 2 ; 2f
 
-.Coords_Three:
+.Coords_Three: ; 11d29e
 	dbpixel  2, 10
 	dbpixel  8, 10
 	dbpixel 14, 10
@@ -2754,15 +2815,15 @@ AnimateEZChatCursor:
 	dbpixel  8, 16
 	dbpixel 14, 16
 
-.Coords_Four:
+.Coords_Four: ; 11d2b6
 	dbpixel 16, 10
 	dbpixel 16, 12
 
-.Coords_Five:
+.Coords_Five: ; 11d2ba
 	dbpixel  4, 10
 	dbpixel  4, 12
 
-.FramesetsIDs_Two:
+.FramesetsIDs_Two: ; 11d2be
 	db SPRITE_ANIM_FRAMESET_EZCHAT_CURSOR_3 ; 00
 	db SPRITE_ANIM_FRAMESET_EZCHAT_CURSOR_3 ; 01
 	db SPRITE_ANIM_FRAMESET_EZCHAT_CURSOR_3 ; 02
@@ -2812,7 +2873,7 @@ AnimateEZChatCursor:
 	db SPRITE_ANIM_FRAMESET_EZCHAT_CURSOR_1 ; 2e
 	db SPRITE_ANIM_FRAMESET_EZCHAT_CURSOR_1 ; 2f
 
-.UpdateObjectFlags:
+.UpdateObjectFlags: ; 11d2ee (47:52ee)
 	ld hl, wcd24
 	and [hl]
 	jr nz, .update_y_offset
@@ -2820,7 +2881,7 @@ AnimateEZChatCursor:
 	ld hl, wcd23
 	and [hl]
 	jr z, .reset_y_offset
-	ld hl, SPRITEANIMSTRUCT_VAR3
+	ld hl, SPRITEANIMSTRUCT_0E
 	add hl, bc
 	ld a, [hl]
 	and a
@@ -2853,18 +2914,19 @@ AnimateEZChatCursor:
 	ld [hl], a
 	ret
 
-Function11d323:
-	ldh a, [rSVBK]
+Function11d323: ; 11d323
+	ld a, [rSVBK]
 	push af
 	ld a, $5
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	ld hl, Palette_11d33a
 	ld de, wBGPals1
 	ld bc, 16 palettes
 	call CopyBytes
 	pop af
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	ret
+; 11d33a
 
 Palette_11d33a:
 	RGB 31, 31, 31
@@ -2946,11 +3008,12 @@ Palette_11d33a:
 	RGB 00, 00, 00
 	RGB 00, 00, 00
 	RGB 00, 00, 00
+; 11d3ba
 
-EZChat_GetSeenPokemonByKana:
-	ldh a, [rSVBK]
+EZChat_GetSeenPokemonByKana: ; 11d3ba
+	ld a, [rSVBK]
 	push af
-	ld hl, wc648
+	ld hl, $c648
 	ld a, LOW(w5_d800)
 	ld [wcd2d], a
 	ld [hli], a
@@ -2963,20 +3026,20 @@ EZChat_GetSeenPokemonByKana:
 	ld a, HIGH(EZChat_SortedPokemon)
 	ld [wcd30], a
 
-	ld a, LOW(wc6a8)
+	ld a, LOW($c6a8)
 	ld [wcd31], a
-	ld a, HIGH(wc6a8)
+	ld a, HIGH($c6a8)
 	ld [wcd32], a
 
-	ld a, LOW(wc64a)
+	ld a, LOW($c64a)
 	ld [wcd33], a
-	ld a, HIGH(wc64a)
+	ld a, HIGH($c64a)
 	ld [wcd34], a
 
 	ld hl, EZChat_SortedWords
 	ld a, (EZChat_SortedWords.End - EZChat_SortedWords) / 4
 
-.MasterLoop:
+.MasterLoop: ; 11d3ef
 	push af
 ; read row
 ; offset
@@ -3005,21 +3068,21 @@ EZChat_GetSeenPokemonByKana:
 .loop1
 ; copy 2*bc bytes from 3:hl to 5:de
 	ld a, $3
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	ld a, [hli]
 	push af
 	ld a, $5
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	pop af
 	ld [de], a
 	inc de
 
 	ld a, $3
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	ld a, [hli]
 	push af
 	ld a, $5
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	pop af
 	ld [de], a
 	inc de
@@ -3080,7 +3143,7 @@ EZChat_GetSeenPokemonByKana:
 ; Push pop to bc.
 	push hl
 	pop bc
-; Load the pointer from [wcd31] (default: wc6a8)
+; Load the pointer from [wcd31] (default: $c6a8)
 	ld a, [wcd31]
 	ld l, a
 	ld a, [wcd32]
@@ -3095,7 +3158,7 @@ EZChat_GetSeenPokemonByKana:
 	ld [wcd31], a
 	ld a, h
 	ld [wcd32], a
-; Recover the pointer from [wcd33] (default: wc64a)
+; Recover the pointer from [wcd33] (default: $c64a)
 	ld a, [wcd33]
 	ld l, a
 	ld a, [wcd34]
@@ -3121,10 +3184,11 @@ EZChat_GetSeenPokemonByKana:
 
 .ExitMasterLoop:
 	pop af
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	ret
+; 11d493
 
-.CheckSeenMon:
+.CheckSeenMon: ; 11d493
 	push hl
 	push bc
 	push de
@@ -3140,12 +3204,13 @@ EZChat_GetSeenPokemonByKana:
 	pop bc
 	pop hl
 	ret
+; 11d4aa
 
-EZChat_GetCategoryWordsByKana:
-	ldh a, [rSVBK]
+EZChat_GetCategoryWordsByKana: ; 11d4aa
+	ld a, [rSVBK]
 	push af
 	ld a, $3
-	ldh [rSVBK], a
+	ld [rSVBK], a
 
 	; load pointers
 	ld hl, MobileEZChatCategoryPointers
@@ -3222,19 +3287,22 @@ EZChat_GetCategoryWordsByKana:
 	dec a
 	jr nz, .loop1
 	pop af
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	ret
+; 11d4fe
 
 INCLUDE "data/pokemon/ezchat_order.asm"
 
-SelectStartGFX:
-INCBIN "gfx/mobile/select_start.2bpp"
+GFX_11d67e:
+INCBIN "gfx/pokedex/select_start.2bpp"
+; 11d6de
 
-EZChatSlowpokeLZ:
+LZ_11d6de:
 INCBIN "gfx/pokedex/slowpoke.2bpp.lz"
+; 11da52
 
-MobileEZChatCategoryNames:
-; entries correspond to EZCHAT_* constants
+MobileEZChatCategoryNames: ; 11da52
+; Fixed message categories
 	db "ポケモン@@" ; 00
 	db "タイプ@@@" ; 01
 	db "あいさつ@@" ; 02
@@ -3250,8 +3318,9 @@ MobileEZChatCategoryNames:
 	db "じかん@@@" ; 0c
 	db "むすび@@@" ; 0d
 	db "あれこれ@@" ; 0e
+; 11daac
 
-MobileEZChatCategoryPointers:
+MobileEZChatCategoryPointers: ; 11daac
 ; entries correspond to EZCHAT_* constants
 	dw .Types          ; 01
 	dw .Greetings      ; 02
@@ -3268,7 +3337,7 @@ MobileEZChatCategoryPointers:
 	dw .Farewells      ; 0d
 	dw .ThisAndThat    ; 0e
 
-.Types:
+.Types: ; 11dac8
 	db "あく@@@", $26, $0, $0
 	db "いわ@@@", $aa, $0, $0
 	db "エスパー@", $da, $0, $0
@@ -3288,7 +3357,7 @@ MobileEZChatCategoryPointers:
 	db "みず@@@", $f4, $4, $0
 	db "むし@@@", $12, $5, $0
 
-.Greetings:
+.Greetings: ; 11db58
 	db "ありがと@", $58, $0, $0
 	db "ありがとう", $5a, $0, $0
 	db "いくぜ！@", $80, $0, $0
@@ -3326,7 +3395,7 @@ MobileEZChatCategoryPointers:
 	db "よろしく@", $80, $5, $0
 	db "らっしゃい", $94, $5, $0
 
-.People:
+.People: ; 11dc78
 	db "あいて@@", $1c, $0, $0
 	db "あたし@@", $36, $0, $0
 	db "あなた@@", $40, $0, $0
@@ -3397,7 +3466,7 @@ MobileEZChatCategoryPointers:
 	db "わたしは@", $ca, $5, $0
 	db "わたしを@", $cc, $5, $0
 
-.Battle:
+.Battle: ; 11dea0
 	db "あいしょう", $18, $0, $0
 	db "いけ！@@", $88, $0, $0
 	db "いちばん@", $96, $0, $0
@@ -3468,7 +3537,7 @@ MobileEZChatCategoryPointers:
 	db "レべル@@", $a6, $5, $0
 	db "わざ@@@", $be, $5, $0
 
-.Exclamations:
+.Exclamations: ; 11e0c8
 	db "！@@@@", $0, $0, $0
 	db "！！@@@", $2, $0, $0
 	db "！？@@@", $4, $0, $0
@@ -3536,7 +3605,7 @@ MobileEZChatCategoryPointers:
 	db "わっ！！@", $ce, $5, $0
 	db "わははは！", $d0, $5, $0
 
-.Conversation:
+.Conversation: ; 11e2d8
 	db "あのね@@", $50, $0, $0
 	db "あんまり@", $6e, $0, $0
 	db "いじわる@", $8e, $0, $0
@@ -3604,7 +3673,7 @@ MobileEZChatCategoryPointers:
 	db "より@@@", $7c, $5, $0
 	db "れば@@@", $a4, $5, $0
 
-.Feelings:
+.Feelings: ; 11e4e8
 	db "あいたい@", $1a, $0, $0
 	db "あそびたい", $32, $0, $0
 	db "いきたい@", $7c, $0, $0
@@ -3675,7 +3744,7 @@ MobileEZChatCategoryPointers:
 	db "わかり@@", $b6, $5, $0
 	db "わくわく@", $ba, $5, $0
 
-.Conditions:
+.Conditions: ; 11e710
 	db "あつい@@", $38, $0, $0
 	db "あった@@", $3a, $0, $0
 	db "あり@@@", $56, $0, $0
@@ -3743,7 +3812,7 @@ MobileEZChatCategoryPointers:
 	db "らしい@@", $90, $5, $0
 	db "わるい@@", $d4, $5, $0
 
-.Life:
+.Life: ; 11e920
 	db "アルバイト", $64, $0, $0
 	db "うち@@@", $ba, $0, $0
 	db "おかね@@", $ee, $0, $0
@@ -3784,7 +3853,7 @@ MobileEZChatCategoryPointers:
 	db "ラジオ@@", $92, $5, $0
 	db "ワールド@", $ae, $5, $0
 
-.Hobbies:
+.Hobbies: ; 11ea58
 	db "アイドル@", $1e, $0, $0
 	db "アニメ@@", $4c, $0, $0
 	db "うた@@@", $b8, $0, $0
@@ -3825,7 +3894,7 @@ MobileEZChatCategoryPointers:
 	db "やすみ@@", $44, $5, $0
 	db "よてい@@", $74, $5, $0
 
-.Actions:
+.Actions: ; 11eb90
 	db "あう@@@", $20, $0, $0
 	db "あきらめ@", $24, $0, $0
 	db "あげる@@", $28, $0, $0
@@ -3896,7 +3965,7 @@ MobileEZChatCategoryPointers:
 	db "わかる@@", $b8, $5, $0
 	db "わすれ@@", $c0, $5, $0
 
-.Time:
+.Time: ; 11edb8
 	db "あき@@@", $22, $0, $0
 	db "あさ@@@", $2a, $0, $0
 	db "あした@@", $2c, $0, $0
@@ -3937,7 +4006,7 @@ MobileEZChatCategoryPointers:
 	db "よる@@@", $7e, $5, $0
 	db "らいしゅう", $88, $5, $0
 
-.Farewells:
+.Farewells: ; 11eef0
 	db "いたします", $92, $0, $0
 	db "おります@", $32, $1, $0
 	db "か！？@@", $3c, $1, $0
@@ -4005,7 +4074,7 @@ MobileEZChatCategoryPointers:
 	db "わけ@@@", $bc, $5, $0
 	db "わよ！@@", $d2, $5, $0
 
-.ThisAndThat:
+.ThisAndThat: ; 11f100
 	db "ああ@@@", $12, $0, $0
 	db "あっち@@", $3c, $0, $0
 	db "あの@@@", $4e, $0, $0
@@ -4042,13 +4111,18 @@ MobileEZChatCategoryPointers:
 	db "なんで@@", $f6, $3, $0
 	db "なんなんだ", $0, $4, $0
 	db "なんの@@", $2, $4, $0
+; 11f220
 
 MobileEZChatData_WordAndPageCounts:
 macro_11f220: MACRO
 ; parameter: number of words
 	db \1
 ; 12 words per page (0-based indexing)
-	db (\1 - 1) / 12
+x = \1 / 12
+if \1 % 12 == 0
+x = x + -1
+endc
+	db x
 ENDM
 	macro_11f220 18 ; 01: Types
 	macro_11f220 36 ; 02: Greetings
@@ -4070,12 +4144,12 @@ EZChat_SortedWords:
 ; with the given kana are sorted in memory, and the pre-
 ; allocated size for each.
 ; These arrays are expanded dynamically to accomodate
-; any Pokemon you've seen that starts with each kana.
+; any Pokemon you've seen that starts with each kana.\
 macro_11f23c: MACRO
-	dw w3_d012 - w3_d000 + x, \1
-x += 2 * \1
+	dw x - w3_d000, \1
+x = x + 2 * \1
 ENDM
-x = 0
+x = $d012
 	macro_11f23c $2f ; a
 	macro_11f23c $1e ; i
 	macro_11f23c $11 ; u
@@ -4120,5 +4194,6 @@ x = 0
 	macro_11f23c $02 ; re
 	macro_11f23c $02 ; ro
 	macro_11f23c $15 ; wa
-	dw NULL,     $09 ; end
+x = $d000
+	macro_11f23c $09 ; end
 .End

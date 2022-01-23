@@ -1,4 +1,4 @@
-KnowsMove:
+KnowsMove: ; f9ea
 	ld a, MON_MOVES
 	call GetPartyParamLocation
 	ld a, [wPutativeTMHMMove]
@@ -14,11 +14,12 @@ KnowsMove:
 	ret
 
 .knows_move
-	ld hl, .KnowsMoveText
+	ld hl, .Text_knows
 	call PrintText
 	scf
 	ret
 
-.KnowsMoveText:
-	text_far _KnowsMoveText
-	text_end
+.Text_knows: ; 0xfa06
+	; knows @ .
+	text_jump UnknownText_0x1c5ea8
+	db "@"

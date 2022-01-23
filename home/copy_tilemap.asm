@@ -1,35 +1,38 @@
-LoadTilemapToTempTilemap::
-; Load wTilemap into wTempTilemap
-	ldh a, [rSVBK]
+LoadTileMapToTempTileMap:: ; 309d
+; Load wTileMap into wTempTileMap
+	ld a, [rSVBK]
 	push af
-	ld a, BANK(wTempTilemap)
-	ldh [rSVBK], a
+	ld a, BANK(wTempTileMap)
+	ld [rSVBK], a
 	hlcoord 0, 0
-	decoord 0, 0, wTempTilemap
-	ld bc, wTilemapEnd - wTilemap
+	decoord 0, 0, wTempTileMap
+	ld bc, wTileMapEnd - wTileMap
 	call CopyBytes
 	pop af
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	ret
+; 30b4
 
-SafeLoadTempTilemapToTilemap::
+Call_LoadTempTileMapToTileMap:: ; 30b4
 	xor a
-	ldh [hBGMapMode], a
-	call LoadTempTilemapToTilemap
+	ld [hBGMapMode], a
+	call LoadTempTileMapToTileMap
 	ld a, 1
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	ret
+; 30bf
 
-LoadTempTilemapToTilemap::
-; Load wTempTilemap into wTilemap
-	ldh a, [rSVBK]
+LoadTempTileMapToTileMap:: ; 30bf
+; Load wTempTileMap into wTileMap
+	ld a, [rSVBK]
 	push af
-	ld a, BANK(wTempTilemap)
-	ldh [rSVBK], a
-	hlcoord 0, 0, wTempTilemap
+	ld a, BANK(wTempTileMap)
+	ld [rSVBK], a
+	hlcoord 0, 0, wTempTileMap
 	decoord 0, 0
-	ld bc, wTilemapEnd - wTilemap
+	ld bc, wTileMapEnd - wTileMap
 	call CopyBytes
 	pop af
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	ret
+; 30d6

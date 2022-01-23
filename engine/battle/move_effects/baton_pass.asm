@@ -1,9 +1,10 @@
-BattleCommand_BatonPass:
+BattleCommand_BatonPass: ; 379c9
 ; batonpass
 
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
 	jp nz, .Enemy
+
 
 ; Need something to switch to
 	call CheckAnyOtherAlivePartyMons
@@ -17,7 +18,7 @@ BattleCommand_BatonPass:
 
 ; Transition into switchmon menu
 	call LoadStandardMenuHeader
-	farcall SetUpBattlePartyMenu
+	farcall SetUpBattlePartyMenu_NoLoop
 
 	farcall ForcePickSwitchMonInBattle
 
@@ -44,7 +45,9 @@ BattleCommand_BatonPass:
 	call ResetBatonPassStatus
 	ret
 
+
 .Enemy:
+
 ; Wildmons don't have anything to switch to
 	ld a, [wBattleMode]
 	dec a ; WILDMON
@@ -68,8 +71,8 @@ BattleCommand_BatonPass:
 	call CallBattleCore
 	ld hl, ResetBattleParticipants
 	call CallBattleCore
-	ld a, TRUE
-	ld [wApplyStatLevelMultipliersToEnemy], a
+	ld a, 1
+	ld [wTypeMatchup], a
 	ld hl, ApplyStatLevelMultiplierOnAllStats
 	call CallBattleCore
 
@@ -78,12 +81,15 @@ BattleCommand_BatonPass:
 
 	jr ResetBatonPassStatus
 
-BatonPass_LinkPlayerSwitch:
+; 37a67
+
+
+BatonPass_LinkPlayerSwitch: ; 37a67
 	ld a, [wLinkMode]
 	and a
 	ret z
 
-	ld a, BATTLEPLAYERACTION_USEITEM
+	ld a, 1
 	ld [wBattlePlayerAction], a
 
 	call LoadStandardMenuHeader
@@ -91,11 +97,14 @@ BatonPass_LinkPlayerSwitch:
 	call CallBattleCore
 	call CloseWindow
 
-	xor a ; BATTLEPLAYERACTION_USEMOVE
+	xor a
 	ld [wBattlePlayerAction], a
 	ret
 
-BatonPass_LinkEnemySwitch:
+; 37a82
+
+
+BatonPass_LinkEnemySwitch: ; 37a82
 	ld a, [wLinkMode]
 	and a
 	ret z
@@ -120,11 +129,17 @@ BatonPass_LinkEnemySwitch:
 .switch
 	jp CloseWindow
 
-FailedBatonPass:
+; 37aab
+
+
+FailedBatonPass: ; 37aab
 	call AnimateFailedMove
 	jp PrintButItFailed
 
-ResetBatonPassStatus:
+; 37ab1
+
+
+ResetBatonPassStatus: ; 37ab1
 ; Reset status changes that aren't passed by Baton Pass.
 
 	; Nightmare isn't passed.
@@ -163,7 +178,10 @@ ResetBatonPassStatus:
 	ld [wEnemyWrapCount], a
 	ret
 
-CheckAnyOtherAlivePartyMons:
+; 37ae9
+
+
+CheckAnyOtherAlivePartyMons: ; 37ae9
 	ld hl, wPartyMon1HP
 	ld a, [wPartyCount]
 	ld d, a
@@ -171,7 +189,10 @@ CheckAnyOtherAlivePartyMons:
 	ld e, a
 	jr CheckAnyOtherAliveMons
 
-CheckAnyOtherAliveEnemyMons:
+; 37af6
+
+
+CheckAnyOtherAliveEnemyMons: ; 37af6
 	ld hl, wOTPartyMon1HP
 	ld a, [wOTPartyCount]
 	ld d, a
@@ -179,8 +200,9 @@ CheckAnyOtherAliveEnemyMons:
 	ld e, a
 
 	; fallthrough
+; 37b01
 
-CheckAnyOtherAliveMons:
+CheckAnyOtherAliveMons: ; 37b01
 ; Check for nonzero HP starting from partymon
 ; HP at hl for d partymons, besides current mon e.
 
@@ -215,3 +237,5 @@ CheckAnyOtherAliveMons:
 	ld a, b
 	and a
 	ret
+
+; 37b1d

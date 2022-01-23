@@ -7,23 +7,20 @@
 	const MONMENUVALUE_MOVE   ; 5
 	const MONMENUVALUE_MAIL   ; 6
 	const MONMENUVALUE_ERROR  ; 7
-NUM_MONMENUVALUES EQU const_value - 1
 
-MonMenuOptionStrings:
+MonMenuOptionStrings: ; 24caf
 ; entries correspond to MONMENUVALUE_* constants
-	list_start MonMenuOptionStrings
-	li "STATS"
-	li "SWITCH"
-	li "ITEM"
-	li "CANCEL"
-	li "MOVE"
-	li "MAIL"
-	li "ERROR!"
-	assert_list_length NUM_MONMENUVALUES
+	db "STATS@"
+	db "SWITCH@"
+	db "ITEM@"
+	db "CANCEL@"
+	db "MOVE@"
+	db "MAIL@"
+	db "ERROR!@"
+; 24cd9
 
-MonMenuOptions:
-; category, item, value; actions are in PokemonActionSubmenu (see engine/pokemon/mon_menu.asm)
-	table_width 3, MonMenuOptions
+MonMenuOptions: ; 24cd9
+; category, item, value; actions are in PokemonActionSubmenu (see engine/start_menu.asm)
 ; moves
 	db MONMENU_FIELD_MOVE, MONMENUITEM_CUT,        CUT
 	db MONMENU_FIELD_MOVE, MONMENUITEM_FLY,        FLY
@@ -34,10 +31,10 @@ MonMenuOptions:
 	db MONMENU_FIELD_MOVE, MONMENUITEM_WHIRLPOOL,  WHIRLPOOL
 	db MONMENU_FIELD_MOVE, MONMENUITEM_DIG,        DIG
 	db MONMENU_FIELD_MOVE, MONMENUITEM_TELEPORT,   TELEPORT
-	db MONMENU_FIELD_MOVE, MONMENUITEM_SOFTBOILED, SOFTBOILED
+	;db MONMENU_FIELD_MOVE, MONMENUITEM_SOFTBOILED, SOFTBOILED
 	db MONMENU_FIELD_MOVE, MONMENUITEM_HEADBUTT,   HEADBUTT
 	db MONMENU_FIELD_MOVE, MONMENUITEM_ROCKSMASH,  ROCK_SMASH
-	db MONMENU_FIELD_MOVE, MONMENUITEM_MILKDRINK,  MILK_DRINK
+	;db MONMENU_FIELD_MOVE, MONMENUITEM_MILKDRINK,  MILK_DRINK
 	db MONMENU_FIELD_MOVE, MONMENUITEM_SWEETSCENT, SWEET_SCENT
 ; options
 	db MONMENU_MENUOPTION, MONMENUITEM_STATS,      MONMENUVALUE_STATS
@@ -47,5 +44,5 @@ MonMenuOptions:
 	db MONMENU_MENUOPTION, MONMENUITEM_MOVE,       MONMENUVALUE_MOVE
 	db MONMENU_MENUOPTION, MONMENUITEM_MAIL,       MONMENUVALUE_MAIL
 	db MONMENU_MENUOPTION, MONMENUITEM_ERROR,      MONMENUVALUE_ERROR
-	assert_table_length NUM_MONMENUITEMS
-	db -1 ; end
+	db -1
+; 24d19

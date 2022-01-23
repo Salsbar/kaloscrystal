@@ -1,4 +1,4 @@
-	object_const_def
+	const_def 2 ; object constants
 	const INDIGOPLATEAUPOKECENTER1F_NURSE
 	const INDIGOPLATEAUPOKECENTER1F_CLERK
 	const INDIGOPLATEAUPOKECENTER1F_COOLTRAINER_M
@@ -7,10 +7,10 @@
 	const INDIGOPLATEAUPOKECENTER1F_ABRA
 
 IndigoPlateauPokecenter1F_MapScripts:
-	def_scene_scripts
+	db 1 ; scene scripts
 	scene_script .DummyScene ; SCENE_DEFAULT
 
-	def_callbacks
+	db 1 ; callbacks
 	callback MAPCALLBACK_NEWMAP, .PrepareElite4
 
 .DummyScene:
@@ -39,19 +39,15 @@ IndigoPlateauPokecenter1F_MapScripts:
 	clearevent EVENT_BEAT_ELITE_4_KAREN
 	clearevent EVENT_BEAT_CHAMPION_LANCE
 	setevent EVENT_LANCES_ROOM_OAK_AND_MARY
-	endcallback
+	return
 
 PlateauRivalBattle1:
 	checkevent EVENT_BEAT_RIVAL_IN_MT_MOON
 	iffalse PlateauRivalScriptDone
-	checkflag ENGINE_INDIGO_PLATEAU_RIVAL_FIGHT
+	checkevent EVENT_GOT_STARTER_FROM_RIVAL
 	iftrue PlateauRivalScriptDone
-	readvar VAR_WEEKDAY
-	ifequal SUNDAY, PlateauRivalScriptDone
-	ifequal TUESDAY, PlateauRivalScriptDone
-	ifequal THURSDAY, PlateauRivalScriptDone
-	ifequal FRIDAY, PlateauRivalScriptDone
-	ifequal SATURDAY, PlateauRivalScriptDone
+	checkevent EVENT_BEAT_RIVAL_IN_INDIGO_PLATEAU
+	iftrue PlateauRivalGiveStarter1
 	moveobject INDIGOPLATEAUPOKECENTER1F_SILVER, 17, 9
 	appear INDIGOPLATEAUPOKECENTER1F_SILVER
 	turnobject PLAYER, DOWN
@@ -61,19 +57,15 @@ PlateauRivalBattle1:
 	applymovement INDIGOPLATEAUPOKECENTER1F_SILVER, PlateauRivalMovement1
 	playmusic MUSIC_RIVAL_ENCOUNTER
 	turnobject PLAYER, RIGHT
-	sjump PlateauRivalBattleCommon
+	jump PlateauRivalBattleCommon
 
 PlateauRivalBattle2:
 	checkevent EVENT_BEAT_RIVAL_IN_MT_MOON
 	iffalse PlateauRivalScriptDone
-	checkflag ENGINE_INDIGO_PLATEAU_RIVAL_FIGHT
+	checkevent EVENT_GOT_STARTER_FROM_RIVAL
 	iftrue PlateauRivalScriptDone
-	readvar VAR_WEEKDAY
-	ifequal SUNDAY, PlateauRivalScriptDone
-	ifequal TUESDAY, PlateauRivalScriptDone
-	ifequal THURSDAY, PlateauRivalScriptDone
-	ifequal FRIDAY, PlateauRivalScriptDone
-	ifequal SATURDAY, PlateauRivalScriptDone
+	checkevent EVENT_BEAT_RIVAL_IN_INDIGO_PLATEAU
+	iftrue PlateauRivalGiveStarter2
 	appear INDIGOPLATEAUPOKECENTER1F_SILVER
 	turnobject PLAYER, DOWN
 	showemote EMOTE_SHOCK, PLAYER, 15
@@ -87,7 +79,7 @@ PlateauRivalBattleCommon:
 	writetext PlateauRivalText1
 	waitbutton
 	closetext
-	setevent EVENT_INDIGO_PLATEAU_POKECENTER_RIVAL
+	;setevent EVENT_INDIGO_PLATEAU_POKECENTER_RIVAL
 	checkevent EVENT_GOT_TOTODILE_FROM_ELM
 	iftrue .Totodile
 	checkevent EVENT_GOT_CHIKORITA_FROM_ELM
@@ -97,45 +89,98 @@ PlateauRivalBattleCommon:
 	setlasttalked INDIGOPLATEAUPOKECENTER1F_SILVER
 	loadtrainer RIVAL2, RIVAL2_2_TOTODILE
 	startbattle
-	dontrestartmapmusic
-	reloadmapafterbattle
-	sjump PlateauRivalPostBattle
+	jump PlateauRivalPostBattle
 
 .Totodile:
 	winlosstext PlateauRivalWinText, PlateauRivalLoseText
 	setlasttalked INDIGOPLATEAUPOKECENTER1F_SILVER
 	loadtrainer RIVAL2, RIVAL2_2_CHIKORITA
 	startbattle
-	dontrestartmapmusic
-	reloadmapafterbattle
-	sjump PlateauRivalPostBattle
+	jump PlateauRivalPostBattle
 
 .Chikorita:
 	winlosstext PlateauRivalWinText, PlateauRivalLoseText
 	setlasttalked INDIGOPLATEAUPOKECENTER1F_SILVER
 	loadtrainer RIVAL2, RIVAL2_2_CYNDAQUIL
 	startbattle
-	dontrestartmapmusic
-	reloadmapafterbattle
-	sjump PlateauRivalPostBattle
+	jump PlateauRivalPostBattle
 
 PlateauRivalPostBattle:
+	dontrestartmapmusic
+	reloadmapafterbattle
 	playmusic MUSIC_RIVAL_AFTER
 	opentext
 	writetext PlateauRivalText2
 	waitbutton
+	setevent EVENT_BEAT_RIVAL_IN_INDIGO_PLATEAU
+	jump PlateauRivalGiveStarter
+	
+PlateauRivalGiveStarter1:
+	moveobject INDIGOPLATEAUPOKECENTER1F_SILVER, 17, 9
+	appear INDIGOPLATEAUPOKECENTER1F_SILVER
+	turnobject PLAYER, DOWN
+	showemote EMOTE_SHOCK, PLAYER, 15
+	pause 15
+	applymovement INDIGOPLATEAUPOKECENTER1F_SILVER, PlateauRivalMovement1
+	turnobject PLAYER, RIGHT
+	opentext
+	jump PlateauRivalGiveStarter
+
+PlateauRivalGiveStarter2:
+	appear INDIGOPLATEAUPOKECENTER1F_SILVER
+	turnobject PLAYER, DOWN
+	showemote EMOTE_SHOCK, PLAYER, 15
+	pause 15
+	applymovement INDIGOPLATEAUPOKECENTER1F_SILVER, PlateauRivalMovement2
+	turnobject PLAYER, LEFT
+	opentext
+
+PlateauRivalGiveStarter:
+	writetext PlateauRivalStarterText1
+	buttonsound
+	waitsfx
+	checkcode VAR_PARTYCOUNT
+	ifequal PARTY_LENGTH, .NoRoom
+	checkevent EVENT_GOT_TOTODILE_FROM_ELM
+	iftrue .RivalGiveChespin
+	checkevent EVENT_GOT_CHIKORITA_FROM_ELM
+	iftrue .RivalGiveFennekin
+	writetext TextGotFroakie
+	playsound SFX_CAUGHT_MON
+	waitsfx
+	givepoke FROAKIE, 5
+	jump .GotStarter3
+.RivalGiveChespin
+	writetext TextGotChespin
+	playsound SFX_CAUGHT_MON
+	waitsfx
+	givepoke CHESPIN, 5
+	jump .GotStarter3
+.RivalGiveFennekin
+	writetext TextGotFennekin
+	playsound SFX_CAUGHT_MON
+	waitsfx
+	givepoke FENNEKIN, 5
+.GotStarter3
+	setevent EVENT_GOT_STARTER_FROM_RIVAL
+	writetext PlateauRivalStarterText2
+	waitbutton
+	jump RivalPlateauLeave
+.NoRoom
+	writetext RivalNoRoomText
+	waitbutton
+RivalPlateauLeave:
 	closetext
 	turnobject PLAYER, DOWN
 	applymovement INDIGOPLATEAUPOKECENTER1F_SILVER, PlateauRivalLeavesMovement
 	disappear INDIGOPLATEAUPOKECENTER1F_SILVER
 	setscene SCENE_DEFAULT
 	playmapmusic
-	setflag ENGINE_INDIGO_PLATEAU_RIVAL_FIGHT
 PlateauRivalScriptDone:
 	end
 
 IndigoPlateauPokecenter1FNurseScript:
-	jumpstd PokecenterNurseScript
+	jumpstd pokecenternurse
 
 IndigoPlateauPokecenter1FClerkScript:
 	opentext
@@ -170,7 +215,7 @@ TeleportGuyScript:
 AbraScript:
 	opentext
 	writetext AbraText
-	cry ABRA
+	cry GOTHITA
 	waitbutton
 	closetext
 	end
@@ -250,9 +295,47 @@ PlateauRivalText2:
 	para "I… I have to think"
 	line "more about my"
 	cont "#MON…"
+	done
+
+PlateauRivalStarterText1:
+	text "…Here… I want you"
+	line "to have this"
+	cont "#MON…"
+	done
+	
+RivalNoRoomText:
+	text "…you've got no"
+	line "room…"
+
+	para "Come back here"
+	line "when you've made"
+	cont "room."
+	
+	para "I'll be waiting…"
+	done
+
+PlateauRivalStarterText2:
+	text "You'd better take"
+	line "good care of that"
+	cont "#MON…"
 
 	para "Humph! Try not to"
 	line "lose!"
+	done
+
+TextGotChespin:
+	text "<PLAYER> received"
+	line "CHESPIN!"
+	done
+
+TextGotFennekin:
+	text "<PLAYER> received"
+	line "FENNEKIN!"
+	done
+
+TextGotFroakie:
+	text "<PLAYER> received"
+	line "FROAKIE!"
 	done
 
 PlateauRivalLoseText:
@@ -275,8 +358,8 @@ TeleportGuyText1:
 	para "If you need to"
 	line "train some more,"
 
-	para "my ABRA can help"
-	line "you."
+	para "my GOTHITA can"
+	line "help you."
 
 	para "It can TELEPORT"
 	line "you home."
@@ -297,25 +380,25 @@ TeleportGuyNoText:
 	done
 
 AbraText:
-	text "ABRA: Aabra…"
+	text "GOTHITA: Gaaa…"
 	done
 
 IndigoPlateauPokecenter1F_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 4 ; warp events
 	warp_event  5, 13, ROUTE_23, 1
 	warp_event  6, 13, ROUTE_23, 2
 	warp_event  0, 13, POKECENTER_2F, 1
 	warp_event 14,  3, WILLS_ROOM, 1
 
-	def_coord_events
+	db 2 ; coord events
 	coord_event 16,  4, SCENE_DEFAULT, PlateauRivalBattle1
 	coord_event 17,  4, SCENE_DEFAULT, PlateauRivalBattle2
 
-	def_bg_events
+	db 0 ; bg events
 
-	def_object_events
+	db 6 ; object events
 	object_event  3,  7, SPRITE_NURSE, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, IndigoPlateauPokecenter1FNurseScript, -1
 	object_event 11,  7, SPRITE_CLERK, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, IndigoPlateauPokecenter1FClerkScript, -1
 	object_event 11, 11, SPRITE_COOLTRAINER_M, SPRITEMOVEDATA_WANDER, 2, 2, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, IndigoPlateauPokecenter1FCooltrainerMScript, -1

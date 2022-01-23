@@ -1,8 +1,8 @@
-BugContest_SetCaughtContestMon:
+BugContest_SetCaughtContestMon: ; e6ce
 	ld a, [wContestMon]
 	and a
 	jr z, .firstcatch
-	ld [wNamedObjectIndex], a
+	ld [wd265], a
 	farcall DisplayAlreadyCaughtText
 	farcall DisplayCaughtContestMonStats
 	lb bc, 14, 7
@@ -12,13 +12,13 @@ BugContest_SetCaughtContestMon:
 .firstcatch
 	call .generatestats
 	ld a, [wTempEnemyMonSpecies]
-	ld [wNamedObjectIndex], a
+	ld [wd265], a
 	call GetPokemonName
-	ld hl, .ContestCaughtMonText
+	ld hl, .caughttext
 	call PrintText
 	ret
 
-.generatestats
+.generatestats ; e6fd
 	ld a, [wTempEnemyMonSpecies]
 	ld [wCurSpecies], a
 	ld [wCurPartySpecies], a
@@ -32,6 +32,7 @@ BugContest_SetCaughtContestMon:
 	ld hl, wContestMon
 	jp GeneratePartyMonStats
 
-.ContestCaughtMonText:
-	text_far _ContestCaughtMonText
-	text_end
+.caughttext ; 0xe71d
+	; Caught @ !
+	text_jump UnknownText_0x1c10c0
+	db "@"

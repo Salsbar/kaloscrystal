@@ -1,18 +1,18 @@
-Music_MobileCenter:
-	channel_count 4
-	channel 1, Music_MobileCenter_Ch1
-	channel 2, Music_MobileCenter_Ch2
-	channel 3, Music_MobileCenter_Ch3
-	channel 4, Music_MobileCenter_Ch4
+Music_MobileCenter: ; 17961d
+	musicheader 4, 1, Music_MobileCenter_Ch1
+	musicheader 1, 2, Music_MobileCenter_Ch2
+	musicheader 1, 3, Music_MobileCenter_Ch3
+	musicheader 1, 4, Music_MobileCenter_Ch4
+; 179629
 
-Music_MobileCenter_Ch1:
+Music_MobileCenter_Ch1: ; 179629
 	tempo 160
-	volume 7, 7
-	duty_cycle 1
-	pitch_offset 2
-	vibrato 8, 2, 2
-	stereo_panning TRUE, FALSE
-	note_type 12, 10, 2
+	volume $77
+	dutycycle $1
+	tone $0002
+	vibrato $8, $22
+	stereopanning $f0
+	notetype $c, $a2
 	octave 3
 	note E_, 2
 	note F_, 2
@@ -20,7 +20,7 @@ Music_MobileCenter_Ch1:
 	note G_, 2
 	note A_, 2
 	note B_, 4
-.mainloop:
+Music_MobileCenter_branch_179642: ; 179642
 	octave 3
 	note E_, 2
 	note C_, 2
@@ -155,17 +155,18 @@ Music_MobileCenter_Ch1:
 	note D_, 2
 	note E_, 2
 	note F_, 2
-	sound_loop 0, .mainloop
+	loopchannel 0, Music_MobileCenter_branch_179642
+; 1796cc
 
-Music_MobileCenter_Ch2:
-	note_type 12, 12, 2
-	duty_cycle 3
-	rest 10
+Music_MobileCenter_Ch2: ; 1796cc
+	notetype $c, $c2
+	dutycycle $3
+	note __, 10
 	octave 1
 	note G_, 2
 	note A_, 2
 	note B_, 2
-.mainloop:
+Music_MobileCenter_branch_1796d6: ; 1796d6
 	octave 2
 	note C_, 2
 	note E_, 2
@@ -251,42 +252,6 @@ Music_MobileCenter_Ch2:
 	note A_, 2
 	note G_, 2
 	note F_, 2
-	note E_, 2
-	note G_, 2
-	note C_, 2
-	note G_, 2
-	note E_, 2
-	note G_, 2
-	note C_, 2
-	note G_, 2
-	note F_, 2
-	note A_, 2
-	note C_, 2
-	note A_, 2
-	note F_, 2
-	note A_, 2
-	note C_, 2
-	note A_, 2
-	note D_, 2
-	note F_, 2
-	octave 1
-	note B_, 2
-	octave 2
-	note F_, 2
-	note D_, 2
-	note F_, 2
-	octave 1
-	note B_, 2
-	octave 2
-	note F_, 2
-	note E_, 2
-	note G_, 2
-	note C_, 2
-	note G_, 2
-	note E_, 2
-	note G_, 2
-	note C_, 2
-	note G_, 2
 	note E_, 2
 	note G_, 2
 	note C_, 2
@@ -320,14 +285,51 @@ Music_MobileCenter_Ch2:
 	note C_, 2
 	note G_, 2
 	note E_, 2
+	note G_, 2
+	note C_, 2
+	note G_, 2
+	note E_, 2
+	note G_, 2
+	note C_, 2
+	note G_, 2
+	note E_, 2
+	note G_, 2
+	note C_, 2
+	note G_, 2
+	note F_, 2
+	note A_, 2
+	note C_, 2
+	note A_, 2
+	note F_, 2
+	note A_, 2
+	note C_, 2
+	note A_, 2
+	note D_, 2
+	note F_, 2
+	octave 1
+	note B_, 2
+	octave 2
+	note F_, 2
+	note D_, 2
+	note F_, 2
+	octave 1
+	note B_, 2
+	octave 2
+	note F_, 2
+	note E_, 2
+	note G_, 2
+	note C_, 2
+	note G_, 2
+	note E_, 2
 	note F_, 2
 	note E_, 2
 	note D_, 2
-	sound_loop 0, .mainloop
+	loopchannel 0, Music_MobileCenter_branch_1796d6
+; 179777
 
-Music_MobileCenter_Ch3:
-	note_type 12, 2, 4
-	vibrato 16, 3, 4
+Music_MobileCenter_Ch3: ; 179777
+	notetype $c, $24
+	vibrato $10, $34
 	octave 4
 	note G_, 2
 	note A_, 2
@@ -336,8 +338,8 @@ Music_MobileCenter_Ch3:
 	octave 5
 	note C_, 2
 	note D_, 4
-	note_type 12, 2, 5
-.mainloop:
+	notetype $c, $25
+Music_MobileCenter_branch_179788: ; 179788
 	note C_, 2
 	octave 4
 	note G_, 2
@@ -349,16 +351,16 @@ Music_MobileCenter_Ch3:
 	note D_, 2
 	octave 4
 	note B_, 6
-	note_type 12, 1, 0
+	notetype $c, $10
 	octave 6
 	note G_, 1
-	rest 1
+	note __, 1
 	note D_, 1
-	rest 1
+	note __, 1
 	octave 7
 	note D_, 1
-	rest 3
-	note_type 12, 2, 5
+	note __, 3
+	notetype $c, $25
 	octave 4
 	note B_, 2
 	note G_, 2
@@ -388,16 +390,16 @@ Music_MobileCenter_Ch3:
 	note D_, 2
 	octave 4
 	note B_, 6
-	note_type 12, 1, 0
+	notetype $c, $10
 	octave 6
 	note G_, 1
-	rest 1
+	note __, 1
 	note D_, 1
-	rest 1
+	note __, 1
 	octave 7
 	note D_, 1
-	rest 3
-	note_type 12, 2, 5
+	note __, 3
+	notetype $c, $25
 	octave 4
 	note B_, 2
 	note G_, 2
@@ -415,7 +417,7 @@ Music_MobileCenter_Ch3:
 	note B_, 2
 	octave 5
 	note D_, 2
-	vibrato 24, 4, 4
+	vibrato $18, $44
 	note E_, 8
 	note G_, 8
 	note F_, 2
@@ -448,38 +450,39 @@ Music_MobileCenter_Ch3:
 	note E_, 2
 	note D_, 2
 	note C_, 8
-	vibrato 16, 3, 4
-	sound_loop 0, .mainloop
+	vibrato $10, $34
+	loopchannel 0, Music_MobileCenter_branch_179788
+; 179807
 
-Music_MobileCenter_Ch4:
-	toggle_noise 3
-	stereo_panning FALSE, TRUE
-	drum_speed 12
-	drum_note 10, 8
-	drum_note 10, 4
-	drum_note 2, 1
-	drum_note 2, 1
-	drum_note 2, 1
-	drum_note 2, 1
-.mainloop:
-.loop1:
-	drum_note 10, 2
-	drum_note 2, 2
-	drum_note 2, 2
-	drum_note 2, 2
-	drum_note 10, 2
-	drum_note 2, 2
-	drum_note 3, 2
-	drum_note 2, 2
-	sound_loop 3, .loop1
-	drum_note 10, 2
-	drum_note 2, 2
-	drum_note 2, 2
-	drum_note 2, 2
-	drum_note 10, 2
-	drum_note 3, 2
-	drum_note 2, 1
-	drum_note 2, 1
-	drum_note 2, 1
-	drum_note 2, 1
-	sound_loop 0, .mainloop
+Music_MobileCenter_Ch4: ; 179807
+	togglenoise $3
+	stereopanning $f
+	notetype $c
+	note A_, 8
+	note A_, 4
+	note C#, 1
+	note C#, 1
+	note C#, 1
+	note C#, 1
+Music_MobileCenter_branch_179813: ; 179813
+	note A_, 2
+	note C#, 2
+	note C#, 2
+	note C#, 2
+	note A_, 2
+	note C#, 2
+	note D_, 2
+	note C#, 2
+	loopchannel 3, Music_MobileCenter_branch_179813
+	note A_, 2
+	note C#, 2
+	note C#, 2
+	note C#, 2
+	note A_, 2
+	note D_, 2
+	note C#, 1
+	note C#, 1
+	note C#, 1
+	note C#, 1
+	loopchannel 0, Music_MobileCenter_branch_179813
+; 17982d

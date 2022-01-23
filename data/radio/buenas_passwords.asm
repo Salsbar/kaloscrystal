@@ -1,5 +1,5 @@
 BuenasPasswordTable:
-	table_width 2, BuenasPasswordTable
+; there are NUM_PASSWORD_CATEGORIES entries
 	dw .JohtoStarters
 	dw .Beverages
 	dw .HealingItems
@@ -11,15 +11,14 @@ BuenasPasswordTable:
 	dw .Moves
 	dw .XItems
 	dw .RadioStations
-	assert_table_length NUM_PASSWORD_CATEGORIES
 
-                ; string type, points, option 1, option 2, option 3
-.JohtoStarters: db BUENA_MON,    10, CYNDAQUIL, TOTODILE, CHIKORITA
+               ; string type, points, option 1, option 2, option 3
+.JohtoStarters: db BUENA_MON,    10, FENNEKIN, FROAKIE, CHESPIN
 .Beverages:     db BUENA_ITEM,   12, FRESH_WATER, SODA_POP, LEMONADE
 .HealingItems:  db BUENA_ITEM,   12, POTION, ANTIDOTE, PARLYZ_HEAL
 .Balls:         db BUENA_ITEM,   12, POKE_BALL, GREAT_BALL, ULTRA_BALL
-.Pokemon1:      db BUENA_MON,    10, PIKACHU, RATTATA, GEODUDE
-.Pokemon2:      db BUENA_MON,    10, HOOTHOOT, SPINARAK, DROWZEE
+.Pokemon1:      db BUENA_MON,    10, SWIRLIX, PATRAT, ROGGENROLA
+.Pokemon2:      db BUENA_MON,    10, PURRLOIN, VENIPEDE, MUNNA
 .JohtoTowns:    db BUENA_STRING, 16, "NEW BARK TOWN@", "CHERRYGROVE CITY@", "AZALEA TOWN@"
 .Types:         db BUENA_STRING,  6, "FLYING@", "BUG@", "GRASS@"
 .Moves:         db BUENA_MOVE,   12, TACKLE, GROWL, MUD_SLAP

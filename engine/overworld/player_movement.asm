@@ -1,9 +1,10 @@
-DoPlayerMovement::
+DoPlayerMovement:: ; 80000
+
 	call .GetDPad
 	ld a, movement_step_sleep
 	ld [wMovementAnimation], a
 	xor a
-	ld [wWalkingIntoEdgeWarp], a
+	ld [wd041], a
 	call .TranslateIntoMovement
 	ld c, a
 	ld a, [wMovementAnimation]
@@ -11,7 +12,8 @@ DoPlayerMovement::
 	ret
 
 .GetDPad:
-	ldh a, [hJoyDown]
+
+	ld a, [hJoyDown]
 	ld [wCurInput], a
 
 ; Standing downhill instead moves down.
@@ -28,6 +30,7 @@ DoPlayerMovement::
 	or D_DOWN
 	ld [wCurInput], a
 	ret
+; 8002d
 
 .TranslateIntoMovement:
 	ld a, [wPlayerState]
@@ -96,7 +99,7 @@ DoPlayerMovement::
 	jr z, .Standing
 
 ; Walking into an edge warp won't bump.
-	ld a, [wWalkingIntoEdgeWarp]
+	ld a, [wEngineBuffer4]
 	and a
 	jr nz, .CantMove
 	call .BumpSound
@@ -109,8 +112,9 @@ DoPlayerMovement::
 	call .StandInPlace
 	xor a
 	ret
+; 800b7
 
-.CheckTile:
+.CheckTile: ; 800b7
 ; Tiles such as waterfalls and warps move the player
 ; in a given direction, overriding input.
 
@@ -118,7 +122,7 @@ DoPlayerMovement::
 	ld c, a
 	call CheckWhirlpoolTile
 	jr c, .not_whirlpool
-	ld a, PLAYERMOVEMENT_FORCE_TURN
+	ld a, 3
 	scf
 	ret
 
@@ -220,11 +224,12 @@ DoPlayerMovement::
 .continue_walk
 	ld a, STEP_WALK
 	call .DoStep
-	ld a, PLAYERMOVEMENT_CONTINUE
+	ld a, 5
 	scf
 	ret
+; 80147
 
-.CheckTurning:
+.CheckTurning: ; 80147
 ; If the player is turning, change direction first. This also lets
 ; the player change facing without moving by tapping a direction.
 
@@ -245,15 +250,17 @@ DoPlayerMovement::
 
 	ld a, STEP_TURN
 	call .DoStep
-	ld a, PLAYERMOVEMENT_TURN
+	ld a, 2
 	scf
 	ret
 
 .not_turning
 	xor a
 	ret
+; 8016b
 
-.TryStep:
+.TryStep: ; 8016b
+
 ; Surfing actually calls .TrySurf directly instead of passing through here.
 	ld a, [wPlayerState]
 	cp PLAYER_SURF
@@ -309,27 +316,29 @@ DoPlayerMovement::
 	scf
 	ret
 
-.unused ; unreferenced
+; unused
 	xor a
 	ret
 
 .bump
 	xor a
 	ret
+; 801c0
 
-.TrySurf:
+.TrySurf: ; 801c0
+
 	call .CheckSurfPerms
-	ld [wWalkingIntoLand], a
+	ld [wd040], a
 	jr c, .surf_bump
 
 	call .CheckNPC
-	ld [wWalkingIntoNPC], a
+	ld [wd03f], a
 	and a
 	jr z, .surf_bump
 	cp 2
 	jr z, .surf_bump
 
-	ld a, [wWalkingIntoLand]
+	ld a, [wd040]
 	and a
 	jr nz, .ExitWater
 
@@ -343,15 +352,16 @@ DoPlayerMovement::
 	call PlayMapMusic
 	ld a, STEP_WALK
 	call .DoStep
-	ld a, PLAYERMOVEMENT_EXIT_WATER
+	ld a, 6
 	scf
 	ret
 
 .surf_bump
 	xor a
 	ret
+; 801f3
 
-.TryJump:
+.TryJump: ; 801f3
 	ld a, [wPlayerStandingTile]
 	ld e, a
 	and $f0
@@ -362,7 +372,7 @@ DoPlayerMovement::
 	and 7
 	ld e, a
 	ld d, 0
-	ld hl, .ledge_table
+	ld hl, .data_8021e
 	add hl, de
 	ld a, [wFacingDirection]
 	and [hl]
@@ -372,7 +382,7 @@ DoPlayerMovement::
 	call PlaySFX
 	ld a, STEP_LEDGE
 	call .DoStep
-	ld a, PLAYERMOVEMENT_JUMP
+	ld a, 7
 	scf
 	ret
 
@@ -380,7 +390,7 @@ DoPlayerMovement::
 	xor a
 	ret
 
-.ledge_table
+.data_8021e
 	db FACE_RIGHT             ; COLL_HOP_RIGHT
 	db FACE_LEFT              ; COLL_HOP_LEFT
 	db FACE_UP                ; COLL_HOP_UP
@@ -389,11 +399,13 @@ DoPlayerMovement::
 	db FACE_DOWN | FACE_LEFT  ; COLL_HOP_DOWN_LEFT
 	db FACE_UP | FACE_RIGHT   ; COLL_HOP_UP_RIGHT
 	db FACE_UP | FACE_LEFT    ; COLL_HOP_UP_LEFT
+; 80226
 
-.CheckWarp:
+.CheckWarp: ; 80226
+
 ; Bug: Since no case is made for STANDING here, it will check
-; [.EdgeWarps + $ff]. This resolves to $3e.
-; This causes wWalkingIntoEdgeWarp to be nonzero when standing on tile $3e,
+; [.edgewarps + $ff]. This resolves to $3e at $8035a.
+; This causes wd041 to be nonzero when standing on tile $3e,
 ; making bumps silent.
 
 	ld a, [wWalkingDirection]
@@ -407,8 +419,8 @@ DoPlayerMovement::
 	cp [hl]
 	jr nz, .not_warp
 
-	ld a, TRUE
-	ld [wWalkingIntoEdgeWarp], a
+	ld a, 1
+	ld [wd041], a
 	ld a, [wWalkingDirection]
 	; This is in the wrong place.
 	cp STANDING
@@ -426,11 +438,11 @@ DoPlayerMovement::
 
 	call .StandInPlace
 	scf
-	ld a, PLAYERMOVEMENT_WARP
+	ld a, 1
 	ret
 
 .not_warp
-	xor a ; PLAYERMOVEMENT_NORMAL
+	xor a
 	ret
 
 .EdgeWarps:
@@ -438,6 +450,7 @@ DoPlayerMovement::
 	db COLL_WARP_CARPET_UP
 	db COLL_WARP_CARPET_LEFT
 	db COLL_WARP_CARPET_RIGHT
+; 8025f
 
 .DoStep:
 	ld e, a
@@ -463,12 +476,10 @@ DoPlayerMovement::
 	ld a, [hl]
 	ld [wPlayerTurningDirection], a
 
-	ld a, PLAYERMOVEMENT_FINISH
+	ld a, 4
 	ret
 
 .Steps:
-; entries correspond to STEP_* constants (see constants/map_object_constants.asm)
-	table_width 2, DoPlayerMovement.Steps
 	dw .SlowStep
 	dw .NormalStep
 	dw .FastStep
@@ -477,7 +488,6 @@ DoPlayerMovement::
 	dw .TurningStep
 	dw .BackJumpStep
 	dw .FinishFacing
-	assert_table_length NUM_STEPS
 
 .SlowStep:
 	slow_step DOWN
@@ -515,28 +525,31 @@ DoPlayerMovement::
 	turn_step LEFT
 	turn_step RIGHT
 .FinishFacing:
-	db $80 | DOWN
-	db $80 | UP
-	db $80 | LEFT
-	db $80 | RIGHT
+	db $80 + DOWN
+	db $80 + UP
+	db $80 + LEFT
+	db $80 + RIGHT
+; 802b3
 
-.StandInPlace:
+.StandInPlace: ; 802b3
 	ld a, 0
 	ld [wPlayerTurningDirection], a
 	ld a, movement_step_sleep
 	ld [wMovementAnimation], a
 	xor a
 	ret
+; 802bf
 
-._WalkInPlace:
+._WalkInPlace: ; 802bf
 	ld a, 0
 	ld [wPlayerTurningDirection], a
 	ld a, movement_step_bump
 	ld [wMovementAnimation], a
 	xor a
 	ret
+; 802cb
 
-.CheckForced:
+.CheckForced: ; 802cb
 ; When sliding on ice, input is forced to remain in the same direction.
 
 	call CheckStandingOnIce
@@ -559,12 +572,13 @@ DoPlayerMovement::
 
 .forced_dpad
 	db D_DOWN, D_UP, D_LEFT, D_RIGHT
+; 802ec
 
-.GetAction:
+.GetAction: ; 802ec
 ; Poll player input and update movement info.
 
-	ld hl, .action_table
-	ld de, .action_table_1_end - .action_table_1
+	ld hl, .table
+	ld de, .table2 - .table1
 	ld a, [wCurInput]
 	bit D_DOWN_F, a
 	jr nz, .d_down
@@ -577,14 +591,11 @@ DoPlayerMovement::
 ; Standing
 	jr .update
 
-.d_down
-	add hl, de
-.d_up
-	add hl, de
-.d_left
-	add hl, de
-.d_right
-	add hl, de
+.d_down 	add hl, de
+.d_up   	add hl, de
+.d_left 	add hl, de
+.d_right	add hl, de
+
 .update
 	ld a, [hli]
 	ld [wWalkingDirection], a
@@ -601,27 +612,33 @@ DoPlayerMovement::
 	ld [wWalkingTile], a
 	ret
 
-player_action: MACRO
-; walk direction, facing, x movement, y movement, tile collision pointer
-	db \1, \2, \3, \4
-	dw \5
-ENDM
+.table
+; struct:
+;	walk direction
+;	facing
+;	x movement
+;	y movement
+;	tile collision pointer
+.table1
+	db STANDING, FACE_CURRENT, 0, 0
+	dw wPlayerStandingTile
+.table2
+	db RIGHT, FACE_RIGHT,  1,  0
+	dw wTileRight
+	db LEFT,  FACE_LEFT,  -1,  0
+	dw wTileLeft
+	db UP,    FACE_UP,     0, -1
+	dw wTileUp
+	db DOWN,  FACE_DOWN,   0,  1
+	dw wTileDown
+; 80341
 
-.action_table:
-.action_table_1
-	player_action STANDING, FACE_CURRENT, 0,  0, wPlayerStandingTile
-.action_table_1_end
-	player_action RIGHT,    FACE_RIGHT,   1,  0, wTileRight
-	player_action LEFT,     FACE_LEFT,   -1,  0, wTileLeft
-	player_action UP,       FACE_UP,      0, -1, wTileUp
-	player_action DOWN,     FACE_DOWN,    0,  1, wTileDown
-
-.CheckNPC:
+.CheckNPC: ; 80341
 ; Returns 0 if there is an NPC in front that you can't move
 ; Returns 1 if there is no NPC in front
 ; Returns 2 if there is a movable NPC in front
 	ld a, 0
-	ldh [hMapObjectIndex], a
+	ld [hMapObjectIndexBuffer], a
 ; Load the next X coordinate into d
 	ld a, [wPlayerStandingMapX]
 	ld d, a
@@ -651,8 +668,10 @@ ENDM
 .no_bump
 	ld a, 2
 	ret
+; 8036f
 
-.CheckStrengthBoulder:
+.CheckStrengthBoulder: ; 8036f
+
 	ld hl, wBikeFlags
 	bit BIKEFLAGS_STRENGTH_ACTIVE_F, [hl]
 	jr z, .not_boulder
@@ -687,8 +706,9 @@ ENDM
 .not_boulder
 	xor a
 	ret
+; 8039e
 
-.CheckLandPerms:
+.CheckLandPerms: ; 8039e
 ; Return 0 if walking onto land and tile permissions allow it.
 ; Otherwise, return carry.
 
@@ -708,8 +728,9 @@ ENDM
 .NotWalkable:
 	scf
 	ret
+; 803b4
 
-.CheckSurfPerms:
+.CheckSurfPerms: ; 803b4
 ; Return 0 if moving in water, or 1 if moving onto land.
 ; Otherwise, return carry.
 
@@ -729,33 +750,36 @@ ENDM
 .NotSurfable:
 	scf
 	ret
+; 803ca
 
-.BikeCheck:
+.BikeCheck: ; 803ca
 	ld a, [wPlayerState]
 	cp PLAYER_BIKE
 	ret z
 	cp PLAYER_SKATE
 	ret
+; 803d3
 
-.CheckWalkable:
+.CheckWalkable: ; 803d3
 ; Return 0 if tile a is land. Otherwise, return carry.
 
 	call GetTileCollision
-	and a ; LAND_TILE
+	and a ; LANDTILE?
 	ret z
 	scf
 	ret
+; 803da
 
-.CheckSurfable:
+.CheckSurfable: ; 803da
 ; Return 0 if tile a is water, or 1 if land.
 ; Otherwise, return carry.
 
 	call GetTileCollision
-	cp WATER_TILE
+	cp WATERTILE
 	jr z, .Water
 
 ; Can walk back onto land from water.
-	and a ; LAND_TILE
+	and a ; LANDTILE?
 	jr z, .Land
 
 	jr .Neither
@@ -772,23 +796,27 @@ ENDM
 .Neither:
 	scf
 	ret
+; 803ee
 
-.BumpSound:
+.BumpSound: ; 803ee
+
 	call CheckSFX
 	ret c
 	ld de, SFX_BUMP
 	call PlaySFX
 	ret
+; 803f9
 
-.GetOutOfWater:
+.GetOutOfWater: ; 803f9
 	push bc
 	ld a, PLAYER_NORMAL
 	ld [wPlayerState], a
-	call UpdatePlayerSprite ; UpdateSprites
+	call ReplaceKrisSprite ; UpdateSprites
 	pop bc
 	ret
+; 80404
 
-CheckStandingOnIce::
+CheckStandingOnIce:: ; 80404
 	ld a, [wPlayerTurningDirection]
 	cp 0
 	jr z, .not_ice
@@ -808,8 +836,9 @@ CheckStandingOnIce::
 .not_ice
 	and a
 	ret
+; 80422
 
-StopPlayerForEvent::
+StopPlayerForEvent:: ; 80422
 	ld hl, wPlayerNextMovement
 	ld a, movement_step_sleep
 	cp [hl]
@@ -819,3 +848,4 @@ StopPlayerForEvent::
 	ld a, 0
 	ld [wPlayerTurningDirection], a
 	ret
+; 80430

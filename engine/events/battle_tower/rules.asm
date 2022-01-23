@@ -1,30 +1,35 @@
-CheckForMobileBattleRules:
+CheckForMobileBattleRules: ; 8b1e1
 	ld de, .PointerTables
 	call BattleTower_ExecuteJumptable
 	ret z
 	call BattleTower_PleaseReturnWhenReady
 	scf
 	ret
+; 8b1ed
 
-.PointerTables:
+.PointerTables: ; 8b1ed
 	db 2
 	dw .Functions
 	dw .TextPointers
 
-.Functions:
+.Functions: ; 8b1f2
 	dw BattleTower_CheckPartyLengthIs3
 	dw BattleTower_CheckPartyHasThreeMonsThatAreNotEggs
+; 8b1f6
 
-.TextPointers:
-	dw .BTExcuseMeText
-	dw NeedAtLeastThreeMonText
-	dw EggDoesNotQualifyText
+.TextPointers: ; 8b1f6
+	dw .ExcuseMeText
+	dw JumpText_NeedAtLeastThreeMon
+	dw JumpText_EggDoesNotQualify
+; 8b1fc
 
-.BTExcuseMeText:
-	text_far _BTExcuseMeText
-	text_end
+.ExcuseMeText: ; 0x8b1fc
+	; Excuse me!
+	text_jump UnknownText_0x1c5937
+	db "@"
+; 0x8b201
 
-_CheckForBattleTowerRules:
+_CheckForBattleTowerRules: ; 8b201
 	ld hl, wStringBuffer2
 	ld [hl], "3"
 	inc hl
@@ -35,63 +40,83 @@ _CheckForBattleTowerRules:
 	call BattleTower_PleaseReturnWhenReady
 	scf
 	ret
+; 8b215
 
-.PointerTables:
+.PointerTables: ; 8b215
 	db 4
 	dw .Functions
 	dw .TextPointers
 
-.Functions:
-	dw CheckBTRule_PartyCountEq3
-	dw CheckBTRule_PartySpeciesAreUnique
-	dw CheckBTRule_PartyItemsAreUnique
-	dw CheckBTRule_HasPartyAnEgg
+.Functions: ; 8b21a
+	dw Function_PartyCountEq3
+	dw Function_PartySpeciesAreUnique
+	dw Function_PartyItemsAreUnique
+	dw Function_HasPartyAnEgg
+; 8b222
 
-.TextPointers:
-	dw ExcuseMeYoureNotReadyText
-	dw OnlyThreeMonMayBeEnteredText
-	dw TheMonMustAllBeDifferentKindsText
-	dw TheMonMustNotHoldTheSameItemsText
-	dw YouCantTakeAnEggText
+.TextPointers: ; 8b222
+	dw JumpText_ExcuseMeYoureNotReady
+	dw JumpText_OnlyThreeMonMayBeEntered
+	dw JumpText_TheMonMustAllBeDifferentKinds
+	dw JumpText_TheMonMustNotHoldTheSameItems
+	dw JumpText_YouCantTakeAnEgg
+; 8b22c
 
-ExcuseMeYoureNotReadyText:
-	text_far _ExcuseMeYoureNotReadyText
-	text_end
+JumpText_ExcuseMeYoureNotReady: ; 0x8b22c
+	; Excuse me. You're not ready.
+	text_jump Text_ExcuseMeYoureNotReady
+	db "@"
+; 0x8b231
 
-BattleTower_PleaseReturnWhenReady:
-	ld hl, .BattleTowerReturnWhenReadyText
+BattleTower_PleaseReturnWhenReady: ; 8b231
+	ld hl, .PleaseReturnWhenReady
 	call PrintText
 	ret
+; 8b238
 
-.BattleTowerReturnWhenReadyText:
-	text_far _BattleTowerReturnWhenReadyText
-	text_end
+.PleaseReturnWhenReady: ; 0x8b238
+	; Please return when you're ready.
+	text_jump UnknownText_0x1c5962
+	db "@"
+; 0x8b23d
 
-NeedAtLeastThreeMonText:
-	text_far _NeedAtLeastThreeMonText
-	text_end
+JumpText_NeedAtLeastThreeMon: ; 0x8b23d
+	; You need at least three #MON.
+	text_jump UnknownText_0x1c5983
+	db "@"
+; 0x8b242
 
-EggDoesNotQualifyText:
-	text_far _EggDoesNotQualifyText
-	text_end
+JumpText_EggDoesNotQualify: ; 0x8b242
+	; Sorry, an EGG doesn't qualify.
+	text_jump UnknownText_0x1c59a3
+	db "@"
+; 0x8b247
 
-OnlyThreeMonMayBeEnteredText:
-	text_far _OnlyThreeMonMayBeEnteredText
-	text_end
+JumpText_OnlyThreeMonMayBeEntered: ; 0x8b247
+	; Only three #MON may be entered.
+	text_jump Text_OnlyThreeMonMayBeEntered
+	db "@"
+; 0x8b24c
 
-TheMonMustAllBeDifferentKindsText:
-	text_far _TheMonMustAllBeDifferentKindsText
-	text_end
+JumpText_TheMonMustAllBeDifferentKinds: ; 0x8b24c
+	; The @  #MON must all be different kinds.
+	text_jump Text_TheMonMustAllBeDifferentKinds
+	db "@"
+; 0x8b251
 
-TheMonMustNotHoldTheSameItemsText:
-	text_far _TheMonMustNotHoldTheSameItemsText
-	text_end
+JumpText_TheMonMustNotHoldTheSameItems: ; 0x8b251
+	; The @  #MON must not hold the same items.
+	text_jump Text_TheMonMustNotHoldTheSameItems
+	db "@"
+; 0x8b256
 
-YouCantTakeAnEggText:
-	text_far _YouCantTakeAnEggText
-	text_end
+JumpText_YouCantTakeAnEgg: ; 0x8b256
+	; You can't take an EGG!
+	text_jump Text_YouCantTakeAnEgg
+	db "@"
+; 0x8b25b
 
-BattleTower_ExecuteJumptable:
+BattleTower_ExecuteJumptable: ; 8b25b
 	ld bc, 0
 .loop
 	call .DoJumptableFunction
@@ -101,8 +126,9 @@ BattleTower_ExecuteJumptable:
 	ld a, b
 	and a
 	ret
+; 8b26c
 
-.DoJumptableFunction:
+.DoJumptableFunction: ; 8b26c
 	push de
 	push bc
 	call .GetFunctionPointer
@@ -111,14 +137,16 @@ BattleTower_ExecuteJumptable:
 	pop bc
 	pop de
 	ret
+; 8b276
 
-.Next_CheckReachedEnd:
+.Next_CheckReachedEnd: ; 8b276
 	inc c
 	ld a, [de]
 	cp c
 	ret
+; 8b27a
 
-.GetFunctionPointer:
+.GetFunctionPointer: ; 8b27a
 	inc de
 	ld a, [de]
 	ld l, a
@@ -126,8 +154,9 @@ BattleTower_ExecuteJumptable:
 	ld a, [de]
 	ld h, a
 	ret
+; 8b281
 
-.GetTextPointers:
+.GetTextPointers: ; 8b281
 	inc de
 	inc de
 	inc de
@@ -137,14 +166,16 @@ BattleTower_ExecuteJumptable:
 	ld a, [de]
 	ld h, a
 	ret
+; 8b28a
 
-.LoadTextPointer:
+.LoadTextPointer: ; 8b28a
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
 	ret
+; 8b28e
 
-.PrintFailureText:
+.PrintFailureText: ; 8b28e
 	push de
 	push bc
 	ld a, b
@@ -152,40 +183,44 @@ BattleTower_ExecuteJumptable:
 	call z, .PrintFirstText
 	pop bc
 	call .PrintNthText
-	ld b, 1
+	ld b, $1
 	pop de
 	ret
+; 8b29d
 
-.PrintFirstText:
+.PrintFirstText: ; 8b29d
 	push de
 	call .GetTextPointers
 	call .LoadTextPointer
 	call PrintText
 	pop de
 	ret
+; 8b2a9
 
-.PrintNthText:
+.PrintNthText: ; 8b2a9
 	push bc
 	call .GetTextPointers
 	inc hl
 	inc hl
-	ld b, 0
+	ld b, $0
 	add hl, bc
 	add hl, bc
 	call .LoadTextPointer
 	call PrintText
 	pop bc
 	ret
+; 8b2bb
 
-BattleTower_CheckPartyLengthIs3:
+BattleTower_CheckPartyLengthIs3: ; 8b2bb
 	ld a, [wPartyCount]
 	cp BATTLETOWER_PARTY_LENGTH
 	ret
+; 8b2c1
 
-BattleTower_CheckPartyHasThreeMonsThatAreNotEggs:
+BattleTower_CheckPartyHasThreeMonsThatAreNotEggs: ; 8b2c1
 	ld hl, wPartyCount
 	ld a, [hli]
-	ld b, 0
+	ld b, $0
 	ld c, a
 .loop
 	ld a, [hli]
@@ -202,20 +237,23 @@ BattleTower_CheckPartyHasThreeMonsThatAreNotEggs:
 	ld a, b
 	cp BATTLETOWER_PARTY_LENGTH
 	ret
+; 8b2da
 
-CheckBTRule_PartyCountEq3:
+Function_PartyCountEq3: ; 8b2da
 	ld a, [wPartyCount]
 	cp BATTLETOWER_PARTY_LENGTH
 	ret z
 	scf
 	ret
+; 8b2e2
 
-CheckBTRule_PartySpeciesAreUnique:
+Function_PartySpeciesAreUnique: ; 8b2e2
 	ld hl, wPartyMon1Species
-	call CheckPartyValueIsUnique
+	call VerifyUniqueness
 	ret
+; 8b2e9
 
-CheckPartyValueIsUnique:
+VerifyUniqueness: ; 8b2e9
 	ld de, wPartyCount
 	ld a, [de]
 	inc de
@@ -258,16 +296,18 @@ CheckPartyValueIsUnique:
 	pop hl
 	scf
 	ret
+; 8b31a
 
-.nextmon
+.nextmon ; 8b31a
 	push bc
 	ld bc, PARTYMON_STRUCT_LENGTH
 	add hl, bc
 	inc de
 	pop bc
 	ret
+; 8b322
 
-.isegg
+.isegg ; 8b322
 	push bc
 	ld b, a
 	ld a, [de]
@@ -275,13 +315,15 @@ CheckPartyValueIsUnique:
 	ld a, b
 	pop bc
 	ret
+; 8b32a
 
-CheckBTRule_PartyItemsAreUnique:
+Function_PartyItemsAreUnique: ; 8b32a
 	ld hl, wPartyMon1Item
-	call CheckPartyValueIsUnique
+	call VerifyUniqueness
 	ret
+; 8b331
 
-CheckBTRule_HasPartyAnEgg:
+Function_HasPartyAnEgg: ; 8b331
 	ld hl, wPartyCount
 	ld a, [hli]
 	ld c, a
@@ -297,3 +339,4 @@ CheckBTRule_HasPartyAnEgg:
 .found
 	scf
 	ret
+; 8b342

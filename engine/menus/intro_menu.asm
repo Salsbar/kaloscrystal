@@ -1,4 +1,4 @@
-Intro_MainMenu:
+_MainMenu: ; 5ae8
 	ld de, MUSIC_NONE
 	call PlayMusic
 	call DelayFrame
@@ -8,11 +8,13 @@ Intro_MainMenu:
 	call PlayMusic
 	farcall MainMenu
 	jp StartTitleScreen
+; 5b04
 
-IntroMenu_DummyFunction: ; unreferenced
+; unused
 	ret
+; 5b05
 
-PrintDayOfWeek:
+PrintDayOfWeek: ; 5b05
 	push de
 	ld hl, .Days
 	ld a, b
@@ -26,8 +28,9 @@ PrintDayOfWeek:
 	ld de, .Day
 	call PlaceString
 	ret
+; 5b1c
 
-.Days:
+.Days: ; 5b1c
 	db "SUN@"
 	db "MON@"
 	db "TUES@"
@@ -35,50 +38,55 @@ PrintDayOfWeek:
 	db "THURS@"
 	db "FRI@"
 	db "SATUR@"
+; 5b40
 
-.Day:
+.Day: ; 5b40
 	db "DAY@"
+; 5b44
 
-NewGame_ClearTilemapEtc:
+NewGame_ClearTileMapEtc: ; 5b44
 	xor a
-	ldh [hMapAnims], a
-	call ClearTilemap
+	ld [hMapAnims], a
+	call ClearTileMap
 	call LoadFontsExtra
 	call LoadStandardFont
 	call ClearWindowData
 	ret
+; 5b54
 
-MysteryGift:
+MysteryGift: ; 5b54
 	call UpdateTime
 	farcall DoMysteryGiftIfDayHasPassed
 	farcall DoMysteryGift
 	ret
+; 5b64
 
-Option:
-	farcall _Option
+OptionsMenu: ; 5b64
+	farcall _OptionsMenu
 	ret
+; 5b6b
 
-NewGame:
+NewGame: ; 5b6b
 	xor a
-	ld [wDebugFlags], a
+	ld [wMonStatusFlags], a
 	call ResetWRAM
-	call NewGame_ClearTilemapEtc
+	call NewGame_ClearTileMapEtc
 	call AreYouABoyOrAreYouAGirl
 	call OakSpeech
 	call InitializeWorld
-
-	ld a, LANDMARK_NEW_BARK_TOWN
-	ld [wPrevLandmark], a
+	ld a, 1
+	ld [wPreviousLandmark], a
 
 	ld a, SPAWN_HOME
 	ld [wDefaultSpawnpoint], a
 
 	ld a, MAPSETUP_WARP
-	ldh [hMapEntryMethod], a
+	ld [hMapEntryMethod], a
 	jp FinishContinueFunction
+; 5b8f
 
-AreYouABoyOrAreYouAGirl:
-	farcall Mobile_AlwaysReturnNotCarry ; mobile
+AreYouABoyOrAreYouAGirl: ; 5b8f
+	farcall Mobile_AlwaysReturnNotCarry ; some mobile stuff
 	jr c, .ok
 	farcall InitGender
 	ret
@@ -87,20 +95,17 @@ AreYouABoyOrAreYouAGirl:
 	ld c, 0
 	farcall InitMobileProfile ; mobile
 	ret
+; 5ba7
 
-if DEF(_DEBUG)
-DebugRoom: ; unreferenced
-	farcall _DebugRoom
-	ret
-endc
-
-ResetWRAM:
+ResetWRAM: ; 5ba7
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call _ResetWRAM
 	ret
+; 5bae
 
-_ResetWRAM:
+_ResetWRAM: ; 5bae
+
 	ld hl, wVirtualOAM
 	ld bc, wOptions - wVirtualOAM
 	xor a
@@ -116,16 +121,16 @@ _ResetWRAM:
 	xor a
 	call ByteFill
 
-	ldh a, [rLY]
-	ldh [hUnusedBackup], a
+	ld a, [rLY]
+	ld [hSecondsBackup], a
 	call DelayFrame
-	ldh a, [hRandomSub]
+	ld a, [hRandomSub]
 	ld [wPlayerID], a
 
-	ldh a, [rLY]
-	ldh [hUnusedBackup], a
+	ld a, [rLY]
+	ld [hSecondsBackup], a
 	call DelayFrame
-	ldh a, [hRandomAdd]
+	ld a, [hRandomAdd]
 	ld [wPlayerID + 1], a
 
 	call Random
@@ -144,7 +149,7 @@ _ResetWRAM:
 	call SetDefaultBoxNames
 
 	ld a, BANK(sBoxCount)
-	call OpenSRAM
+	call GetSRAMBank
 	ld hl, sBoxCount
 	call .InitList
 	call CloseSRAM
@@ -158,7 +163,7 @@ _ResetWRAM:
 	ld hl, wNumBalls
 	call .InitList
 
-	ld hl, wNumPCItems
+	ld hl, wPCItems
 	call .InitList
 
 	xor a
@@ -173,13 +178,12 @@ _ResetWRAM:
 	ld [wRoamMon2MapNumber], a
 	ld [wRoamMon3MapNumber], a
 
-	ld a, BANK(sMysteryGiftItem) ; aka BANK(sMysteryGiftUnlocked)
-	call OpenSRAM
+	ld a, BANK(sMysteryGiftItem)
+	call GetSRAMBank
 	ld hl, sMysteryGiftItem
 	xor a
 	ld [hli], a
-	assert sMysteryGiftItem + 1 == sMysteryGiftUnlocked
-	dec a ; -1
+	dec a
 	ld [hl], a
 	call CloseSRAM
 
@@ -224,16 +228,18 @@ endc
 
 	call ResetGameTime
 	ret
+; 5ca1
 
-.InitList:
+.InitList: ; 5ca1
 ; Loads 0 in the count and -1 in the first item or mon slot.
 	xor a
 	ld [hli], a
 	dec a
 	ld [hl], a
 	ret
+; 5ca6
 
-SetDefaultBoxNames:
+SetDefaultBoxNames: ; 5ca6
 	ld hl, wBoxNames
 	ld c, 0
 .loop
@@ -264,8 +270,9 @@ SetDefaultBoxNames:
 
 .Box:
 	db "BOX@"
+; 5cd3
 
-InitializeMagikarpHouse:
+InitializeMagikarpHouse: ; 5cd3
 	ld hl, wBestMagikarpLengthFeet
 	ld a, $3
 	ld [hli], a
@@ -274,11 +281,13 @@ InitializeMagikarpHouse:
 	ld de, .Ralph
 	call CopyName2
 	ret
+; 5ce3
 
-.Ralph:
+.Ralph: ; 5ce3
 	db "RALPH@"
+; 5ce9
 
-InitializeNPCNames:
+InitializeNPCNames: ; 5ce9
 	ld hl, .Rival
 	ld de, wRivalName
 	call .Copy
@@ -303,16 +312,18 @@ InitializeNPCNames:
 .Red:    db "RED@"
 .Green:  db "GREEN@"
 .Mom:    db "MOM@"
+; 5d23
 
-InitializeWorld:
+InitializeWorld: ; 5d23
 	call ShrinkPlayer
 	farcall SpawnPlayer
 	farcall _InitializeStartDay
 	ret
+; 5d33
 
-LoadOrRegenerateLuckyIDNumber:
+LoadOrRegenerateLuckyIDNumber: ; 5d33
 	ld a, BANK(sLuckyIDNumber)
-	call OpenSRAM
+	call GetSRAMBank
 	ld a, [wCurDay]
 	inc a
 	ld b, a
@@ -335,15 +346,16 @@ LoadOrRegenerateLuckyIDNumber:
 	ld [wLuckyIDNumber + 1], a
 	ld [sLuckyIDNumber + 1], a
 	jp CloseSRAM
+; 5d65
 
-Continue:
+Continue: ; 5d65
 	farcall TryLoadSaveFile
 	jr c, .FailToLoad
 	farcall _LoadData
 	call LoadStandardMenuHeader
 	call DisplaySaveInfoOnContinue
 	ld a, $1
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	ld c, 20
 	call DelayFrames
 	call ConfirmContinue
@@ -367,17 +379,17 @@ Continue:
 	call ClearBGPalettes
 	call Continue_MobileAdapterMenu
 	call CloseWindow
-	call ClearTilemap
+	call ClearTileMap
 	ld c, 20
 	call DelayFrames
 	farcall JumpRoamMons
-	farcall CopyMysteryGiftReceivedDecorationsToPC
-	farcall ClockContinue
+	farcall MysteryGift_CopyReceivedDecosToPC ; Mystery Gift
+	farcall Function140ae ; time-related
 	ld a, [wSpawnAfterChampion]
 	cp SPAWN_LANCE
 	jr z, .SpawnAfterE4
 	ld a, MAPSETUP_CONTINUE
-	ldh [hMapEntryMethod], a
+	ld [hMapEntryMethod], a
 	jp FinishContinueFunction
 
 .FailToLoad:
@@ -388,19 +400,22 @@ Continue:
 	ld [wDefaultSpawnpoint], a
 	call PostCreditsSpawn
 	jp FinishContinueFunction
+; 5de2
 
-SpawnAfterRed:
+SpawnAfterRed: ; 5de2
 	ld a, SPAWN_MT_SILVER
 	ld [wDefaultSpawnpoint], a
+; 5de7
 
-PostCreditsSpawn:
+PostCreditsSpawn: ; 5de7
 	xor a
 	ld [wSpawnAfterChampion], a
 	ld a, MAPSETUP_WARP
-	ldh [hMapEntryMethod], a
+	ld [hMapEntryMethod], a
 	ret
+; 5df0
 
-Continue_MobileAdapterMenu:
+Continue_MobileAdapterMenu: ; 5df0
 	farcall Mobile_AlwaysReturnNotCarry ; mobile check
 	ret nc
 
@@ -429,8 +444,9 @@ Continue_MobileAdapterMenu:
 	ld c, 35
 	call DelayFrames
 	ret
+; 5e34
 
-ConfirmContinue:
+ConfirmContinue: ; 5e34
 .loop
 	call DelayFrame
 	call GetJoypad
@@ -444,8 +460,9 @@ ConfirmContinue:
 
 .PressA:
 	ret
+; 5e48
 
-Continue_CheckRTC_RestartClock:
+Continue_CheckRTC_RestartClock: ; 5e48
 	call CheckRTCStatus
 	and %10000000 ; Day count exceeded 16383
 	jr z, .pass
@@ -459,15 +476,16 @@ Continue_CheckRTC_RestartClock:
 .pass
 	xor a
 	ret
+; 5e5d
 
-FinishContinueFunction:
+FinishContinueFunction: ; 5e5d
 .loop
 	xor a
 	ld [wDontPlayMapMusicOnReload], a
 	ld [wLinkMode], a
-	ld hl, wGameTimerPaused
-	set GAME_TIMER_PAUSED_F, [hl]
-	res GAME_TIMER_MOBILE_F, [hl]
+	ld hl, wGameTimerPause
+	set GAMETIMERPAUSE_TIMER_PAUSED_F, [hl]
+	res GAMETIMERPAUSE_MOBILE_7_F, [hl]
 	ld hl, wEnteredMapFromContinue
 	set 1, [hl]
 	farcall OverworldLoop
@@ -479,8 +497,9 @@ FinishContinueFunction:
 .AfterRed:
 	call SpawnAfterRed
 	jr .loop
+; 5e85
 
-DisplaySaveInfoOnContinue:
+DisplaySaveInfoOnContinue: ; 5e85
 	call CheckRTCStatus
 	and %10000000
 	jr z, .clock_ok
@@ -492,30 +511,34 @@ DisplaySaveInfoOnContinue:
 	lb de, 4, 8
 	call DisplayNormalContinueData
 	ret
+; 5e9a
 
-DisplaySaveInfoOnSave:
+DisplaySaveInfoOnSave: ; 5e9a
 	lb de, 4, 0
 	jr DisplayNormalContinueData
+; 5e9f
 
-DisplayNormalContinueData:
+DisplayNormalContinueData: ; 5e9f
 	call Continue_LoadMenuHeader
 	call Continue_DisplayBadgesDexPlayerName
 	call Continue_PrintGameTime
 	call LoadFontsExtra
 	call UpdateSprites
 	ret
+; 5eaf
 
-DisplayContinueDataWithRTCError:
+DisplayContinueDataWithRTCError: ; 5eaf
 	call Continue_LoadMenuHeader
 	call Continue_DisplayBadgesDexPlayerName
 	call Continue_UnknownGameTime
 	call LoadFontsExtra
 	call UpdateSprites
 	ret
+; 5ebf
 
-Continue_LoadMenuHeader:
+Continue_LoadMenuHeader: ; 5ebf
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	ld hl, .MenuHeader_Dex
 	ld a, [wStatusFlags]
 	bit STATUSFLAGS_POKEDEX_F, a
@@ -527,36 +550,42 @@ Continue_LoadMenuHeader:
 	call MenuBox
 	call PlaceVerticalMenuItems
 	ret
+; 5ed9
 
-.MenuHeader_Dex:
+.MenuHeader_Dex: ; 5ed9
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 0, 0, 15, 9
 	dw .MenuData_Dex
 	db 1 ; default option
+; 5ee1
 
-.MenuData_Dex:
+.MenuData_Dex: ; 5ee1
 	db 0 ; flags
 	db 4 ; items
 	db "PLAYER@"
 	db "BADGES@"
 	db "#DEX@"
 	db "TIME@"
+; 5efb
 
-.MenuHeader_NoDex:
+.MenuHeader_NoDex: ; 5efb
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 0, 0, 15, 9
 	dw .MenuData_NoDex
 	db 1 ; default option
+; 5f03
 
-.MenuData_NoDex:
+.MenuData_NoDex: ; 5f03
 	db 0 ; flags
 	db 4 ; items
 	db "PLAYER <PLAYER>@"
 	db "BADGES@"
 	db " @"
 	db "TIME@"
+; 5f1c
 
-Continue_DisplayBadgesDexPlayerName:
+
+Continue_DisplayBadgesDexPlayerName: ; 5f1c
 	call MenuBoxCoord2Tile
 	push hl
 	decoord 13, 4, 0
@@ -578,14 +607,16 @@ Continue_DisplayBadgesDexPlayerName:
 
 .Player:
 	db "<PLAYER>@"
+; 5f40
 
-Continue_PrintGameTime:
+Continue_PrintGameTime: ; 5f40
 	decoord 9, 8, 0
 	add hl, de
 	call Continue_DisplayGameTime
 	ret
+; 5f48
 
-Continue_UnknownGameTime:
+Continue_UnknownGameTime: ; 5f48
 	decoord 9, 8, 0
 	add hl, de
 	ld de, .three_question_marks
@@ -594,18 +625,20 @@ Continue_UnknownGameTime:
 
 .three_question_marks
 	db " ???@"
+; 5f58
 
-Continue_DisplayBadgeCount:
+Continue_DisplayBadgeCount: ; 5f58
 	push hl
 	ld hl, wJohtoBadges
 	ld b, 2
 	call CountSetBits
 	pop hl
-	ld de, wNumSetBits
+	ld de, wd265
 	lb bc, 1, 2
 	jp PrintNum
+; 5f6b
 
-Continue_DisplayPokedexNumCaught:
+Continue_DisplayPokedexNumCaught: ; 5f6b
 	ld a, [wStatusFlags]
 	bit STATUSFLAGS_POKEDEX_F, a
 	ret z
@@ -618,11 +651,12 @@ else
 endc
 	call CountSetBits
 	pop hl
-	ld de, wNumSetBits
+	ld de, wd265
 	lb bc, 1, 3
 	jp PrintNum
+; 5f84
 
-Continue_DisplayGameTime:
+Continue_DisplayGameTime: ; 5f84
 	ld de, wGameTimeHours
 	lb bc, 2, 3
 	call PrintNum
@@ -631,11 +665,13 @@ Continue_DisplayGameTime:
 	ld de, wGameTimeMinutes
 	lb bc, PRINTNUM_LEADINGZEROS | 1, 2
 	jp PrintNum
+; 5f99
 
-OakSpeech:
+
+OakSpeech: ; 0x5f99
 	farcall InitClock
 	call RotateFourPalettesLeft
-	call ClearTilemap
+	call ClearTileMap
 
 	ld de, MUSIC_ROUTE_30
 	call PlayMusic
@@ -655,9 +691,9 @@ OakSpeech:
 	ld hl, OakText1
 	call PrintText
 	call RotateThreePalettesRight
-	call ClearTilemap
+	call ClearTileMap
 
-	ld a, WOOPER
+	ld a, FLETCHLING
 	ld [wCurSpecies], a
 	ld [wCurPartySpecies], a
 	call GetBaseData
@@ -678,7 +714,7 @@ OakSpeech:
 	ld hl, OakText4
 	call PrintText
 	call RotateThreePalettesRight
-	call ClearTilemap
+	call ClearTileMap
 
 	xor a
 	ld [wCurPartySpecies], a
@@ -693,7 +729,7 @@ OakSpeech:
 	ld hl, OakText5
 	call PrintText
 	call RotateThreePalettesRight
-	call ClearTilemap
+	call ClearTileMap
 
 	xor a
 	ld [wCurPartySpecies], a
@@ -710,40 +746,40 @@ OakSpeech:
 	call PrintText
 	ret
 
-OakText1:
-	text_far _OakText1
-	text_end
+OakText1: ; 0x6045
+	text_jump _OakText1
+	db "@"
 
-OakText2:
-	text_far _OakText2
-	text_asm
-	ld a, WOOPER
+OakText2: ; 0x604a
+	text_jump _OakText2
+	start_asm
+	ld a, FLETCHLING
 	call PlayMonCry
 	call WaitSFX
 	ld hl, OakText3
 	ret
 
-OakText3:
-	text_far _OakText3
-	text_end
+OakText3: ; 0x605b
+	text_jump _OakText3
+	db "@"
 
-OakText4:
-	text_far _OakText4
-	text_end
+OakText4: ; 0x6060
+	text_jump _OakText4
+	db "@"
 
-OakText5:
-	text_far _OakText5
-	text_end
+OakText5: ; 0x6065
+	text_jump _OakText5
+	db "@"
 
-OakText6:
-	text_far _OakText6
-	text_end
+OakText6: ; 0x606a
+	text_jump _OakText6
+	db "@"
 
-OakText7:
-	text_far _OakText7
-	text_end
+OakText7: ; 0x606f
+	text_jump _OakText7
+	db "@"
 
-NamePlayer:
+NamePlayer: ; 0x6074
 	farcall MovePlayerPicRight
 	farcall ShowPlayerNamingChoices
 	ld a, [wMenuCursorY]
@@ -755,12 +791,12 @@ NamePlayer:
 	ret
 
 .NewName:
-	ld b, NAME_PLAYER
+	ld b, 1
 	ld de, wPlayerName
 	farcall NamingScreen
 
 	call RotateThreePalettesRight
-	call ClearTilemap
+	call ClearTileMap
 
 	call LoadFontsExtra
 	call WaitBGMap
@@ -787,8 +823,9 @@ NamePlayer:
 	db "CHRIS@@@@@@"
 .Kris:
 	db "KRIS@@@@@@@"
+; 60e9
 
-GSShowPlayerNamingChoices: ; unreferenced
+Unreferenced_Function60e9:
 	call LoadMenuHeader
 	call VerticalMenu
 	ld a, [wMenuCursorY]
@@ -796,8 +833,9 @@ GSShowPlayerNamingChoices: ; unreferenced
 	call CopyNameFromMenu
 	call CloseWindow
 	ret
+; 60fa
 
-StorePlayerName:
+StorePlayerName: ; 60fa
 	ld a, "@"
 	ld bc, NAME_LENGTH
 	ld hl, wPlayerName
@@ -806,9 +844,11 @@ StorePlayerName:
 	ld de, wStringBuffer2
 	call CopyName2
 	ret
+; 610f
 
-ShrinkPlayer:
-	ldh a, [hROMBank]
+ShrinkPlayer: ; 610f
+
+	ld a, [hROMBank]
 	push af
 
 	ld a, 32 ; fade time
@@ -856,10 +896,11 @@ ShrinkPlayer:
 	call DelayFrames
 
 	call RotateThreePalettesRight
-	call ClearTilemap
+	call ClearTileMap
 	ret
+; 616a
 
-Intro_RotatePalettesLeftFrontpic:
+Intro_RotatePalettesLeftFrontpic: ; 616a
 	ld hl, IntroFadePalettes
 	ld b, IntroFadePalettes.End - IntroFadePalettes
 .loop
@@ -870,55 +911,61 @@ Intro_RotatePalettesLeftFrontpic:
 	dec b
 	jr nz, .loop
 	ret
+; 617c
 
-IntroFadePalettes:
-	dc 1, 1, 1, 0
-	dc 2, 2, 2, 0
-	dc 3, 3, 3, 0
-	dc 3, 3, 2, 0
-	dc 3, 3, 1, 0
-	dc 3, 2, 1, 0
+IntroFadePalettes: ; 0x617c
+	db %01010100
+	db %10101000
+	db %11111100
+	db %11111000
+	db %11110100
+	db %11100100
 .End
+; 6182
 
-Intro_WipeInFrontpic:
+Intro_WipeInFrontpic: ; 6182
 	ld a, $77
-	ldh [hWX], a
+	ld [hWX], a
 	call DelayFrame
 	ld a, %11100100
 	call DmgToCgbBGPals
 .loop
 	call DelayFrame
-	ldh a, [hWX]
+	ld a, [hWX]
 	sub $8
 	cp -1
 	ret z
-	ldh [hWX], a
+	ld [hWX], a
 	jr .loop
+; 619c
 
-Intro_PrepTrainerPic:
+Intro_PrepTrainerPic: ; 619c
 	ld de, vTiles2
 	farcall GetTrainerPic
 	xor a
-	ldh [hGraphicStartTile], a
+	ld [hGraphicStartTile], a
 	hlcoord 6, 4
 	lb bc, 7, 7
 	predef PlaceGraphic
 	ret
+; 61b4
 
-ShrinkFrame:
+ShrinkFrame: ; 61b4
 	ld de, vTiles2
 	ld c, 7 * 7
 	predef DecompressGet2bpp
 	xor a
-	ldh [hGraphicStartTile], a
+	ld [hGraphicStartTile], a
 	hlcoord 6, 4
 	lb bc, 7, 7
 	predef PlaceGraphic
 	ret
+; 61cd
 
-Intro_PlacePlayerSprite:
+Intro_PlacePlayerSprite: ; 61cd
+
 	farcall GetPlayerIcon
-	ld c, 12
+	ld c, $c
 	ld hl, vTiles0
 	call Request2bpp
 
@@ -947,40 +994,32 @@ Intro_PlacePlayerSprite:
 .male
 	ld a, b
 
-	ld [hli], a ; attributes
+	ld [hli], a
 	dec c
 	jr nz, .loop
 	ret
+; 61fe
 
-.sprites
+.sprites ; 61fe
 	db 4
 	; y pxl, x pxl, tile offset
 	db  9 * 8 + 4,  9 * 8, 0
 	db  9 * 8 + 4, 10 * 8, 1
 	db 10 * 8 + 4,  9 * 8, 2
 	db 10 * 8 + 4, 10 * 8, 3
+; 620b
 
 
-	const_def
-	const TITLESCREENOPTION_MAIN_MENU
-	const TITLESCREENOPTION_DELETE_SAVE_DATA
-	const TITLESCREENOPTION_RESTART
-	const TITLESCREENOPTION_UNUSED
-	const TITLESCREENOPTION_RESET_CLOCK
-NUM_TITLESCREENOPTIONS EQU const_value
-
-IntroSequence:
-	callfar SplashScreen
+CrystalIntroSequence: ; 620b
+	callfar Copyright_GFPresents
 	jr c, StartTitleScreen
 	farcall CrystalIntro
 
-	; fallthrough
-
-StartTitleScreen:
-	ldh a, [rSVBK]
+StartTitleScreen: ; 6219
+	ld a, [rSVBK]
 	push af
-	ld a, BANK(wLYOverrides)
-	ldh [rSVBK], a
+	ld a, BANK(wBGPals1)
+	ld [rSVBK], a
 
 	call .TitleScreen
 	call DelayFrame
@@ -992,25 +1031,25 @@ StartTitleScreen:
 	call ClearBGPalettes
 
 	pop af
-	ldh [rSVBK], a
+	ld [rSVBK], a
 
 	ld hl, rLCDC
 	res rLCDC_SPRITE_SIZE, [hl] ; 8x8
 	call ClearScreen
 	call WaitBGMap2
 	xor a
-	ldh [hLCDCPointer], a
-	ldh [hSCX], a
-	ldh [hSCY], a
+	ld [hLCDCPointer], a
+	ld [hSCX], a
+	ld [hSCY], a
 	ld a, $7
-	ldh [hWX], a
+	ld [hWX], a
 	ld a, $90
-	ldh [hWY], a
+	ld [hWY], a
 	ld b, SCGB_DIPLOMA
 	call GetSGBLayout
 	call UpdateTimePals
-	ld a, [wTitleScreenSelectedOption]
-	cp NUM_TITLESCREENOPTIONS
+	ld a, [wIntroSceneFrameCounter]
+	cp $5
 	jr c, .ok
 	xor a
 .ok
@@ -1023,19 +1062,23 @@ StartTitleScreen:
 	ld h, [hl]
 	ld l, a
 	jp hl
+; 626a
 
 .dw
-	dw Intro_MainMenu
+	dw _MainMenu
 	dw DeleteSaveData
-	dw IntroSequence
-	dw IntroSequence
+	dw CrystalIntroSequence
+	dw CrystalIntroSequence
 	dw ResetClock
+; 6274
 
-.TitleScreen:
+
+.TitleScreen: ; 6274
 	farcall _TitleScreen
 	ret
+; 627b
 
-RunTitleScreen:
+RunTitleScreen: ; 627b
 	ld a, [wJumptableIndex]
 	bit 7, a
 	jr nz, .done_title
@@ -1048,10 +1091,10 @@ RunTitleScreen:
 .done_title
 	scf
 	ret
+; 6292
 
-UnusedTitlePerspectiveScroll: ; unreferenced
-; Similar behavior to Intro_PerspectiveScrollBG.
-	ldh a, [hVBlankCounter]
+Unreferenced_Function6292: ; 6292
+	ld a, [hVBlankCounter]
 	and $7
 	ret nz
 	ld hl, wLYOverrides + $5f
@@ -1060,8 +1103,9 @@ UnusedTitlePerspectiveScroll: ; unreferenced
 	ld bc, 2 * SCREEN_WIDTH
 	call ByteFill
 	ret
+; 62a3
 
-TitleScreenScene:
+TitleScreenScene: ; 62a3
 	ld e, a
 	ld d, 0
 	ld hl, .scenes
@@ -1071,26 +1115,31 @@ TitleScreenScene:
 	ld h, [hl]
 	ld l, a
 	jp hl
+; 62af
 
 .scenes
 	dw TitleScreenEntrance
 	dw TitleScreenTimer
 	dw TitleScreenMain
 	dw TitleScreenEnd
+; 62b7
 
-TitleScreenNextScene: ; unreferenced
+.Unreferenced_NextScene:
 	ld hl, wJumptableIndex
 	inc [hl]
 	ret
+; 62bc
 
-TitleScreenEntrance:
+
+TitleScreenEntrance: ; 62bc
+
 ; Animate the logo:
 ; Move each line by 4 pixels until our count hits 0.
-	ldh a, [hSCX]
+	ld a, [hSCX]
 	and a
 	jr z, .done
 	sub 4
-	ldh [hSCX], a
+	ld [hSCX], a
 
 ; Lay out a base (all lines scrolling together).
 	ld e, a
@@ -1120,17 +1169,20 @@ TitleScreenEntrance:
 	ld hl, wJumptableIndex
 	inc [hl]
 	xor a
-	ldh [hLCDCPointer], a
+	ld [hLCDCPointer], a
 
 ; Play the title screen music.
 	ld de, MUSIC_TITLE
 	call PlayMusic
 
 	ld a, $88
-	ldh [hWY], a
+	ld [hWY], a
 	ret
+; 62f6
 
-TitleScreenTimer:
+
+TitleScreenTimer: ; 62f6
+
 ; Next scene
 	ld hl, wJumptableIndex
 	inc [hl]
@@ -1142,8 +1194,10 @@ TitleScreenTimer:
 	inc hl
 	ld [hl], d
 	ret
+; 6304
 
-TitleScreenMain:
+TitleScreenMain: ; 6304
+
 ; Run the timer down.
 	ld hl, wTitleScreenTimer
 	ld e, [hl]
@@ -1169,7 +1223,7 @@ TitleScreenMain:
 ; To bring up the clock reset dialog:
 
 ; Hold Down + B + Select to initiate the sequence.
-	ldh a, [hClockResetTrigger]
+	ld a, [hClockResetTrigger]
 	cp $34
 	jr z, .check_clock_reset
 
@@ -1179,7 +1233,7 @@ TitleScreenMain:
 	jr nz, .check_start
 
 	ld a, $34
-	ldh [hClockResetTrigger], a
+	ld [hClockResetTrigger], a
 	jr .check_start
 
 ; Keep Select pressed, and hold Left + Up.
@@ -1189,12 +1243,12 @@ TitleScreenMain:
 	jr nz, .check_start
 
 	xor a
-	ldh [hClockResetTrigger], a
+	ld [hClockResetTrigger], a
 
 	ld a, [hl]
 	and D_LEFT + D_UP
 	cp  D_LEFT + D_UP
-	jr z, .reset_clock
+	jr z, .clock_reset
 
 ; Press Start or A to start the game.
 .check_start
@@ -1204,14 +1258,14 @@ TitleScreenMain:
 	ret
 
 .incave
-	ld a, TITLESCREENOPTION_MAIN_MENU
+	ld a, 0
 	jr .done
 
 .delete_save_data
-	ld a, TITLESCREENOPTION_DELETE_SAVE_DATA
+	ld a, 1
 
 .done
-	ld [wTitleScreenSelectedOption], a
+	ld [wIntroSceneFrameCounter], a
 
 ; Return to the intro sequence.
 	ld hl, wJumptableIndex
@@ -1224,7 +1278,7 @@ TitleScreenMain:
 	inc [hl]
 
 ; Fade out the title screen music
-	xor a ; MUSIC_NONE
+	xor a
 	ld [wMusicFadeID], a
 	ld [wMusicFadeID + 1], a
 	ld hl, wMusicFade
@@ -1234,16 +1288,18 @@ TitleScreenMain:
 	inc [hl]
 	ret
 
-.reset_clock
-	ld a, TITLESCREENOPTION_RESET_CLOCK
-	ld [wTitleScreenSelectedOption], a
+.clock_reset
+	ld a, 4
+	ld [wIntroSceneFrameCounter], a
 
 ; Return to the intro sequence.
 	ld hl, wJumptableIndex
 	set 7, [hl]
 	ret
+; 6375
 
-TitleScreenEnd:
+TitleScreenEnd: ; 6375
+
 ; Wait until the music is done fading.
 
 	ld hl, wTitleScreenTimer
@@ -1253,37 +1309,40 @@ TitleScreenEnd:
 	and a
 	ret nz
 
-	ld a, TITLESCREENOPTION_RESTART
-	ld [wTitleScreenSelectedOption], a
+	ld a, 2
+	ld [wIntroSceneFrameCounter], a
 
 ; Back to the intro.
 	ld hl, wJumptableIndex
 	set 7, [hl]
 	ret
+; 6389
 
-DeleteSaveData:
+DeleteSaveData: ; 6389
 	farcall _DeleteSaveData
 	jp Init
+; 6392
 
-ResetClock:
+ResetClock: ; 6392
 	farcall _ResetClock
 	jp Init
+; 639b
 
-UpdateTitleTrailSprite: ; unreferenced
+Unreferenced_Function639b:
 	; If bit 0 or 1 of [wTitleScreenTimer] is set, we don't need to be here.
 	ld a, [wTitleScreenTimer]
 	and %00000011
 	ret nz
 	ld bc, wSpriteAnim10
 	ld hl, SPRITEANIMSTRUCT_FRAME
-	add hl, bc
+	add hl, bc ; over-the-top compicated way to load wc3ae into hl
 	ld l, [hl]
 	ld h, 0
 	add hl, hl
 	add hl, hl
-	ld de, .TitleTrailCoords
+	ld de, .Data63ca
 	add hl, de
-	; If bit 2 of [wTitleScreenTimer] is set, get the second coords; else, get the first coords
+	; If bit 2 of [wTitleScreenTimer] is set, get the second dw; else, get the first dw
 	ld a, [wTitleScreenTimer]
 	and %00000100
 	srl a
@@ -1298,30 +1357,22 @@ UpdateTitleTrailSprite: ; unreferenced
 	ld e, a
 	ld d, [hl]
 	ld a, SPRITE_ANIM_INDEX_GS_TITLE_TRAIL
-	call InitSpriteAnimStruct
+	call _InitSpriteAnimStruct
 	ret
+; 63ca
 
-.TitleTrailCoords:
-trail_coords: MACRO
-rept _NARG / 2
-_dx = 4
-if \1 == 0 && \2 == 0
-_dx = 0
-endc
-	dbpixel \1, \2, _dx, 0
-	shift 2
-endr
-ENDM
-	; frame 0 y, x; frame 1 y, x
-	trail_coords 11, 10,  0,  0
-	trail_coords 11, 13, 11, 11
-	trail_coords 11, 13, 11, 15
-	trail_coords 11, 17, 11, 15
-	trail_coords  0,  0, 11, 15
-	trail_coords  0,  0, 11, 11
+.Data63ca: ; 63ca
+; frame 0 y, x; frame 1 y, x
+	db 11 * 8 + 4, 10 * 8,  0 * 8,      0 * 8
+	db 11 * 8 + 4, 13 * 8, 11 * 8 + 4, 11 * 8
+	db 11 * 8 + 4, 13 * 8, 11 * 8 + 4, 15 * 8
+	db 11 * 8 + 4, 17 * 8, 11 * 8 + 4, 15 * 8
+	db  0 * 8,      0 * 8, 11 * 8 + 4, 15 * 8
+	db  0 * 8,      0 * 8, 11 * 8 + 4, 11 * 8
+; 63e2
 
-Copyright:
-	call ClearTilemap
+Copyright: ; 63e2
+	call ClearTileMap
 	call LoadFontsExtra
 	ld de, CopyrightGFX
 	ld hl, vTiles2 tile $60
@@ -1330,8 +1381,9 @@ Copyright:
 	hlcoord 2, 7
 	ld de, CopyrightString
 	jp PlaceString
+; 63fd
 
-CopyrightString:
+CopyrightString: ; 63fd
 	; ©1995-2001 Nintendo
 	db   $60, $61, $62, $63, $64, $65, $66
 	db   $67, $68, $69, $6a, $6b, $6c
@@ -1345,20 +1397,22 @@ CopyrightString:
 	db   $73, $74, $75, $76, $77, $78, $79, $7a, $7b, $7c
 
 	db "@"
+; 642e
 
-GameInit::
+GameInit:: ; 642e
 	farcall TryLoadSaveData
 	call ClearWindowData
 	call ClearBGPalettes
-	call ClearTilemap
+	call ClearTileMap
 	ld a, HIGH(vBGMap0)
-	ldh [hBGMapAddress + 1], a
+	ld [hBGMapAddress + 1], a
 	xor a ; LOW(vBGMap0)
-	ldh [hBGMapAddress], a
-	ldh [hJoyDown], a
-	ldh [hSCX], a
-	ldh [hSCY], a
+	ld [hBGMapAddress], a
+	ld [hJoyDown], a
+	ld [hSCX], a
+	ld [hSCY], a
 	ld a, $90
-	ldh [hWY], a
+	ld [hWY], a
 	call WaitBGMap
-	jp IntroSequence
+	jp CrystalIntroSequence
+; 6454

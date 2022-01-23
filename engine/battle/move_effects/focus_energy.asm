@@ -1,4 +1,4 @@
-BattleCommand_FocusEnergy:
+BattleCommand_FocusEnergy: ; 36c98
 ; focusenergy
 
 	ld a, BATTLE_VARS_SUBSTATUS4
@@ -8,8 +8,10 @@ BattleCommand_FocusEnergy:
 	set SUBSTATUS_FOCUS_ENERGY, [hl]
 	call AnimateCurrentMove
 	ld hl, GettingPumpedText
-	jp StdBattleTextbox
+	jp StdBattleTextBox
 
 .already_pumped
 	call AnimateFailedMove
 	jp PrintButItFailed
+
+; 36cb2

@@ -1,7 +1,7 @@
-Fish:
+Fish: ; 92402
 ; Using a fishing rod.
 ; Fish for monsters with rod e in encounter group d.
-; Return monster d at level e.
+; Return monster e at level d.
 
 	push af
 	push bc
@@ -11,7 +11,7 @@ Fish:
 	call GetFishGroupIndex
 
 	ld hl, FishGroups
-rept FISHGROUP_DATA_LENGTH
+rept 7
 	add hl, de
 endr
 	call .Fish
@@ -20,10 +20,12 @@ endr
 	pop bc
 	pop af
 	ret
+; 9241a
 
-.Fish:
+
+.Fish: ; 9241a
 ; Fish for monsters with rod b from encounter data in FishGroup at hl.
-; Return monster d at level e.
+; Return monster e at level d.
 
 	call Random
 	cp [hl]
@@ -88,13 +90,15 @@ endr
 	ld d, [hl]
 	inc hl
 	ret
+; 9245b
 
-GetFishGroupIndex:
+
+GetFishGroupIndex: ; 9245b
 ; Return the index of fishgroup d in de.
 
 	push hl
-	ld hl, wDailyFlags1
-	bit DAILYFLAGS1_FISH_SWARM_F, [hl]
+	ld hl, wDailyFlags
+	bit DAILYFLAGS_FISH_SWARM_F, [hl]
 	pop hl
 	jr z, .done
 
@@ -123,5 +127,7 @@ GetFishGroupIndex:
 	jr nz, .done
 	ld d, FISHGROUP_REMORAID_SWARM
 	jr .done
+; 92488
+
 
 INCLUDE "data/wild/fish.asm"

@@ -2,8 +2,7 @@
 ; catch rate as an item. However, if the catch rate appears in this table, the
 ; item associated with the table entry is used instead.
 
-TimeCapsule_CatchRateItems:
-	db ITEM_19, LEFTOVERS
+TimeCapsule_CatchRateItems: ; 28785
 	db ITEM_2D, BITTER_BERRY
 	db ITEM_32, GOLD_BERRY
 	db ITEM_5A, BERRY
@@ -16,3 +15,4 @@ TimeCapsule_CatchRateItems:
 	db ITEM_FA, BERRY
 	db -1,      BERRY
 	db 0 ; end
+; 2879e

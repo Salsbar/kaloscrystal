@@ -1,4 +1,4 @@
-BattleCommand_MirrorCoat:
+BattleCommand_MirrorCoat: ; 37c95
 ; mirrorcoat
 
 	ld a, 1
@@ -29,15 +29,14 @@ BattleCommand_MirrorCoat:
 	ld de, wStringBuffer1
 	call GetMoveData
 
-	ld a, [wStringBuffer1 + MOVE_POWER]
+	ld a, [wStringBuffer1 + 2]
 	and a
 	ret z
 
-	ld a, [wStringBuffer1 + MOVE_TYPE]
+	ld a, [wStringBuffer1 + 3]
 	cp SPECIAL
 	ret c
 
-	; BUG: Move should fail with all non-damaging battle actions
 	ld hl, wCurDamage
 	ld a, [hli]
 	or [hl]
@@ -58,3 +57,5 @@ BattleCommand_MirrorCoat:
 	xor a
 	ld [wAttackMissed], a
 	ret
+
+; 37ce6

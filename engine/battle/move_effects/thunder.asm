@@ -1,4 +1,4 @@
-BattleCommand_ThunderAccuracy:
+BattleCommand_ThunderAccuracy: ; 37d94
 ; thunderaccuracy
 
 	ld a, BATTLE_VARS_MOVE_TYPE
@@ -16,3 +16,5 @@ BattleCommand_ThunderAccuracy:
 	; Redundant with CheckHit guranteeing hit
 	ld [hl], 100 percent
 	ret
+
+; 37daa

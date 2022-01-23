@@ -1,4 +1,4 @@
-	object_const_def
+	const_def 2 ; object constants
 	const GOLDENRODDEPTSTOREB1F_POKE_BALL1
 	const GOLDENRODDEPTSTOREB1F_POKE_BALL2
 	const GOLDENRODDEPTSTOREB1F_POKE_BALL3
@@ -9,20 +9,20 @@
 	const GOLDENRODDEPTSTOREB1F_MACHOP
 
 GoldenrodDeptStoreB1F_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 2 ; callbacks
 	callback MAPCALLBACK_TILES, .ClearBoxes
 	callback MAPCALLBACK_NEWMAP, .Unblock
 
 .ClearBoxes:
 	checkevent EVENT_RECEIVED_CARD_KEY
 	iftrue .GotCardKey
-	sjump .Continue
+	jump .Continue
 
 .GotCardKey:
 	changeblock 16, 4, $0d ; floor
-	sjump .Continue
+	jump .Continue
 
 .Continue:
 	checkevent EVENT_GOLDENROD_DEPT_STORE_B1F_LAYOUT_2
@@ -30,19 +30,19 @@ GoldenrodDeptStoreB1F_MapScripts:
 	checkevent EVENT_GOLDENROD_DEPT_STORE_B1F_LAYOUT_3
 	iftrue .Layout3
 	changeblock 10, 8, $0d ; floor
-	endcallback
+	return
 
 .Layout2:
 	changeblock 4, 10, $0d ; floor
-	endcallback
+	return
 
 .Layout3:
 	changeblock 10, 12, $0d ; floor
-	endcallback
+	return
 
 .Unblock:
 	clearevent EVENT_GOLDENROD_UNDERGROUND_WAREHOUSE_BLOCKED_OFF
-	endcallback
+	return
 
 GoldenrodDeptStoreB1FBlackBelt1Script:
 	jumptextfaceplayer GoldenrodDeptStoreB1FBlackBelt1Text
@@ -55,8 +55,8 @@ GoldenrodDeptStoreB1FBlackBelt3Script:
 
 GoldenrodDeptStoreB1FMachopScript:
 	opentext
-	writetext GoldenrodDeptStoreB1FMachokeText
-	cry MACHOKE
+	writetext UnknownText_0x7d8bb
+	cry GURDURR
 	waitbutton
 	closetext
 	end
@@ -103,23 +103,23 @@ GoldenrodDeptStoreB1FBlackBelt3Text:
 	line "want it!"
 	done
 
-GoldenrodDeptStoreB1FMachokeText:
-	text "MACHOKE: Maaacho!"
+UnknownText_0x7d8bb:
+	text "GURDURR: Gurrrr!"
 	done
 
 GoldenrodDeptStoreB1F_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 3 ; warp events
 	warp_event 17,  2, GOLDENROD_UNDERGROUND_WAREHOUSE, 3
 	warp_event  9,  4, GOLDENROD_DEPT_STORE_ELEVATOR, 1
 	warp_event 10,  4, GOLDENROD_DEPT_STORE_ELEVATOR, 2
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 0 ; bg events
 
-	def_object_events
+	db 8 ; object events
 	object_event 10, 15, SPRITE_POKE_BALL, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_ITEMBALL, 0, GoldenrodDeptStoreB1FEther, EVENT_GOLDENROD_DEPT_STORE_B1F_ETHER
 	object_event 14,  2, SPRITE_POKE_BALL, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_ITEMBALL, 0, GoldenrodDeptStoreB1FAmuletCoin, EVENT_GOLDENROD_DEPT_STORE_B1F_AMULET_COIN
 	object_event  6,  3, SPRITE_POKE_BALL, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_ITEMBALL, 0, GoldenrodDeptStoreB1FBurnHeal, EVENT_GOLDENROD_DEPT_STORE_B1F_BURN_HEAL

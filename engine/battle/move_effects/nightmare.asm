@@ -1,4 +1,4 @@
-BattleCommand_Nightmare:
+BattleCommand_Nightmare: ; 37536
 ; nightmare
 
 ; Can't hit an absent opponent.
@@ -30,8 +30,9 @@ BattleCommand_Nightmare:
 	set SUBSTATUS_NIGHTMARE, [hl]
 	call AnimateCurrentMove
 	ld hl, StartedNightmareText
-	jp StdBattleTextbox
+	jp StdBattleTextBox
 
 .failed
 	call AnimateFailedMove
 	jp PrintButItFailed
+; 37563

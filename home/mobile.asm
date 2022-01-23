@@ -1,119 +1,123 @@
-MobileAPI::
+Function3e32:: ; 3e32
 ; Mobile
 	cp $2
-	ld [wMobileAPIIndex], a
+	ld [$c988], a
 	ld a, l
-	ld [wc986], a
+	ld [$c986], a
 	ld a, h
-	ld [wc987], a
+	ld [$c987], a
 	jr nz, .okay
 
-	ld [wc982], a
+	ld [$c982], a
 	ld a, l
-	ld [wc981], a
-	ld hl, wc983
+	ld [$c981], a
+	ld hl, $c983
 	ld a, c
 	ld [hli], a
 	ld a, b
 	ld [hl], a
 
 .okay
-	ld hl, wc822
+	ld hl, $c822
 	set 6, [hl]
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
-	ld a, BANK(_MobileAPI)
-	ld [wc981], a
+	ld a, BANK(Function110030)
+	ld [$c981], a
 	rst Bankswitch
 
-	jp _MobileAPI
+	jp Function110030
+; 3e60
 
-ReturnMobileAPI::
-; Return from _MobileAPI
-	ld [wc986], a
+Function3e60:: ; 3e60
+; Return from Function110030
+	ld [$c986], a
 	ld a, l
-	ld [wc987], a
+	ld [$c987], a
 	ld a, h
-	ld [wMobileAPIIndex], a
+	ld [$c988], a
 
 	pop bc
 	ld a, b
-	ld [wc981], a
+	ld [$c981], a
 	rst Bankswitch
 
-	ld hl, wc822
+	ld hl, $c822
 	res 6, [hl]
-	ld hl, wc987
+	ld hl, $c987
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	ld a, [wc986]
+	ld a, [$c986]
 	ret
+; 3e80
 
-MobileReceive::
-	ldh a, [hROMBank]
+MobileReceive:: ; 3e80
+	ld a, [hROMBank]
 	push af
 	ld a, BANK(_MobileReceive)
-	ld [wc981], a
+	ld [$c981], a
 	rst Bankswitch
 
 	call _MobileReceive
 	pop bc
 	ld a, b
-	ld [wc981], a
+	ld [$c981], a
 	rst Bankswitch
 
 	ret
+; 3e93
 
-MobileTimer::
+
+Timer:: ; 3e93
 	push af
 	push bc
 	push de
 	push hl
 
-	ldh a, [hMobile]
+	ld a, [hMobile]
 	and a
 	jr z, .pop_ret
 
 	xor a
-	ldh [rTAC], a
+	ld [rTAC], a
 
 ; Turn off timer interrupt
-	ldh a, [rIF]
+	ld a, [rIF]
 	and 1 << VBLANK | 1 << LCD_STAT | 1 << SERIAL | 1 << JOYPAD
-	ldh [rIF], a
+	ld [rIF], a
 
-	ld a, [wc86a]
+	ld a, [$c86a]
 	or a
 	jr z, .pop_ret
 
-	ld a, [wc822]
+	ld a, [$c822]
 	bit 1, a
-	jr nz, .skip_timer
+	jr nz, .skip_Timer
 
-	ldh a, [rSC]
+	ld a, [rSC]
 	and 1 << rSC_ON
-	jr nz, .skip_timer
+	jr nz, .skip_Timer
 
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 	ld a, BANK(_Timer)
-	ld [wc981], a
+	ld [$c981], a
 	rst Bankswitch
 
 	call _Timer
 
 	pop bc
 	ld a, b
-	ld [wc981], a
+	ld [$c981], a
 	rst Bankswitch
 
-.skip_timer
-	ldh a, [rTMA]
-	ldh [rTIMA], a
+.skip_Timer
+	ld a, [rTMA]
+	ld [rTIMA], a
 
 	ld a, 1 << rTAC_ON | rTAC_65536_HZ
-	ldh [rTAC], a
+	ld [rTAC], a
 
 .pop_ret
 	pop hl
@@ -121,10 +125,11 @@ MobileTimer::
 	pop bc
 	pop af
 	reti
+; 3ed7
 
-Function3ed7:: ; unreferenced
+Unreferenced_Function3ed7:: ; 3ed7
 	ld [$dc02], a
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 	ld a, BANK(Function114243)
 	rst Bankswitch
@@ -136,11 +141,12 @@ Function3ed7:: ; unreferenced
 
 	ld a, [$dc02]
 	ret
+; 3eea
 
-Function3eea::
+Function3eea:: ; 3eea
 	push hl
 	push bc
-	ld de, wAttrmap - wTilemap
+	ld de, wAttrMap - wTileMap
 	add hl, de
 	inc b
 	inc b
@@ -151,21 +157,23 @@ Function3eea::
 	pop hl
 	call MobileHome_PlaceBox
 	ret
+; 3efd
 
-Function3efd:: ; unreferenced
+Unreferenced_Function3efd:: ; 3efd
 	push hl
 	hlcoord 0, 12
 	ld b, 4
 	ld c, 18
 	call .fill_attr
 	pop hl
-	call PrintTextboxText
+	call PrintTextBoxText
 	ret
+; 3f0d
 
 .fill_attr
 	push hl
 	push bc
-	ld de, wAttrmap - wTilemap
+	ld de, wAttrMap - wTileMap
 	add hl, de
 	inc b
 	inc b
@@ -174,11 +182,12 @@ Function3efd:: ; unreferenced
 	call Function3f35
 	pop bc
 	pop hl
-	call TextboxBorder
+	call TextBoxBorder
 	ret
+; 3f20
 
-Function3f20::
-	hlcoord 0, 0, wAttrmap
+Function3f20:: ; 3f20
+	hlcoord 0, 0, wAttrMap
 	ld b,  6
 	ld c, 20
 	call Function3f35
@@ -187,8 +196,9 @@ Function3f20::
 	ld c, 18
 	call MobileHome_PlaceBox
 	ret
+; 3f35
 
-Function3f35::
+Function3f35:: ; 3f35
 	ld a, 6
 	ld de, SCREEN_WIDTH
 .row
@@ -204,8 +214,9 @@ Function3f35::
 	dec b
 	jr nz, .row
 	ret
+; 3f47
 
-MobileHome_PlaceBox:
+MobileHome_PlaceBox: ; 3f47
 	push bc
 	call .FillTop
 	pop bc
@@ -217,6 +228,7 @@ MobileHome_PlaceBox:
 	jr nz, .RowLoop
 	call .FillBottom
 	ret
+; 3f58
 
 .FillTop:
 	ld a, $63
@@ -248,16 +260,18 @@ MobileHome_PlaceBox:
 	ld de, SCREEN_WIDTH
 	add hl, de
 	ret
+; 3f7c
 
-Function3f7c::
+Function3f7c:: ; 3f7c
 	call MenuBoxCoord2Tile
 	call GetMenuBoxDims
 	dec b
 	dec c
 	call Function3eea
 	ret
+; 3f88
 
-Function3f88::
+Function3f88:: ; 3f88
 	ld hl, wDecompressScratch
 	ld b, 0
 .row
@@ -276,8 +290,9 @@ Function3f88::
 	dec c
 	jr nz, .row
 	ret
+; 3f9f
 
-Function3f9f::
+Function3f9f:: ; 3f9f
 	ld hl, wDecompressScratch
 .row
 	push bc
@@ -296,3 +311,4 @@ Function3f9f::
 	dec c
 	jr nz, .row
 	ret
+; 3fb5

@@ -1,22 +1,23 @@
-GBCOnlyScreen:
-	ldh a, [hCGB]
+GBCOnlyScreen: ; 4ea82
+
+	ld a, [hCGB]
 	and a
 	ret nz
 
 	ld de, MUSIC_NONE
 	call PlayMusic
 
-	call ClearTilemap
+	call ClearTileMap
 
 	ld hl, GBCOnlyGFX
 	ld de, wGBCOnlyDecompressBuffer
-	ldh a, [rSVBK]
+	ld a, [rSVBK]
 	push af
 	ld a, 0 ; this has the same effect as selecting bank 1
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	call Decompress
 	pop af
-	ldh [rSVBK], a
+	ld [rSVBK], a
 
 	ld de, wGBCOnlyDecompressBuffer
 	ld hl, vTiles2
@@ -36,8 +37,11 @@ GBCOnlyScreen:
 .loop
 	call DelayFrame
 	jr .loop
+; 4eac5
 
-DrawGBCOnlyScreen:
+
+DrawGBCOnlyScreen: ; 4eac5
+
 	call DrawGBCOnlyBorder
 
 	; Pokemon
@@ -59,8 +63,11 @@ DrawGBCOnlyScreen:
 	call PlaceString
 
 	ret
+; 4eaea
 
-DrawGBCOnlyBorder:
+
+DrawGBCOnlyBorder: ; 4eaea
+
 	hlcoord 0, 0
 	ld [hl], 0 ; top-left
 
@@ -87,16 +94,18 @@ DrawGBCOnlyBorder:
 
 	ld [hl], 7 ; bottom-right
 	ret
+; 4eb15
 
-.FillRow:
+.FillRow: ; 4eb15
 	ld c, SCREEN_WIDTH - 2
 .next_column
 	ld [hli], a
 	dec c
 	jr nz, .next_column
 	ret
+; 4eb1c
 
-.FillColumn:
+.FillColumn: ; 4eb1c
 	ld de, SCREEN_WIDTH
 	ld c, SCREEN_HEIGHT - 2
 .next_row
@@ -105,8 +114,10 @@ DrawGBCOnlyBorder:
 	dec c
 	jr nz, .next_row
 	ret
+; 4eb27
 
-DrawGBCOnlyGraphic:
+
+DrawGBCOnlyGraphic: ; 4eb27
 	ld de, SCREEN_WIDTH
 .y
 	push bc
@@ -122,12 +133,17 @@ DrawGBCOnlyGraphic:
 	dec c
 	jr nz, .y
 	ret
+; 4eb38
 
-GBCOnlyString:
+
+GBCOnlyString: ; 4eb38
 	db   "This Game Pak is"
 	next "designed only for"
 	next "use on the"
 	next "Game Boy Color.@"
+; 4eb76
 
-GBCOnlyGFX:
+
+GBCOnlyGFX: ; 4eb76
 INCBIN "gfx/sgb/gbc_only.2bpp.lz"
+; 4f0bc

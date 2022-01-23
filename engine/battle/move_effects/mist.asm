@@ -1,4 +1,4 @@
-BattleCommand_Mist:
+BattleCommand_Mist: ; 36c7e
 ; mist
 
 	ld a, BATTLE_VARS_SUBSTATUS4
@@ -8,8 +8,10 @@ BattleCommand_Mist:
 	set SUBSTATUS_MIST, [hl]
 	call AnimateCurrentMove
 	ld hl, MistText
-	jp StdBattleTextbox
+	jp StdBattleTextBox
 
 .already_mist
 	call AnimateFailedMove
 	jp PrintButItFailed
+
+; 36c98

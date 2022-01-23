@@ -1,4 +1,4 @@
-PlaceWaitingText::
+PlaceWaitingText:: ; 4000
 	hlcoord 3, 10
 	ld b, 1
 	ld c, 11
@@ -7,7 +7,7 @@ PlaceWaitingText::
 	and a
 	jr z, .notinbattle
 
-	call Textbox
+	call TextBox
 	jr .proceed
 
 .notinbattle
@@ -20,5 +20,5 @@ PlaceWaitingText::
 	ld c, 50
 	jp DelayFrames
 
-.Waiting:
+.Waiting: ; 4025
 	db "Waiting...!@"

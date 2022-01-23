@@ -1,9 +1,9 @@
-BattleCommand_Conversion:
+BattleCommand_Conversion: ; 3707f
 ; conversion
 
 	ld hl, wBattleMonMoves
 	ld de, wBattleMonType1
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
 	jr z, .got_moves
 	ld hl, wEnemyMonMoves
@@ -46,7 +46,7 @@ BattleCommand_Conversion:
 	ld a, [hl]
 	cp -1
 	jr z, .fail
-	cp CURSE_TYPE
+	cp CURSE_T
 	jr z, .next
 	ld a, [de]
 	cp [hl]
@@ -75,7 +75,7 @@ BattleCommand_Conversion:
 	ld a, [hl]
 	cp -1
 	jr z, .loop3
-	cp CURSE_TYPE
+	cp CURSE_T
 	jr z, .loop3
 	ld a, [de]
 	cp [hl]
@@ -89,8 +89,10 @@ BattleCommand_Conversion:
 	ld [de], a
 	inc de
 	ld [de], a
-	ld [wNamedObjectIndex], a
+	ld [wNamedObjectIndexBuffer], a
 	farcall GetTypeName
 	call AnimateCurrentMove
 	ld hl, TransformedTypeText
-	jp StdBattleTextbox
+	jp StdBattleTextBox
+
+; 3710e

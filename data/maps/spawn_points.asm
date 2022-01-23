@@ -4,9 +4,8 @@ spawn: MACRO
 	db \2, \3
 ENDM
 
-SpawnPoints:
+SpawnPoints: ; 0x152ab
 ; entries correspond to SPAWN_* constants
-	table_width 4, SpawnPoints
 
 	spawn PLAYERS_HOUSE_2F,            3,  3
 	spawn VIRIDIAN_POKECENTER_1F,      5,  3
@@ -38,7 +37,5 @@ SpawnPoints:
 	spawn BLACKTHORN_CITY,            21, 30
 	spawn SILVER_CAVE_OUTSIDE,        23, 20
 	spawn FAST_SHIP_CABINS_SW_SSW_NW,  6,  2
-
 	spawn N_A,                        -1, -1
-
-	assert_table_length NUM_SPAWNS + 1
+; 1531f

@@ -1,10 +1,10 @@
 command: MACRO
-	const \1_command
+	enum \1_command
 \1 EQUS "db \1_command"
 ENDM
 
 ; BattleCommandPointers indexes (see data/battle/effect_command_pointers.asm)
-	const_def 1
+	enum_start 1
 	command checkturn               ; 01
 	command checkobedience          ; 02
 	command usedmovetext            ; 03
@@ -21,7 +21,7 @@ ENDM
 	command applydamage             ; 0e
 	command criticaltext            ; 0f
 	command supereffectivetext      ; 10
-	command checkfaint              ; 11
+	command checkdestinybond        ; 11
 	command buildopponentrage       ; 12
 	command poisontarget            ; 13
 	command sleeptarget             ; 14
@@ -34,8 +34,6 @@ ENDM
 	command mirrormove              ; 1b
 	command statup                  ; 1c
 	command statdown                ; 1d
-	command payday                  ; 1e
-	command conversion              ; 1f
 	command resetstats              ; 20
 	command storeenergy             ; 21
 	command unleashenergy           ; 22
@@ -49,7 +47,6 @@ ENDM
 	command confuse                 ; 2a
 	command confusetarget           ; 2b
 	command heal                    ; 2c
-	command transform               ; 2d
 	command screen                  ; 2e
 	command poison                  ; 2f
 	command paralyze                ; 30
@@ -58,7 +55,6 @@ ENDM
 	command mimic                   ; 33
 	command metronome               ; 34
 	command leechseed               ; 35
-	command splash                  ; 36
 	command disable                 ; 37
 	command cleartext               ; 38
 	command charge                  ; 39
@@ -72,9 +68,7 @@ ENDM
 	command encore                  ; 41
 	command painsplit               ; 42
 	command snore                   ; 43
-	command conversion2             ; 44
 	command lockon                  ; 45
-	command sketch                  ; 46
 	command defrostopponent         ; 47
 	command sleeptalk               ; 48
 	command destinybond             ; 49
@@ -82,8 +76,6 @@ ENDM
 	command falseswipe              ; 4b
 	command healbell                ; 4c
 	command kingsrock               ; 4d
-	command triplekick              ; 4e
-	command kickcounter             ; 4f
 	command thief                   ; 50
 	command arenatrap               ; 51
 	command nightmare               ; 52
@@ -101,7 +93,6 @@ ENDM
 	command furycutter              ; 5e
 	command attract                 ; 5f
 	command happinesspower          ; 60
-	command present                 ; 61
 	command damagecalc              ; 62
 	command frustrationpower        ; 63
 	command safeguard               ; 64
@@ -165,14 +156,12 @@ ENDM
 	command skipsuncharge           ; 9e
 	command thunderaccuracy         ; 9f
 	command teleport                ; a0
-	command beatup                  ; a1
 	command ragedamage              ; a2
 	command resettypematchup        ; a3
 	command allstatsup              ; a4
 	command bidefailtext            ; a5
 	command raisesubnoanim          ; a6
 	command lowersubnoanim          ; a7
-	command beatupfailtext          ; a8
 	command clearmissdamage         ; a9
 	command movedelay               ; aa
 	command moveanim                ; ab
@@ -180,8 +169,11 @@ ENDM
 	command supereffectivelooptext  ; ad
 	command startloop               ; ae
 	command curl                    ; af
-NUM_EFFECT_COMMANDS EQU const_value - 1
+	command quiverdance                    ; af
+	command nobleroar                    ; af
+	command shiftgear                    ; af
+	command flyingpress                    ; af
 
-	const_def -1, -1
-	command endmove                 ; ff
+	enum_start $fe
 	command endturn                 ; fe
+	command endmove                 ; ff

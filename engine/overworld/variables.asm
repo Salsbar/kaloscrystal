@@ -1,4 +1,4 @@
-_GetVarAction::
+_GetVarAction:: ; 80648 (20:4648)
 	ld a, c
 	cp NUM_VARS
 	jr c, .valid
@@ -28,12 +28,13 @@ _GetVarAction::
 	call _de_
 	ret
 
-.loadstringbuffer2
+.loadstringbuffer2 ; 8066c (20:466c)
 	ld de, wStringBuffer2
 	ld [de], a
 	ret
+; 80671 (20:4671)
 
-.VarActionTable:
+.VarActionTable: ; 80671
 ; entries correspond to VAR_* constants
 	; RETVAR_STRBUF2: copy [de] to wStringBuffer2
 	; RETVAR_ADDR_DE: return address in de
@@ -61,56 +62,62 @@ _GetVarAction::
 	dwb wSpecialPhoneCallID,            RETVAR_STRBUF2
 	dwb wNrOfBeatenBattleTowerTrainers, RETVAR_STRBUF2
 	dwb wKurtApricornQuantity,          RETVAR_STRBUF2
-	dwb wCurCaller,                     RETVAR_ADDR_DE
+	dwb wCurrentCaller,                 RETVAR_ADDR_DE
 	dwb wBlueCardBalance,               RETVAR_ADDR_DE
 	dwb wBuenasPassword,                RETVAR_ADDR_DE
 	dwb wKenjiBreakTimer,               RETVAR_STRBUF2
 	dwb NULL,                           RETVAR_STRBUF2
+; 806c5
 
-.CountCaughtMons:
+.CountCaughtMons: ; 806c5
 ; Caught mons.
 	ld hl, wPokedexCaught
 	ld b, wEndPokedexCaught - wPokedexCaught
 	call CountSetBits
-	ld a, [wNumSetBits]
+	ld a, [wd265]
 	jp .loadstringbuffer2
+; 806d3
 
-.CountSeenMons:
+.CountSeenMons: ; 806d3
 ; Seen mons.
 	ld hl, wPokedexSeen
 	ld b, wEndPokedexSeen - wPokedexSeen
 	call CountSetBits
-	ld a, [wNumSetBits]
+	ld a, [wd265]
 	jp .loadstringbuffer2
+; 806e1
 
-.CountBadges:
+.CountBadges: ; 806e1
 ; Number of owned badges.
 	ld hl, wBadges
 	ld b, 2
 	call CountSetBits
-	ld a, [wNumSetBits]
+	ld a, [wd265]
 	jp .loadstringbuffer2
+; 806ef
 
-.PlayerFacing:
+.PlayerFacing: ; 806ef
 ; The direction the player is facing.
 	ld a, [wPlayerDirection]
 	and $c
 	rrca
 	rrca
 	jp .loadstringbuffer2
+; 806f9
 
-.DayOfWeek:
+.DayOfWeek: ; 806f9
 ; The day of the week.
 	call GetWeekday
 	jp .loadstringbuffer2
+; 806ff
 
-.UnownCaught:
+.UnownCaught: ; 806ff
 ; Number of unique Unown caught.
-	call .count_unown
+	call .count
 	ld a, b
 	jp .loadstringbuffer2
 
-.count_unown
+.count
 	ld hl, wUnownDex
 	ld b, 0
 .loop
@@ -122,11 +129,12 @@ _GetVarAction::
 	cp NUM_UNOWN
 	jr c, .loop
 	ret
+; 80715
 
-.BoxFreeSpace:
+.BoxFreeSpace: ; 80715
 ; Remaining slots in the current box.
 	ld a, BANK(sBoxCount)
-	call OpenSRAM
+	call GetSRAMBank
 	ld hl, sBoxCount
 	ld a, MONS_PER_BOX
 	sub [hl]
@@ -134,8 +142,10 @@ _GetVarAction::
 	call CloseSRAM
 	ld a, b
 	jp .loadstringbuffer2
+; 80728
 
-.BattleResult:
+.BattleResult: ; 80728
 	ld a, [wBattleResult]
-	and ~BATTLERESULT_BITMASK
+	and $ff ^ BATTLERESULT_BITMASK
 	jp .loadstringbuffer2
+; 80730

@@ -1,4 +1,4 @@
-PlaceGraphic:
+PlaceGraphic: ; 2ef6e
 ; Fill wBoxAlignment-aligned box width b height c
 ; with iterating tile starting from hGraphicStartTile at hl.
 
@@ -8,7 +8,7 @@ PlaceGraphic:
 	and a
 	jr nz, .right
 
-	ldh a, [hGraphicStartTile]
+	ld a, [hGraphicStartTile]
 .x1
 	push bc
 	push hl
@@ -35,7 +35,7 @@ PlaceGraphic:
 	add hl, bc
 	pop bc
 
-	ldh a, [hGraphicStartTile]
+	ld a, [hGraphicStartTile]
 .x2
 	push bc
 	push hl

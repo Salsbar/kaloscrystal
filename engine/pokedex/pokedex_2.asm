@@ -1,4 +1,4 @@
-AnimateDexSearchSlowpoke:
+AnimateDexSearchSlowpoke: ; 441cf
 	ld hl, .FrameIDs
 	ld b, 25
 .loop
@@ -29,7 +29,7 @@ AnimateDexSearchSlowpoke:
 	call DelayFrames
 	ret
 
-.FrameIDs:
+.FrameIDs: ; 441fc
 	; frame ID, duration
 	db 0, 7
 	db 1, 7
@@ -38,7 +38,7 @@ AnimateDexSearchSlowpoke:
 	db 4, 7
 	db -2
 
-DoDexSearchSlowpokeFrame:
+DoDexSearchSlowpokeFrame: ; 44207
 	ld a, [wDexSearchSlowpokeFrame]
 	ld hl, .SlowpokeSpriteData
 	ld de, wVirtualOAMSprite00
@@ -64,29 +64,29 @@ DoDexSearchSlowpokeFrame:
 	inc de
 	jr .loop
 
-.SlowpokeSpriteData:
-	dbsprite  9, 11, 0, 0, $00, 0
-	dbsprite 10, 11, 0, 0, $01, 0
-	dbsprite 11, 11, 0, 0, $02, 0
-	dbsprite  9, 12, 0, 0, $10, 0
-	dbsprite 10, 12, 0, 0, $11, 0
-	dbsprite 11, 12, 0, 0, $12, 0
-	dbsprite  9, 13, 0, 0, $20, 0
-	dbsprite 10, 13, 0, 0, $21, 0
-	dbsprite 11, 13, 0, 0, $22, 0
+.SlowpokeSpriteData: ; 44228
+	dsprite 11, 0,  9, 0, $00, 0
+	dsprite 11, 0, 10, 0, $01, 0
+	dsprite 11, 0, 11, 0, $02, 0
+	dsprite 12, 0,  9, 0, $10, 0
+	dsprite 12, 0, 10, 0, $11, 0
+	dsprite 12, 0, 11, 0, $12, 0
+	dsprite 13, 0,  9, 0, $20, 0
+	dsprite 13, 0, 10, 0, $21, 0
+	dsprite 13, 0, 11, 0, $22, 0
 	db -1
 
-DisplayDexEntry:
+DisplayDexEntry: ; 4424d
 	call GetPokemonName
 	hlcoord 9, 3
 	call PlaceString ; mon species
-	ld a, [wTempSpecies]
+	ld a, [wd265]
 	ld b, a
 	call GetDexEntryPointer
 	ld a, b
 	push af
 	hlcoord 9, 5
-	call PlaceFarString ; dex species
+	call FarString ; dex species
 	ld h, b
 	ld l, c
 	push de
@@ -96,11 +96,11 @@ DisplayDexEntry:
 	ld [hli], a
 	ld a, $5d ; .
 	ld [hli], a
-	ld de, wTempSpecies
+	ld de, wd265
 	lb bc, PRINTNUM_LEADINGZEROS | 1, 3
 	call PrintNum
 ; Check to see if we caught it.  Get out of here if we haven't.
-	ld a, [wTempSpecies]
+	ld a, [wd265]
 	dec a
 	call CheckCaughtMon
 	pop hl
@@ -113,7 +113,7 @@ DisplayDexEntry:
 	ld a, b
 	push af
 	push hl
-	call GetFarWord
+	call GetFarHalfword
 	ld d, l
 	ld e, h
 	pop hl
@@ -124,16 +124,14 @@ DisplayDexEntry:
 	jr z, .skip_height
 	push hl
 	push de
-; Print the height, with two of the four digits in front of the decimal point
-	ld hl, sp+0
+	ld hl, sp+$0
 	ld d, h
 	ld e, l
 	hlcoord 12, 7
-	lb bc, 2, (2 << 4) | 4
+	lb bc, 2, PRINTNUM_MONEY | 4
 	call PrintNum
-; Replace the decimal point with a ft symbol
 	hlcoord 14, 7
-	ld [hl], $5e
+	ld [hl], $5e ; ft symbol
 	pop af
 	pop hl
 
@@ -143,19 +141,18 @@ DisplayDexEntry:
 	inc hl
 	push hl
 	dec hl
-	call GetFarWord
+	call GetFarHalfword
 	ld d, l
 	ld e, h
 	ld a, e
 	or d
 	jr z, .skip_weight
 	push de
-; Print the weight, with four of the five digits in front of the decimal point
-	ld hl, sp+0
+	ld hl, sp+$0
 	ld d, h
 	ld e, l
 	hlcoord 11, 9
-	lb bc, 2, (4 << 4) | 5
+	lb bc, 2, PRINTNUM_RIGHTALIGN | 5
 	call PrintNum
 	pop de
 
@@ -182,7 +179,7 @@ DisplayDexEntry:
 	pop af
 	hlcoord 2, 11
 	push af
-	call PlaceFarString
+	call FarString
 	pop bc
 	ld a, [wPokedexStatus]
 	or a ; check for page 2
@@ -211,13 +208,14 @@ DisplayDexEntry:
 	inc de
 	pop af
 	hlcoord 2, 11
-	call PlaceFarString
+	call FarString
 	ret
 
-POKeString: ; unreferenced
+UnreferencedPOKeString: ; 44331
+; unused
 	db "#@"
 
-GetDexEntryPointer:
+GetDexEntryPointer: ; 44333
 ; return dex entry pointer b:de
 	push hl
 	ld hl, PokedexDataPointerTable
@@ -244,13 +242,13 @@ GetDexEntryPointer:
 	ret
 
 .PokedexEntryBanks:
-	db BANK("Pokedex Entries 001-064")
-	db BANK("Pokedex Entries 065-128")
-	db BANK("Pokedex Entries 129-192")
-	db BANK("Pokedex Entries 193-251")
+	db BANK(PokedexEntries1)
+	db BANK(PokedexEntries2)
+	db BANK(PokedexEntries3)
+	db BANK(PokedexEntries4)
 
-GetDexEntryPagePointer:
-	call GetDexEntryPointer
+GetDexEntryPagePointer: ; 44355
+	call GetDexEntryPointer ; b:de
 	push hl
 	ld h, d
 	ld l, e
@@ -281,5 +279,3 @@ endr
 	ld e, l
 	pop hl
 	ret
-
-INCLUDE "data/pokemon/dex_entry_pointers.asm"

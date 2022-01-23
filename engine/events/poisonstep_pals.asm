@@ -1,13 +1,12 @@
-LoadPoisonBGPals:
+LoadPoisonBGPals: ; cbcdd
 	call .LoadPals
-	ldh a, [hCGB]
+	ld a, [hCGB]
 	and a
 	ret nz
-	; code was probably dummied out here
-	ret
+	ret ; ????
 
-.LoadPals:
-	ldh a, [hCGB]
+.LoadPals: ; cbce5
+	ld a, [hCGB]
 	and a
 	jr nz, .cgb
 	ld a, [wTimeOfDayPal]
@@ -25,10 +24,10 @@ LoadPoisonBGPals:
 	ret
 
 .cgb
-	ldh a, [rSVBK]
+	ld a, [rSVBK]
 	push af
 	ld a, BANK(wBGPals2)
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	ld hl, wBGPals2
 	ld c, 4 palettes
 .loop
@@ -39,9 +38,9 @@ LoadPoisonBGPals:
 	dec c
 	jr nz, .loop
 	pop af
-	ldh [rSVBK], a
-	ld a, TRUE
-	ldh [hCGBPalUpdate], a
+	ld [rSVBK], a
+	ld a, $1
+	ld [hCGBPalUpdate], a
 	ld c, 4
 	call DelayFrames
 	farcall _UpdateTimePals

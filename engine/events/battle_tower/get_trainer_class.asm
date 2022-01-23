@@ -5,7 +5,7 @@ GetMobileOTTrainerClass: ; mobile function
 	ld c, a
 	ret
 
-.GetMobileOTTrainerClass:
+.GetMobileOTTrainerClass: ; 4e930
 	ld a, [hli]
 	xor [hl]
 	ld c, a
@@ -21,7 +21,7 @@ GetMobileOTTrainerClass: ; mobile function
 
 .skip_male_trainers
 	ld a, [de]
-	cp FEMALE
+	cp $1
 	ld hl, MaleTrainers
 	jr nz, .finished
 

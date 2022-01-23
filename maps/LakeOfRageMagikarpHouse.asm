@@ -1,10 +1,10 @@
-	object_const_def
+	const_def 2 ; object constants
 	const LAKEOFRAGEMAGIKARPHOUSE_FISHING_GURU
 
 LakeOfRageMagikarpHouse_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 0 ; callbacks
 
 MagikarpLengthRaterScript:
 	faceplayer
@@ -37,7 +37,7 @@ MagikarpLengthRaterScript:
 	end
 
 .AskedForMagikarp:
-	setval MAGIKARP
+	writebyte TYNAMO
 	special FindPartyMonThatSpecies
 	iffalse .ClearedRocketHideout
 	writetext MagikarpLengthRaterText_YouHaveAMagikarp
@@ -47,11 +47,11 @@ MagikarpLengthRaterScript:
 	ifequal MAGIKARPLENGTH_REFUSED, .Refused
 	ifequal MAGIKARPLENGTH_TOO_SHORT, .TooShort
 	; MAGIKARPLENGTH_BEAT_RECORD
-	sjump .GetReward
+	jump .GetReward
 
 .GetReward:
 	writetext MagikarpLengthRaterText_Memento
-	promptbutton
+	buttonsound
 	verbosegiveitem ELIXER
 	iffalse .NoRoom
 	writetext MagikarpLengthRaterText_Bonus
@@ -83,18 +83,19 @@ MagikarpLengthRaterScript:
 	closetext
 	end
 
-LakeOfRageMagikarpHouseUnusedRecordSign: ; unreferenced
+LakeOfRageMagikarpHouseUnusedRecordSign:
+; unused
 	jumptext LakeOfRageMagikarpHouseUnusedRecordText
 
 MagikarpHouseBookshelf:
-	jumpstd DifficultBookshelfScript
+	jumpstd difficultbookshelf
 
 MagikarpLengthRaterText_LakeOfRageHistory:
 	text "LAKE OF RAGE is"
 	line "actually a crater"
 
 	para "made by rampaging"
-	line "GYARADOS."
+	line "EELEKTROSS."
 
 	para "The crater filled"
 	line "up with rainwater"
@@ -111,7 +112,7 @@ MagikarpLengthRaterText_LakeOfRageHistory:
 	para "It used to be that"
 	line "you could catch"
 
-	para "lively MAGIKARP"
+	para "lively TYNAMO"
 	line "there, but…"
 
 	para "I don't understand"
@@ -130,13 +131,13 @@ MagikarpLengthRaterText_WorldsLargestMagikarp:
 	text "LAKE OF RAGE is"
 	line "back to normal."
 
-	para "The MAGIKARP have"
+	para "The TYNAMO have"
 	line "returned."
 
 	para "I may yet realize"
 	line "my dream of see-"
 	cont "ing the world's"
-	cont "largest MAGIKARP."
+	cont "largest TYNAMO."
 
 	para "Do you have a ROD?"
 	line "Please help me if"
@@ -145,7 +146,7 @@ MagikarpLengthRaterText_WorldsLargestMagikarp:
 
 MagikarpLengthRaterText_YouHaveAMagikarp:
 	text "Ah, you have a"
-	line "MAGIKARP! Let's"
+	line "TYNAMO! Let's"
 
 	para "see how big that"
 	line "baby is."
@@ -183,7 +184,7 @@ MagikarpLengthRaterText_TooShort:
 
 MagikarpLengthRaterText_NotMagikarp:
 	text "What? That's not a"
-	line "MAGIKARP!"
+	line "TYNAMO!"
 	done
 
 MagikarpLengthRaterText_Refused:
@@ -198,27 +199,24 @@ LakeOfRageMagikarpHouseUnusedRecordText:
 	text "CURRENT RECORD"
 
 	para "@"
-	text_ram wStringBuffer3
+	text_from_ram wStringBuffer3
 	text " caught by"
 	line "@"
-	text_ram wStringBuffer4
-	text_end
-
-LakeOfRageMagikarpHouseUnusedDummyText: ; unreferenced
-	text_end
+	text_from_ram wStringBuffer4
+	db "@@"
 
 LakeOfRageMagikarpHouse_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 2 ; warp events
 	warp_event  2,  7, LAKE_OF_RAGE, 2
 	warp_event  3,  7, LAKE_OF_RAGE, 2
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 2 ; bg events
 	bg_event  0,  1, BGEVENT_READ, MagikarpHouseBookshelf
 	bg_event  1,  1, BGEVENT_READ, MagikarpHouseBookshelf
 
-	def_object_events
+	db 1 ; object events
 	object_event  2,  3, SPRITE_FISHING_GURU, SPRITEMOVEDATA_SPINRANDOM_SLOW, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, MagikarpLengthRaterScript, -1

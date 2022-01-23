@@ -1,19 +1,19 @@
-BeastsCheck:
+BeastsCheck: ; 0x4a6e8
 ; Check if the player owns all three legendary beasts.
 ; They must exist in either party or PC, and have the player's OT and ID.
 ; Return the result in wScriptVar.
 
-	ld a, RAIKOU
+	ld a, TORNADUS
 	ld [wScriptVar], a
 	call CheckOwnMonAnywhere
 	jr nc, .notexist
 
-	ld a, ENTEI
+	ld a, THUNDURUS
 	ld [wScriptVar], a
 	call CheckOwnMonAnywhere
 	jr nc, .notexist
 
-	ld a, SUICUNE
+	ld a, ZYGARDE
 	ld [wScriptVar], a
 	call CheckOwnMonAnywhere
 	jr nc, .notexist
@@ -28,7 +28,8 @@ BeastsCheck:
 	ld [wScriptVar], a
 	ret
 
-MonCheck:
+
+MonCheck: ; 0x4a711
 ; Check if the player owns any Pokémon of the species in wScriptVar.
 ; Return the result in wScriptVar.
 
@@ -45,7 +46,8 @@ MonCheck:
 	ld [wScriptVar], a
 	ret
 
-CheckOwnMonAnywhere:
+
+CheckOwnMonAnywhere: ; 0x4a721
 ; Check if the player owns any monsters of the species in wScriptVar.
 ; It must exist in either party or PC, and have the player's OT and ID.
 
@@ -58,7 +60,7 @@ CheckOwnMonAnywhere:
 	ld d, a
 	ld e, 0
 	ld hl, wPartyMon1Species
-	ld bc, wPartyMonOTs
+	ld bc, wPartyMonOT
 
 	; Run CheckOwnMon on each Pokémon in the party.
 .partymon
@@ -75,14 +77,14 @@ CheckOwnMonAnywhere:
 
 	; Run CheckOwnMon on each Pokémon in the PC.
 	ld a, BANK(sBoxCount)
-	call OpenSRAM
+	call GetSRAMBank
 	ld a, [sBoxCount]
 	and a
 	jr z, .boxes
 
 	ld d, a
 	ld hl, sBoxMon1Species
-	ld bc, sBoxMonOTs
+	ld bc, sBoxMonOT
 .openboxmon
 	call CheckOwnMon
 	jr nc, .loop
@@ -113,13 +115,13 @@ CheckOwnMonAnywhere:
 	jr z, .loopbox
 
 	; Load the box.
-	ld hl, SearchBoxAddressTable
+	ld hl, BoxAddressTable1
 	ld b, 0
 	add hl, bc
 	add hl, bc
 	add hl, bc
 	ld a, [hli]
-	call OpenSRAM
+	call GetSRAMBank
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -138,7 +140,7 @@ CheckOwnMonAnywhere:
 	ld e, l
 	pop hl
 	push de
-	ld de, sBoxMonOTs - sBoxCount
+	ld de, sBoxMonOT - sBoxCount
 	add hl, de
 	ld b, h
 	ld c, l
@@ -176,7 +178,8 @@ CheckOwnMonAnywhere:
 	and a
 	ret
 
-CheckOwnMon:
+
+CheckOwnMon: ; 0x4a7ba
 ; Check if a Pokémon belongs to the player and is of a specific species.
 
 ; inputs:
@@ -216,7 +219,7 @@ CheckOwnMon:
 
 	ld hl, wPlayerName
 
-rept NAME_LENGTH_JAPANESE - 2 ; should be PLAYER_NAME_LENGTH - 2
+rept NAME_LENGTH_JAPANESE + -2 ; should be PLAYER_NAME_LENGTH + -2
 	ld a, [de]
 	cp [hl]
 	jr nz, .notfound
@@ -243,9 +246,9 @@ endr
 	pop bc
 	scf
 	ret
+; 0x4a810
 
-SearchBoxAddressTable:
-	table_width 3, SearchBoxAddressTable
+BoxAddressTable1: ; 4a810
 	dba sBox1
 	dba sBox2
 	dba sBox3
@@ -260,9 +263,9 @@ SearchBoxAddressTable:
 	dba sBox12
 	dba sBox13
 	dba sBox14
-	assert_table_length NUM_BOXES
+; 4a83a
 
-UpdateOTPointer:
+UpdateOTPointer: ; 0x4a83a
 	push hl
 	ld hl, NAME_LENGTH
 	add hl, bc
@@ -270,3 +273,4 @@ UpdateOTPointer:
 	ld c, l
 	pop hl
 	ret
+; 0x4a843

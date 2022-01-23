@@ -1,6 +1,6 @@
-InitDisplayForHallOfFame:
+InitDisplayForHallOfFame: ; 4e881
 	call ClearBGPalettes
-	call ClearTilemap
+	call ClearTileMap
 	call ClearSprites
 	call DisableLCD
 	call LoadStandardFont
@@ -9,27 +9,28 @@ InitDisplayForHallOfFame:
 	ld bc, vBGMap1 - vBGMap0
 	ld a, " "
 	call ByteFill
-	hlcoord 0, 0, wAttrmap
+	hlcoord 0, 0, wAttrMap
 	ld bc, SCREEN_WIDTH * SCREEN_HEIGHT
 	xor a
 	call ByteFill
 	xor a
-	ldh [hSCY], a
-	ldh [hSCX], a
+	ld [hSCY], a
+	ld [hSCX], a
 	call EnableLCD
-	ld hl, .SavingRecordText
+	ld hl, .SavingRecordDontTurnOff
 	call PrintText
 	call WaitBGMap2
 	call SetPalettes
 	ret
 
-.SavingRecordText:
-	text_far _SavingRecordText
-	text_end
+.SavingRecordDontTurnOff: ; 0x4e8bd
+	; SAVING RECORD… DON'T TURN OFF!
+	text_jump UnknownText_0x1bd39e
+	db "@"
 
-InitDisplayForRedCredits:
+InitDisplayForRedCredits: ; 4e8c2
 	call ClearBGPalettes
-	call ClearTilemap
+	call ClearTileMap
 	call ClearSprites
 	call DisableLCD
 	call LoadStandardFont
@@ -38,7 +39,7 @@ InitDisplayForRedCredits:
 	ld bc, vBGMap1 - vBGMap0
 	ld a, " "
 	call ByteFill
-	hlcoord 0, 0, wAttrmap
+	hlcoord 0, 0, wAttrMap
 	ld bc, SCREEN_WIDTH * SCREEN_HEIGHT
 	xor a
 	call ByteFill
@@ -52,20 +53,20 @@ InitDisplayForRedCredits:
 	dec c
 	jr nz, .load_white_palettes
 	xor a
-	ldh [hSCY], a
-	ldh [hSCX], a
+	ld [hSCY], a
+	ld [hSCX], a
 	call EnableLCD
 	call WaitBGMap2
 	call SetPalettes
 	ret
 
-ResetDisplayBetweenHallOfFameMons:
-	ldh a, [rSVBK]
+ResetDisplayBetweenHallOfFameMons: ; 4e906
+	ld a, [rSVBK]
 	push af
 	ld a, BANK(wDecompressScratch)
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	ld hl, wDecompressScratch
-	ld bc, wScratchAttrmap - wDecompressScratch
+	ld bc, wScratchAttrMap - wDecompressScratch
 	ld a, " "
 	call ByteFill
 	hlbgcoord 0, 0
@@ -74,5 +75,5 @@ ResetDisplayBetweenHallOfFameMons:
 	ld c, 4 tiles
 	call Request2bpp
 	pop af
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	ret

@@ -1,22 +1,28 @@
-Kurt_PrintTextWhichApricorn:
-	ld hl, .WhichApricornText
+Kurt_PrintTextWhichApricorn: ; 88000
+	ld hl, .Text
 	call PrintText
 	ret
+; 88007
 
-.WhichApricornText:
-	text_far _WhichApricornText
-	text_end
+.Text: ; 0x88007
+	; Which APRICORN should I use?
+	text_jump UnknownText_0x1bc06b
+	db "@"
+; 0x8800c
 
-Kurt_PrintTextHowMany:
-	ld hl, .HowManyShouldIMakeText
+Kurt_PrintTextHowMany: ; 8800c
+	ld hl, .Text
 	call PrintText
 	ret
+; 88013
 
-.HowManyShouldIMakeText:
-	text_far _HowManyShouldIMakeText
-	text_end
+.Text: ; 0x88013
+	; How many should I make?
+	text_jump UnknownText_0x1bc089
+	db "@"
+; 0x88018
 
-SelectApricornForKurt:
+SelectApricornForKurt: ; 88018
 	call LoadStandardMenuHeader
 	ld c, $1
 	xor a
@@ -41,23 +47,24 @@ SelectApricornForKurt:
 	call Kurt_SelectQuantity
 	pop bc
 	jr nc, .loop
-	ld a, [wItemQuantityChange]
+	ld a, [wItemQuantityChangeBuffer]
 	ld [wKurtApricornQuantity], a
 	call Kurt_GiveUpSelectedQuantityOfSelectedApricorn
 
 .done
 	call Call_ExitMenu
 	ret
+; 88055
 
-Kurt_SelectApricorn:
+Kurt_SelectApricorn: ; 88055
 	farcall FindApricornsInBag
 	jr c, .nope
 	ld hl, .MenuHeader
 	call CopyMenuHeader
 	ld a, [wMenuSelection]
-	ld [wMenuCursorPosition], a
+	ld [wMenuCursorBuffer], a
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call InitScrollingMenu
 	call UpdateSprites
 	call ScrollingMenu
@@ -74,55 +81,59 @@ Kurt_SelectApricorn:
 .done
 	ld c, a
 	ret
+; 88086
 
-.MenuHeader:
+.MenuHeader: ; 0x88086
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 1, 1, 13, 10
 	dw .MenuData
 	db 1 ; default option
+; 0x8808e
 
-	db 0 ; unused
+	db 0 ; XXX
 
-.MenuData:
+.MenuData: ; 0x8808f
 	db SCROLLINGMENU_DISPLAY_ARROWS ; flags
-	db 4, 7 ; rows, columns
-	db SCROLLINGMENU_ITEMS_NORMAL ; item format
-	dbw 0, wKurtApricornCount
+	db 4, 7
+	db 1
+	dbw 0, wBuffer1
 	dba .Name
 	dba .Quantity
 	dba NULL
 
-.Name:
+.Name: ; 8809f
 	ld a, [wMenuSelection]
 	and a
 	ret z
 	farcall PlaceMenuItemName
 	ret
+; 880ab
 
-.Quantity:
+.Quantity: ; 880ab
 	ld a, [wMenuSelection]
 	ld [wCurItem], a
 	call Kurt_GetQuantityOfApricorn
 	ret z
-	ld a, [wItemQuantityChange]
+	ld a, [wItemQuantityChangeBuffer]
 	ld [wMenuSelectionQuantity], a
 	farcall PlaceMenuItemQuantity
 	ret
+; 880c2
 
-Kurt_SelectQuantity:
+Kurt_SelectQuantity: ; 880c2
 	ld a, [wCurItem]
 	ld [wMenuSelection], a
 	call Kurt_GetQuantityOfApricorn
 	jr z, .done
-	ld a, [wItemQuantityChange]
-	ld [wItemQuantity], a
+	ld a, [wItemQuantityChangeBuffer]
+	ld [wItemQuantityBuffer], a
 	ld a, $1
-	ld [wItemQuantityChange], a
+	ld [wItemQuantityChangeBuffer], a
 	ld hl, .MenuHeader
 	call LoadMenuHeader
 .loop
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call MenuBox
 	call UpdateSprites
 	call .PlaceApricornName
@@ -137,22 +148,23 @@ Kurt_SelectQuantity:
 	ld a, b
 	cp -1
 	jr z, .done
-	ld a, [wItemQuantityChange]
-	ld [wItemQuantityChange], a ; What is the point of this operation?
+	ld a, [wItemQuantityChangeBuffer]
+	ld [wItemQuantityChangeBuffer], a ; What is the point of this operation?
 	scf
 
 .done
 	call CloseWindow
 	ret
+; 8810d
 
-.MenuHeader:
+.MenuHeader: ; 0x8810d
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 6, 9, SCREEN_WIDTH - 1, 12
 	dw NULL
 	db -1 ; default option
 	db 0
 
-.PlaceApricornName:
+.PlaceApricornName: ; 88116
 	call MenuBoxCoord2Tile
 	ld de, SCREEN_WIDTH + 1
 	add hl, de
@@ -160,23 +172,25 @@ Kurt_SelectQuantity:
 	ld e, l
 	farcall PlaceMenuItemName
 	ret
+; 88126
 
-PlaceApricornQuantity:
+PlaceApricornQuantity: ; 88126
 	call MenuBoxCoord2Tile
 	ld de, 2 * SCREEN_WIDTH + 10
 	add hl, de
 	ld [hl], "×"
 	inc hl
-	ld de, wItemQuantityChange
+	ld de, wItemQuantityChangeBuffer
 	lb bc, PRINTNUM_LEADINGZEROS | 1, 2
 	jp PrintNum
+; 88139
 
-Kurt_GetQuantityOfApricorn:
+Kurt_GetQuantityOfApricorn: ; 88139
 	push bc
 	ld hl, wNumItems
 	ld a, [wCurItem]
 	ld c, a
-	ld b, 0
+	ld b, $0
 .loop
 	inc hl
 	ld a, [hli]
@@ -198,12 +212,13 @@ Kurt_GetQuantityOfApricorn:
 
 .done2
 	ld a, b
-	ld [wItemQuantityChange], a
+	ld [wItemQuantityChangeBuffer], a
 	and a
 	pop bc
 	ret
+; 88161
 
-Kurt_GiveUpSelectedQuantityOfSelectedApricorn:
+Kurt_GiveUpSelectedQuantityOfSelectedApricorn: ; 88161
 ; Get the quantity of Apricorns of type [wCurItem]
 ; in the bag. Compatible with multiple stacks.
 
@@ -309,7 +324,7 @@ Kurt_GiveUpSelectedQuantityOfSelectedApricorn:
 	ld [wCurItemQuantity], a
 	call Kurt_GetRidOfItem
 	pop hl
-	ld a, [wItemQuantityChange]
+	ld a, [wItemQuantityChangeBuffer]
 	and a
 	jr z, .done
 	push hl
@@ -332,19 +347,20 @@ Kurt_GiveUpSelectedQuantityOfSelectedApricorn:
 	jr .loop4
 
 .done
-	ld a, [wItemQuantityChange]
+	ld a, [wItemQuantityChangeBuffer]
 	and a
 	pop bc
 	pop de
 	ret
+; 88201
 
-Kurt_GetAddressOfApricornQuantity:
+Kurt_GetAddressOfApricornQuantity: ; 88201
 	push hl
 	push bc
 	ld hl, wNumItems
 	inc hl
 	ld c, a
-	ld b, 0
+	ld b, $0
 	add hl, bc
 	add hl, bc
 	inc hl
@@ -352,13 +368,14 @@ Kurt_GetAddressOfApricornQuantity:
 	pop bc
 	pop hl
 	ret
+; 88211
 
-Kurt_GetRidOfItem:
+Kurt_GetRidOfItem: ; 88211
 	push bc
 	ld hl, wNumItems
 	ld a, [wCurItemQuantity]
 	ld c, a
-	ld b, 0
+	ld b, $0
 	inc hl
 	add hl, bc
 	add hl, bc
@@ -369,7 +386,7 @@ Kurt_GetRidOfItem:
 	jr z, .done
 	cp c
 	jr nz, .done
-	ld a, [wItemQuantityChange]
+	ld a, [wItemQuantityChangeBuffer]
 	ld c, a
 	ld a, [hl]
 	sub c
@@ -382,13 +399,14 @@ Kurt_GetRidOfItem:
 	push bc
 	ld hl, wNumItems
 	ld a, b
-	ld [wItemQuantityChange], a
+	ld [wItemQuantityChangeBuffer], a
 	call TossItem
 	pop bc
 	ld a, c
 	sub b
 
 .done
-	ld [wItemQuantityChange], a
+	ld [wItemQuantityChangeBuffer], a
 	pop bc
 	ret
+; 88248

@@ -1,4 +1,4 @@
-BattleCommand_Endure:
+BattleCommand_Endure: ; 3766f
 ; endure
 
 ; Endure shares code with Protect. See protect.asm.
@@ -13,4 +13,5 @@ BattleCommand_Endure:
 	call AnimateCurrentMove
 
 	ld hl, BracedItselfText
-	jp StdBattleTextbox
+	jp StdBattleTextBox
+; 37683

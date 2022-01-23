@@ -1,4 +1,4 @@
-	object_const_def
+	const_def 2 ; object constants
 	const DRAGONSDENB1F_POKE_BALL1
 	const DRAGONSDENB1F_CLAIR
 	const DRAGONSDENB1F_SILVER
@@ -10,11 +10,11 @@
 	const DRAGONSDENB1F_POKE_BALL3
 
 DragonsDenB1F_MapScripts:
-	def_scene_scripts
+	db 2 ; scene scripts
 	scene_script .DummyScene0 ; SCENE_DRAGONSDENB1F_NOTHING
 	scene_script .DummyScene1 ; SCENE_DRAGONSDENB1F_CLAIR_GIVES_TM
 
-	def_callbacks
+	db 1 ; callbacks
 	callback MAPCALLBACK_NEWMAP, .CheckSilver
 
 .DummyScene0:
@@ -27,18 +27,18 @@ DragonsDenB1F_MapScripts:
 	checkevent EVENT_BEAT_RIVAL_IN_MT_MOON
 	iftrue .CheckDay
 	disappear DRAGONSDENB1F_SILVER
-	endcallback
+	return
 
 .CheckDay:
-	readvar VAR_WEEKDAY
+	checkcode VAR_WEEKDAY
 	ifequal TUESDAY, .AppearSilver
 	ifequal THURSDAY, .AppearSilver
 	disappear DRAGONSDENB1F_SILVER
-	endcallback
+	return
 
 .AppearSilver:
 	appear DRAGONSDENB1F_SILVER
-	endcallback
+	return
 
 DragonsDenB1F_ClairScene:
 	appear DRAGONSDENB1F_CLAIR
@@ -52,21 +52,21 @@ DragonsDenB1F_ClairScene:
 	applymovement DRAGONSDENB1F_CLAIR, MovementDragonsDen_ClairWalksToYou
 	opentext
 	writetext ClairText_GiveDragonbreathDragonDen
-	promptbutton
-	giveitem TM_DRAGONBREATH
+	buttonsound
+	giveitem TM_DRAGON_CLAW
 	iffalse .BagFull
-	getitemname STRING_BUFFER_3, TM_DRAGONBREATH
-	writetext Text_ReceivedTM24
+	itemtotext TM_DRAGON_CLAW, MEM_BUFFER_0
+	writetext NotifyReceiveDragonbreath
 	playsound SFX_ITEM
 	waitsfx
 	itemnotify
 	setevent EVENT_GOT_TM24_DRAGONBREATH
 	writetext ClairText_DescribeDragonbreathDragonDen
-	promptbutton
+	buttonsound
 	writetext ClairText_WhatsTheMatterDragonDen
 	waitbutton
 	closetext
-	sjump .FinishClair
+	jump .FinishClair
 
 .BagFull:
 	writetext ClairText_NoRoom
@@ -132,7 +132,7 @@ DragonsDenB1FDragonFangScript:
 	iffalse .BagFull
 	disappear DRAGONSDENB1F_POKE_BALL1
 	opentext
-	getitemname STRING_BUFFER_3, DRAGON_FANG
+	itemtotext DRAGON_FANG, MEM_BUFFER_0
 	writetext Text_FoundDragonFang
 	playsound SFX_ITEM
 	waitsfx
@@ -142,9 +142,9 @@ DragonsDenB1FDragonFangScript:
 
 .BagFull:
 	opentext
-	getitemname STRING_BUFFER_3, DRAGON_FANG
+	itemtotext DRAGON_FANG, MEM_BUFFER_0
 	writetext Text_FoundDragonFang
-	promptbutton
+	buttonsound
 	writetext Text_NoRoomForDragonFang
 	waitbutton
 	closetext
@@ -214,18 +214,14 @@ ClairText_GiveDragonbreathDragonDen:
 	line "my apology."
 	done
 
-Text_ReceivedTM24:
+NotifyReceiveDragonbreath:
 	text "<PLAYER> received"
 	line "TM24."
 	done
 
 ClairText_DescribeDragonbreathDragonDen:
 	text "That contains"
-	line "DRAGONBREATH."
-
-	para "No, it doesn't"
-	line "have anything to"
-	cont "do with my breath."
+	line "DRAGON CLAW."
 
 	para "If you don't want"
 	line "it, you don't have"
@@ -393,7 +389,7 @@ TwinsLeaandpia2AfterBattleText:
 Text_FoundDragonFang:
 	text "<PLAYER> found"
 	line "@"
-	text_ram wStringBuffer3
+	text_from_ram wStringBuffer3
 	text "!"
 	done
 
@@ -406,20 +402,20 @@ Text_NoRoomForDragonFang:
 DragonsDenB1F_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 2 ; warp events
 	warp_event 20,  3, DRAGONS_DEN_1F, 3
 	warp_event 19, 29, DRAGON_SHRINE, 1
 
-	def_coord_events
+	db 1 ; coord events
 	coord_event 19, 30, SCENE_DRAGONSDENB1F_CLAIR_GIVES_TM, DragonsDenB1F_ClairScene
 
-	def_bg_events
+	db 4 ; bg events
 	bg_event 18, 24, BGEVENT_READ, DragonShrineSignpost
 	bg_event 33, 29, BGEVENT_ITEM, DragonsDenB1FHiddenRevive
 	bg_event 21, 17, BGEVENT_ITEM, DragonsDenB1FHiddenMaxPotion
 	bg_event 31, 15, BGEVENT_ITEM, DragonsDenB1FHiddenMaxElixer
 
-	def_object_events
+	db 9 ; object events
 	object_event 35, 16, SPRITE_POKE_BALL, SPRITEMOVEDATA_STILL, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, DragonsDenB1FDragonFangScript, EVENT_DRAGONS_DEN_B1F_DRAGON_FANG
 	object_event 14, 30, SPRITE_CLAIR, SPRITEMOVEDATA_STANDING_UP, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_SCRIPT, 0, ObjectEvent, EVENT_DRAGONS_DEN_CLAIR
 	object_event 20, 23, SPRITE_SILVER, SPRITEMOVEDATA_WANDER, 2, 2, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, DragonsDenB1FSilverScript, EVENT_RIVAL_DRAGONS_DEN

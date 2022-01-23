@@ -1,18 +1,18 @@
-PlaceMenuItemName:
+PlaceMenuItemName: ; 0x24ab4
 	push de
 	ld a, [wMenuSelection]
-	ld [wNamedObjectIndex], a
+	ld [wNamedObjectIndexBuffer], a
 	call GetItemName
 	pop hl
 	call PlaceString
 	ret
 
-PlaceMenuItemQuantity:
+PlaceMenuItemQuantity: ; 0x24ac3
 	push de
 	ld a, [wMenuSelection]
 	ld [wCurItem], a
 	farcall _CheckTossableItem
-	ld a, [wItemAttributeValue]
+	ld a, [wItemAttributeParamBuffer]
 	pop hl
 	and a
 	jr nz, .done
@@ -27,22 +27,22 @@ PlaceMenuItemQuantity:
 .done
 	ret
 
-PlaceMoneyTopRight:
-	ld hl, MoneyTopRightMenuHeader
+PlaceMoneyTopRight: ; 24ae8
+	ld hl, MenuHeader_0x24b15
 	call CopyMenuHeader
-	jr PlaceMoneyTextbox
+	jr PlaceMoneyTextBox
 
-PlaceMoneyBottomLeft:
-	ld hl, MoneyBottomLeftMenuHeader
+PlaceMoneyBottomLeft: ; 24af0
+	ld hl, MenuHeader_0x24b1d
 	call CopyMenuHeader
-	jr PlaceMoneyTextbox
+	jr PlaceMoneyTextBox
 
-PlaceMoneyAtTopLeftOfTextbox:
-	ld hl, MoneyTopRightMenuHeader
+PlaceMoneyAtTopLeftOfTextbox: ; 24af8
+	ld hl, MenuHeader_0x24b15
 	lb de, 0, 11
 	call OffsetMenuHeader
 
-PlaceMoneyTextbox:
+PlaceMoneyTextBox: ; 24b01
 	call MenuBox
 	call MenuBoxCoord2Tile
 	ld de, SCREEN_WIDTH + 1
@@ -52,24 +52,24 @@ PlaceMoneyTextbox:
 	call PrintNum
 	ret
 
-MoneyTopRightMenuHeader:
+MenuHeader_0x24b15: ; 0x24b15
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 11, 0, SCREEN_WIDTH - 1, 2
 	dw NULL
 	db 1 ; default option
 
-MoneyBottomLeftMenuHeader:
+MenuHeader_0x24b1d: ; 0x24b1d
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 0, 11, 8, 13
 	dw NULL
 	db 1 ; default option
 
-DisplayCoinCaseBalance:
+DisplayCoinCaseBalance: ; 24b25
 	; Place a text box of size 1x7 at 11, 0.
 	hlcoord 11, 0
 	ld b, 1
 	ld c, 7
-	call Textbox
+	call TextBox
 	hlcoord 12, 0
 	ld de, CoinString
 	call PlaceString
@@ -82,11 +82,11 @@ DisplayCoinCaseBalance:
 	call PrintNum
 	ret
 
-DisplayMoneyAndCoinBalance:
+DisplayMoneyAndCoinBalance: ; 24b4e
 	hlcoord 5, 0
 	ld b, 3
 	ld c, 13
-	call Textbox
+	call TextBox
 	hlcoord 6, 1
 	ld de, MoneyString
 	call PlaceString
@@ -103,14 +103,15 @@ DisplayMoneyAndCoinBalance:
 	call PrintNum
 	ret
 
-MoneyString:
+MoneyString: ; 24b83
 	db "MONEY@"
-CoinString:
+CoinString: ; 24b89
 	db "COIN@"
-ShowMoney_TerminatorString:
+ShowMoney_TerminatorString: ; 24b8e
 	db "@"
 
-StartMenu_PrintSafariGameStatus: ; unreferenced
+Unreferenced_Function24b8f: ; 24b8f
+; related to safari?
 	ld hl, wOptions
 	ld a, [hl]
 	push af
@@ -118,7 +119,7 @@ StartMenu_PrintSafariGameStatus: ; unreferenced
 	hlcoord 0, 0
 	ld b, 3
 	ld c, 7
-	call Textbox
+	call TextBox
 	hlcoord 1, 1
 	ld de, wSafariTimeRemaining
 	lb bc, 2, 3
@@ -137,39 +138,39 @@ StartMenu_PrintSafariGameStatus: ; unreferenced
 	ld [wOptions], a
 	ret
 
-.slash_500
+.slash_500 ; 24bcf
 	db "／５００@"
-.booru_ko
+.booru_ko ; 24bd4
 	db "ボール　　　こ@"
 
-StartMenu_DrawBugContestStatusBox:
+StartMenu_DrawBugContestStatusBox: ; 24bdc
 	hlcoord 0, 0
 	ld b, 5
 	ld c, 17
-	call Textbox
+	call TextBox
 	ret
 
-StartMenu_PrintBugContestStatus:
+StartMenu_PrintBugContestStatus: ; 24be7
 	ld hl, wOptions
 	ld a, [hl]
 	push af
 	set NO_TEXT_SCROLL, [hl]
 	call StartMenu_DrawBugContestStatusBox
 	hlcoord 1, 5
-	ld de, .BallsString
+	ld de, .Balls_EN
 	call PlaceString
 	hlcoord 8, 5
 	ld de, wParkBallsRemaining
-	lb bc, PRINTNUM_LEFTALIGN | 1, 2
+	lb bc, PRINTNUM_RIGHTALIGN | 1, 2
 	call PrintNum
 	hlcoord 1, 1
-	ld de, .CaughtString
+	ld de, .CAUGHT
 	call PlaceString
 	ld a, [wContestMon]
 	and a
-	ld de, .NoneString
+	ld de, .None
 	jr z, .no_contest_mon
-	ld [wNamedObjectIndex], a
+	ld [wd265], a
 	call GetPokemonName
 
 .no_contest_mon
@@ -179,37 +180,36 @@ StartMenu_PrintBugContestStatus:
 	and a
 	jr z, .skip_level
 	hlcoord 1, 3
-	ld de, .LevelString
+	ld de, .LEVEL
 	call PlaceString
 	ld a, [wContestMonLevel]
 	ld h, b
 	ld l, c
 	inc hl
 	ld c, 3
-	call Print8BitNumLeftAlign
+	call Print8BitNumRightAlign
 
 .skip_level
 	pop af
 	ld [wOptions], a
 	ret
 
-.BallsJPString: ; unreferenced
+.Balls_JP: ; 24c43
 	db "ボール　　　こ@"
-.CaughtString:
+.CAUGHT: ; 24c4b
 	db "CAUGHT@"
-.BallsString:
+.Balls_EN: ; 24c52
 	db "BALLS:@"
-.NoneString:
+.None: ; 24c59
 	db "None@"
-.LevelString:
+.LEVEL: ; 24c5e
 	db "LEVEL@"
 
-FindApricornsInBag:
+FindApricornsInBag: ; 24c64
 ; Checks the bag for Apricorns.
-	ld hl, wKurtApricornCount
+	ld hl, wBuffer1
 	xor a
 	ld [hli], a
-	assert wKurtApricornCount + 1 == wKurtApricornItems
 	dec a
 	ld bc, 10
 	call ByteFill
@@ -233,15 +233,15 @@ FindApricornsInBag:
 	jr .loop
 
 .done
-	ld a, [wKurtApricornCount]
+	ld a, [wBuffer1]
 	and a
 	ret nz
 	scf
 	ret
 
-.addtobuffer:
+.addtobuffer ; 24c94
 	push hl
-	ld hl, wKurtApricornCount
+	ld hl, wBuffer1
 	inc [hl]
 	ld e, [hl]
 	ld d, 0

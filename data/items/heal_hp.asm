@@ -1,4 +1,4 @@
-HealingHPAmounts:
+HealingHPAmounts: ; f3af
 	dbw FRESH_WATER,   50
 	dbw SODA_POP,      60
 	dbw LEMONADE,      80
@@ -15,3 +15,4 @@ HealingHPAmounts:
 	dbw RAGECANDYBAR,  20
 	dbw BERRY_JUICE,   20
 	dbw -1, 0 ; end
+; f3df

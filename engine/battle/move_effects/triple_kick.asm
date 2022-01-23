@@ -1,7 +1,7 @@
-BattleCommand_TripleKick:
+BattleCommand_TripleKick: ; 346b2
 ; triplekick
 
-	ld a, [wBattleAnimParam]
+	ld a, [wKickCounter]
 	ld b, a
 	inc b
 	ld hl, wCurDamage + 1
@@ -26,9 +26,14 @@ BattleCommand_TripleKick:
 	ld [hl], a
 	ret
 
-BattleCommand_KickCounter:
+; 346cd
+
+
+BattleCommand_KickCounter: ; 346cd
 ; kickcounter
 
-	ld hl, wBattleAnimParam
+	ld hl, wKickCounter
 	inc [hl]
 	ret
+
+; 346d2

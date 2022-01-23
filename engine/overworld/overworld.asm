@@ -1,21 +1,23 @@
-GetEmote2bpp:
+GetEmote2bpp: ; 1412a
 	ld a, $1
-	ldh [rVBK], a
+	ld [rVBK], a
 	call Get2bpp
 	xor a
-	ldh [rVBK], a
+	ld [rVBK], a
 	ret
+; 14135
 
-_UpdatePlayerSprite::
+_ReplaceKrisSprite:: ; 14135
 	call GetPlayerSprite
 	ld a, [wUsedSprites]
-	ldh [hUsedSpriteIndex], a
+	ld [hUsedSpriteIndex], a
 	ld a, [wUsedSprites + 1]
-	ldh [hUsedSpriteTile], a
+	ld [hUsedSpriteTile], a
 	call GetUsedSprite
 	ret
+; 14146
 
-_RefreshSprites: ; mobile
+Function14146: ; mobile
 	ld hl, wSpriteFlags
 	ld a, [hl]
 	push af
@@ -25,8 +27,9 @@ _RefreshSprites: ; mobile
 	pop af
 	ld [wSpriteFlags], a
 	ret
+; 14157
 
-_ClearSprites: ; mobile
+Function14157: ; mobile
 	ld hl, wSpriteFlags
 	ld a, [hl]
 	push af
@@ -36,13 +39,15 @@ _ClearSprites: ; mobile
 	pop af
 	ld [wSpriteFlags], a
 	ret
+; 14168
 
-RefreshSprites::
+RefreshSprites:: ; 14168
 	call .Refresh
 	call LoadUsedSpritesGFX
 	ret
+; 1416f
 
-.Refresh:
+.Refresh: ; 1416f
 	xor a
 	ld bc, wUsedSpritesEnd - wUsedSprites
 	ld hl, wUsedSprites
@@ -51,8 +56,9 @@ RefreshSprites::
 	call AddMapSprites
 	call LoadAndSortSprites
 	ret
+; 14183
 
-GetPlayerSprite:
+GetPlayerSprite: ; 14183
 ; Get Chris or Kris's sprite.
 	ld hl, ChrisStateSprites
 	ld a, [wPlayerSpriteSetupFlags]
@@ -91,7 +97,8 @@ GetPlayerSprite:
 
 INCLUDE "data/sprites/player_sprites.asm"
 
-AddMapSprites:
+
+AddMapSprites: ; 141c9
 	call GetMapEnvironment
 	call CheckOutdoorMap
 	jr z, .outdoor
@@ -101,23 +108,27 @@ AddMapSprites:
 .outdoor
 	call AddOutdoorSprites
 	ret
+; 141d9
 
-AddIndoorSprites:
+
+AddIndoorSprites: ; 141d9
 	ld hl, wMap1ObjectSprite
 	ld a, 1
 .loop
 	push af
 	ld a, [hl]
 	call AddSpriteGFX
-	ld de, MAPOBJECT_LENGTH
+	ld de, OBJECT_LENGTH
 	add hl, de
 	pop af
 	inc a
 	cp NUM_OBJECTS
 	jr nz, .loop
 	ret
+; 141ee
 
-AddOutdoorSprites:
+
+AddOutdoorSprites: ; 141ee
 	ld a, [wMapGroup]
 	dec a
 	ld c, a
@@ -128,24 +139,24 @@ AddOutdoorSprites:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	ld c, MAX_OUTDOOR_SPRITES
 .loop
-	push bc
 	ld a, [hli]
+	and a
+	ret z
 	call AddSpriteGFX
-	pop bc
-	dec c
-	jr nz, .loop
-	ret
+	jr .loop
+; 14209
 
-LoadUsedSpritesGFX:
+
+LoadUsedSpritesGFX: ; 14209
 	ld a, MAPCALLBACK_SPRITES
 	call RunMapCallback
 	call GetUsedSprites
-	call LoadMiscTiles
+	call .LoadMiscTiles
 	ret
+; 14215
 
-LoadMiscTiles:
+.LoadMiscTiles: ; 14215
 	ld a, [wSpriteFlags]
 	bit 6, a
 	ret nz
@@ -160,14 +171,18 @@ LoadMiscTiles:
 .outdoor
 	farcall LoadEmote
 	ret
+; 14236
 
-SafeGetSprite:
+
+
+SafeGetSprite: ; 14236
 	push hl
 	call GetSprite
 	pop hl
 	ret
+; 1423c
 
-GetSprite:
+GetSprite: ; 1423c
 	call GetMonSprite
 	ret c
 
@@ -193,8 +208,10 @@ GetSprite:
 	ld l, [hl]
 	ld h, a
 	ret
+; 14259
 
-GetMonSprite:
+
+GetMonSprite: ; 14259
 ; Return carry if a monster sprite was loaded.
 
 	cp SPRITE_POKEMON
@@ -234,7 +251,7 @@ GetMonSprite:
 
 	farcall LoadOverworldMonIcon
 
-	ld l, WALKING_SPRITE
+	ld l, 1
 	ld h, 0
 	scf
 	ret
@@ -250,13 +267,15 @@ GetMonSprite:
 	jp nz, GetMonSprite
 
 .NoBreedmon:
-	ld a, WALKING_SPRITE
-	ld l, WALKING_SPRITE
+	ld a, 1
+	ld l, 1
 	ld h, 0
 	and a
 	ret
+; 142a7
 
-_DoesSpriteHaveFacings::
+
+_DoesSpriteHaveFacings:: ; 142a7
 ; Checks to see whether we can apply a facing to a sprite.
 ; Returns carry unless the sprite is a Pokemon or a Still Sprite.
 	cp SPRITE_POKEMON
@@ -281,8 +300,10 @@ _DoesSpriteHaveFacings::
 .only_down
 	and a
 	ret
+; 142c4
 
-_GetSpritePalette::
+
+_GetSpritePalette:: ; 142c4
 	ld a, c
 	call GetMonSprite
 	jr c, .is_pokemon
@@ -300,14 +321,17 @@ _GetSpritePalette::
 	xor a
 	ld c, a
 	ret
+; 142db
 
-LoadAndSortSprites:
+
+LoadAndSortSprites: ; 142db
 	call LoadSpriteGFX
-	call SortUsedSprites
 	call ArrangeUsedSprites
 	ret
+; 142e5
 
-AddSpriteGFX:
+
+AddSpriteGFX: ; 142e5
 ; Add any new sprite ids to a list of graphics to be loaded.
 ; Return carry if the list is full.
 
@@ -344,8 +368,10 @@ AddSpriteGFX:
 	pop hl
 	and a
 	ret
+; 14306
 
-LoadSpriteGFX:
+
+LoadSpriteGFX: ; 14306
 ; Bug: b is not preserved, so it's useless as a next count.
 ; Uncomment the lines below to fix.
 
@@ -366,83 +392,15 @@ LoadSpriteGFX:
 	ret
 
 .LoadSprite:
-	; push bc
+	push bc
 	call GetSprite
-	; pop bc
+	pop bc
 	ld a, l
 	ret
+; 1431e
 
-SortUsedSprites:
-; Bubble-sort sprites by type.
 
-; Run backwards through wUsedSprites to find the last one.
-
-	ld c, SPRITE_GFX_LIST_CAPACITY
-	ld de, wUsedSprites + (SPRITE_GFX_LIST_CAPACITY - 1) * 2
-.FindLastSprite:
-	ld a, [de]
-	and a
-	jr nz, .FoundLastSprite
-	dec de
-	dec de
-	dec c
-	jr nz, .FindLastSprite
-.FoundLastSprite:
-	dec c
-	jr z, .quit
-
-; If the length of the current sprite is
-; higher than a later one, swap them.
-
-	inc de
-	ld hl, wUsedSprites + 1
-
-.CheckSprite:
-	push bc
-	push de
-	push hl
-
-.CheckFollowing:
-	ld a, [de]
-	cp [hl]
-	jr nc, .loop
-
-; Swap the two sprites.
-
-	ld b, a
-	ld a, [hl]
-	ld [hl], b
-	ld [de], a
-	dec de
-	dec hl
-	ld a, [de]
-	ld b, a
-	ld a, [hl]
-	ld [hl], b
-	ld [de], a
-	inc de
-	inc hl
-
-; Keep doing this until everything's in order.
-
-.loop
-	dec de
-	dec de
-	dec c
-	jr nz, .CheckFollowing
-
-	pop hl
-	inc hl
-	inc hl
-	pop de
-	pop bc
-	dec c
-	jr nz, .CheckSprite
-
-.quit
-	ret
-
-ArrangeUsedSprites:
+ArrangeUsedSprites: ; 14355
 ; Get the length of each sprite and space them out in VRAM.
 ; Crystal introduces a second table in VRAM bank 0.
 
@@ -499,8 +457,10 @@ ArrangeUsedSprites:
 
 .quit
 	ret
+; 14386
 
-GetSpriteLength:
+
+GetSpriteLength: ; 14386
 ; Return the length of sprite type a in tiles.
 
 	cp WALKING_SPRITE
@@ -520,8 +480,10 @@ GetSpriteLength:
 .OneDirection:
 	ld a, 4
 	ret
+; 1439b
 
-GetUsedSprites:
+
+GetUsedSprites: ; 1439b
 	ld hl, wUsedSprites
 	ld c, SPRITE_GFX_LIST_CAPACITY
 
@@ -533,10 +495,10 @@ GetUsedSprites:
 	ld a, [hli]
 	and a
 	jr z, .done
-	ldh [hUsedSpriteIndex], a
+	ld [hUsedSpriteIndex], a
 
 	ld a, [hli]
-	ldh [hUsedSpriteTile], a
+	ld [hUsedSpriteTile], a
 
 	bit 7, a
 	jr z, .dont_set
@@ -556,11 +518,12 @@ GetUsedSprites:
 
 .done
 	ret
+; 143c8
 
-GetUsedSprite:
-	ldh a, [hUsedSpriteIndex]
+GetUsedSprite: ; 143c8
+	ld a, [hUsedSpriteIndex]
 	call SafeGetSprite
-	ldh a, [hUsedSpriteTile]
+	ld a, [hUsedSpriteTile]
 	call .GetTileAddr
 	push hl
 	push de
@@ -589,19 +552,20 @@ endr
 	bit 6, a
 	jr nz, .done
 
-	ldh a, [hUsedSpriteIndex]
+	ld a, [hUsedSpriteIndex]
 	call _DoesSpriteHaveFacings
 	jr c, .done
 
 	ld a, h
-	add HIGH(vTiles1 - vTiles0)
+	add $8
 	ld h, a
 	call .CopyToVram
 
 .done
 	ret
+; 14406
 
-.GetTileAddr:
+.GetTileAddr: ; 14406
 ; Return the address of tile (a) in (hl).
 	and $7f
 	ld l, a
@@ -616,9 +580,10 @@ endr
 	adc HIGH(vTiles0)
 	ld h, a
 	ret
+; 14418
 
-.CopyToVram:
-	ldh a, [rVBK]
+.CopyToVram: ; 14418
+	ld a, [rVBK]
 	push af
 	ld a, [wSpriteFlags]
 	bit 5, a
@@ -627,16 +592,17 @@ endr
 	ld a, $0
 
 .bankswitch
-	ldh [rVBK], a
+	ld [rVBK], a
 	call Get2bpp
 	pop af
-	ldh [rVBK], a
+	ld [rVBK], a
 	ret
+; 1442f
 
-LoadEmote::
+LoadEmote:: ; 1442f
 ; Get the address of the pointer to emote c.
 	ld a, c
-	ld bc, EMOTE_LENGTH
+	ld bc, 6 ; sizeof(emote)
 	ld hl, Emotes
 	call AddNTimes
 ; Load the emote address into de
@@ -661,6 +627,8 @@ LoadEmote::
 	ret z
 	call GetEmote2bpp
 	ret
+; 1444d
+
 
 INCLUDE "data/sprites/emotes.asm"
 

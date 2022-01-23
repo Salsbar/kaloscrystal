@@ -1,4 +1,4 @@
-CorrectPartyErrors: ; unreferenced
+Unreferenced_CorrectPartyErrors:
 	ld hl, wPartyCount
 	ld a, [hl]
 	and a
@@ -23,13 +23,13 @@ CorrectPartyErrors: ; unreferenced
 	jr c, .next_species
 
 .invalid_species
-	ld [hl], SMEARGLE
+	ld [hl], PATRAT
 	push hl
 	push bc
 	ld a, c
 	ld hl, wPartyMon1Species
 	call GetPartyLocation
-	ld [hl], SMEARGLE
+	ld [hl], PATRAT
 	pop bc
 	pop hl
 
@@ -56,13 +56,13 @@ CorrectPartyErrors: ; unreferenced
 	jr c, .check_level
 
 .invalid_species_2
-	ld [hl], SMEARGLE
+	ld [hl], PATRAT
 	push de
 	ld d, 0
 	ld hl, wPartySpecies
 	add hl, de
 	pop de
-	ld a, SMEARGLE
+	ld a, PATRAT
 	ld [hl], a
 
 .check_level
@@ -123,7 +123,7 @@ CorrectPartyErrors: ; unreferenced
 	cp EGG
 	ld hl, .TAMAGO
 	jr z, .got_nickname
-	ld [wNamedObjectIndex], a
+	ld [wd265], a
 	call GetPokemonName
 	ld hl, wStringBuffer1
 .got_nickname
@@ -137,7 +137,7 @@ CorrectPartyErrors: ; unreferenced
 	dec b
 	jr nz, .loop3
 
-	ld de, wPartyMonOTs
+	ld de, wPartyMonOT
 	ld a, [wPartyCount]
 	ld b, a
 	ld c, 0
@@ -201,11 +201,13 @@ CorrectPartyErrors: ; unreferenced
 	dec b
 	jr nz, .loop5
 	ret
+; 13b6b
 
-.TAMAGO:
+.TAMAGO: ; 13b6b
 	db "タマゴ@@@"
+; 13b71
 
-.GetLengthOfStringWith6CharCap:
+.GetLengthOfStringWith6CharCap: ; 13b71
 	push de
 	ld c, 1
 	ld b, NAME_LENGTH_JAPANESE
@@ -224,3 +226,4 @@ CorrectPartyErrors: ; unreferenced
 .done
 	pop de
 	ret
+; 13b87

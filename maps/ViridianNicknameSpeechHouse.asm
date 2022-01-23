@@ -1,13 +1,13 @@
-	object_const_def
+	const_def 2 ; object constants
 	const VIRIDIANNICKNAMESPEECHHOUSE_POKEFAN_M
 	const VIRIDIANNICKNAMESPEECHHOUSE_LASS
 	const VIRIDIANNICKNAMESPEECHHOUSE_SPEARY
 	const VIRIDIANNICKNAMESPEECHHOUSE_RATTEY
 
 ViridianNicknameSpeechHouse_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 0 ; callbacks
 
 ViridianNicknameSpeechHousePokefanMScript:
 	jumptextfaceplayer ViridianNicknameSpeechHousePokefanMText
@@ -18,7 +18,7 @@ ViridianNicknameSpeechHouseLassScript:
 Speary:
 	opentext
 	writetext SpearyText
-	cry SPEAROW
+	cry RUFFLET
 	waitbutton
 	closetext
 	end
@@ -26,7 +26,7 @@ Speary:
 Rattey:
 	opentext
 	writetext RatteyText
-	cry RATTATA
+	cry PATRAT
 	waitbutton
 	closetext
 	end
@@ -46,31 +46,31 @@ ViridianNicknameSpeechHousePokefanMText:
 	done
 
 ViridianNicknameSpeechHouseLassText:
-	text "They're SPEARY--"
-	line "a SPEAROW--and"
-	cont "RATTEY--a RATTATA."
+	text "They're RUFFY--"
+	line "a RUFFLET--and"
+	cont "PATTY--a PATRAT."
 	done
 
 SpearyText:
-	text "SPEARY: Ch-chun!"
+	text "RUFFY: Ch-chun!"
 	done
 
 RatteyText:
-	text "RATTEY: Kikiii!"
+	text "PATTY: Kikiii!"
 	done
 
 ViridianNicknameSpeechHouse_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 2 ; warp events
 	warp_event  2,  7, VIRIDIAN_CITY, 2
 	warp_event  3,  7, VIRIDIAN_CITY, 2
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 0 ; bg events
 
-	def_object_events
+	db 4 ; object events
 	object_event  2,  4, SPRITE_POKEFAN_M, SPRITEMOVEDATA_STANDING_RIGHT, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, ViridianNicknameSpeechHousePokefanMScript, -1
 	object_event  5,  4, SPRITE_LASS, SPRITEMOVEDATA_STANDING_UP, 0, 0, -1, -1, PAL_NPC_GREEN, OBJECTTYPE_SCRIPT, 0, ViridianNicknameSpeechHouseLassScript, -1
 	object_event  5,  2, SPRITE_MOLTRES, SPRITEMOVEDATA_POKEMON, 2, 0, -1, -1, PAL_NPC_BROWN, OBJECTTYPE_SCRIPT, 0, Speary, -1

@@ -1,6 +1,6 @@
 HALLOFFAME_COLON EQU $63
 
-HallOfFame::
+HallOfFame:: ; 0x8640e
 	call HallOfFame_FadeOutMusic
 	ld a, [wStatusFlags]
 	push af
@@ -33,8 +33,9 @@ HallOfFame::
 	ld b, a
 	farcall Credits
 	ret
+; 0x86455
 
-RedCredits::
+RedCredits:: ; 86455
 	ld a, LOW(MUSIC_NONE)
 	ld [wMusicFadeID], a
 	ld a, HIGH(MUSIC_NONE)
@@ -44,7 +45,7 @@ RedCredits::
 	farcall FadeOutPalettes
 	xor a
 	ld [wVramState], a
-	ldh [hMapAnims], a
+	ld [hMapAnims], a
 	farcall InitDisplayForRedCredits
 	ld c, 8
 	call DelayFrames
@@ -55,8 +56,9 @@ RedCredits::
 	ld b, a
 	farcall Credits
 	ret
+; 8648e
 
-HallOfFame_FadeOutMusic:
+HallOfFame_FadeOutMusic: ; 8648e
 	ld a, LOW(MUSIC_NONE)
 	ld [wMusicFadeID], a
 	ld a, HIGH(MUSIC_NONE)
@@ -66,12 +68,13 @@ HallOfFame_FadeOutMusic:
 	farcall FadeOutPalettes
 	xor a
 	ld [wVramState], a
-	ldh [hMapAnims], a
+	ld [hMapAnims], a
 	farcall InitDisplayForHallOfFame
 	ld c, 100
 	jp DelayFrames
+; 864b4
 
-HallOfFame_PlayMusicDE:
+HallOfFame_PlayMusicDE: ; 864b4
 	push de
 	ld de, MUSIC_NONE
 	call PlayMusic
@@ -79,8 +82,9 @@ HallOfFame_PlayMusicDE:
 	pop de
 	call PlayMusic
 	ret
+; 864c3
 
-AnimateHallOfFame:
+AnimateHallOfFame: ; 864c3
 	xor a
 	ld [wJumptableIndex], a
 	call LoadHOFTeam
@@ -116,25 +120,27 @@ AnimateHallOfFame:
 	ld c, 8
 	call DelayFrames
 	ret
+; 8650c
 
-.DisplayNewHallOfFamer:
+.DisplayNewHallOfFamer: ; 8650c
 	call DisplayHOFMon
 	ld de, .String_NewHallOfFamer
 	hlcoord 1, 2
 	call PlaceString
 	call WaitBGMap
-	decoord 6, 5
-	ld c, ANIM_MON_HOF
-	predef HOF_AnimateFrontpic
-	ld c, 60
+	call HOF_PlayCry
+	ld c, 180
 	call DelayFrames
 	and a
 	ret
+; 8652c
 
 .String_NewHallOfFamer:
 	db "New Hall of Famer!@"
+; 8653f
 
-GetHallOfFameParty:
+
+GetHallOfFameParty: ; 8653f
 	ld hl, wHallOfFamePokemonList
 	ld bc, wHallOfFamePokemonListEnd - wHallOfFamePokemonList + 1
 	xor a
@@ -219,8 +225,9 @@ GetHallOfFameParty:
 	ld a, -1
 	ld [de], a
 	ret
+; 865b5
 
-AnimateHOFMonEntrance:
+AnimateHOFMonEntrance: ; 865b5
 	push hl
 	call ClearBGPalettes
 	farcall ResetDisplayBetweenHallOfFameMons
@@ -243,17 +250,17 @@ AnimateHOFMonEntrance:
 	ld de, vTiles2 tile $31
 	predef GetMonBackpic
 	ld a, $31
-	ldh [hGraphicStartTile], a
+	ld [hGraphicStartTile], a
 	hlcoord 6, 6
 	lb bc, 6, 6
 	predef PlaceGraphic
 	ld a, $d0
-	ldh [hSCY], a
+	ld [hSCY], a
 	ld a, $90
-	ldh [hSCX], a
+	ld [hSCX], a
 	call WaitBGMap
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	ld b, SCGB_PLAYER_OR_MON_FRONTPIC_PALS
 	call GetSGBLayout
 	call SetPalettes
@@ -268,33 +275,36 @@ AnimateHOFMonEntrance:
 	call _PrepMonFrontpic
 	call WaitBGMap
 	xor a
-	ldh [hBGMapMode], a
-	ldh [hSCY], a
+	ld [hBGMapMode], a
+	ld [hSCY], a
 	call HOF_SlideFrontpic
 	ret
+; 86635
 
 HOF_SlideBackpic:
 .backpicloop
-	ldh a, [hSCX]
+	ld a, [hSCX]
 	cp $70
 	ret z
-	add 4
-	ldh [hSCX], a
+	add $4
+	ld [hSCX], a
 	call DelayFrame
 	jr .backpicloop
+; 86643
 
 HOF_SlideFrontpic:
 .frontpicloop
-	ldh a, [hSCX]
+	ld a, [hSCX]
 	and a
 	ret z
 	dec a
 	dec a
-	ldh [hSCX], a
+	ld [hSCX], a
 	call DelayFrame
 	jr .frontpicloop
+; 86650
 
-_HallOfFamePC:
+_HallOfFamePC: ; 86650
 	call LoadFontsBattleExtra
 	xor a
 	ld [wJumptableIndex], a
@@ -389,9 +399,7 @@ _HallOfFamePC:
 	ld b, SCGB_PLAYER_OR_MON_FRONTPIC_PALS
 	call GetSGBLayout
 	call SetPalettes
-	decoord 6, 5
-	ld c, ANIM_MON_HOF
-	predef HOF_AnimateFrontpic
+	call HOF_PlayCry
 	and a
 	ret
 
@@ -403,8 +411,9 @@ _HallOfFamePC:
 
 .TimeFamer:
 	db "    -Time Famer@"
+; 8671c
 
-LoadHOFTeam:
+LoadHOFTeam: ; 8671c
 	ld a, [wJumptableIndex]
 	cp NUM_HOF_TEAMS
 	jr nc, .invalid
@@ -412,7 +421,7 @@ LoadHOFTeam:
 	ld bc, wHallOfFameTempEnd - wHallOfFameTemp + 1
 	call AddNTimes
 	ld a, BANK(sHallOfFame)
-	call OpenSRAM
+	call GetSRAMBank
 	ld a, [hl]
 	and a
 	jr z, .absent
@@ -429,10 +438,11 @@ LoadHOFTeam:
 .invalid
 	scf
 	ret
+; 86748
 
-DisplayHOFMon:
+DisplayHOFMon: ; 86748
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	ld a, [hli]
 	ld [wTempMonSpecies], a
 	ld a, [hli]
@@ -449,20 +459,20 @@ DisplayHOFMon:
 	ld bc, MON_NAME_LENGTH - 1
 	call CopyBytes
 	ld a, "@"
-	ld [wStringBuffer2 + MON_NAME_LENGTH - 1], a
+	ld [wStringBuffer2 + 10], a
 	hlcoord 0, 0
 	ld bc, SCREEN_WIDTH * SCREEN_HEIGHT
 	ld a, " "
 	call ByteFill
 	hlcoord 0, 0
 	lb bc, 3, SCREEN_WIDTH - 2
-	call Textbox
+	call TextBox
 	hlcoord 0, 12
 	lb bc, 4, SCREEN_WIDTH - 2
-	call Textbox
+	call TextBox
 	ld a, [wTempMonSpecies]
 	ld [wCurPartySpecies], a
-	ld [wTextDecimalByte], a
+	ld [wd265], a
 	ld hl, wTempMonDVs
 	predef GetUnownLetter
 	xor a
@@ -477,7 +487,7 @@ DisplayHOFMon:
 	ld [hli], a
 	ld [hl], "<DOT>"
 	hlcoord 3, 13
-	ld de, wTextDecimalByte
+	ld de, wd265
 	lb bc, PRINTNUM_LEADINGZEROS | 1, 3
 	call PrintNum
 	call GetBasePokemonName
@@ -515,8 +525,9 @@ DisplayHOFMon:
 	lb bc, PRINTNUM_LEADINGZEROS | 2, 5
 	call PrintNum
 	ret
+; 86810
 
-HOF_AnimatePlayerPic:
+HOF_AnimatePlayerPic: ; 86810
 	call ClearBGPalettes
 	ld hl, vTiles2 tile HALLOFFAME_COLON
 	ld de, FontExtra + 13 tiles ; "<COLON>"
@@ -528,17 +539,17 @@ HOF_AnimatePlayerPic:
 	call ByteFill
 	farcall GetPlayerBackpic
 	ld a, $31
-	ldh [hGraphicStartTile], a
+	ld [hGraphicStartTile], a
 	hlcoord 6, 6
 	lb bc, 6, 6
 	predef PlaceGraphic
 	ld a, $d0
-	ldh [hSCY], a
+	ld [hSCY], a
 	ld a, $90
-	ldh [hSCX], a
+	ld [hSCX], a
 	call WaitBGMap
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	ld [wCurPartySpecies], a
 	ld b, SCGB_PLAYER_OR_MON_FRONTPIC_PALS
 	call GetSGBLayout
@@ -552,25 +563,25 @@ HOF_AnimatePlayerPic:
 	call ByteFill
 	farcall HOF_LoadTrainerFrontpic
 	xor a
-	ldh [hGraphicStartTile], a
+	ld [hGraphicStartTile], a
 	hlcoord 12, 5
 	lb bc, 7, 7
 	predef PlaceGraphic
 	ld a, $c0
-	ldh [hSCX], a
+	ld [hSCX], a
 	call WaitBGMap
 	xor a
-	ldh [hBGMapMode], a
-	ldh [hSCY], a
+	ld [hBGMapMode], a
+	ld [hSCY], a
 	call HOF_SlideFrontpic
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	hlcoord 0, 2
 	lb bc, 8, 9
-	call Textbox
+	call TextBox
 	hlcoord 0, 12
 	lb bc, 4, 18
-	call Textbox
+	call TextBox
 	hlcoord 2, 4
 	ld de, wPlayerName
 	call PlaceString
@@ -599,6 +610,23 @@ HOF_AnimatePlayerPic:
 	call WaitBGMap
 	farcall ProfOaksPCRating
 	ret
+; 868ed
 
 .PlayTime:
 	db "PLAY TIME@"
+; 868f7
+
+HOF_PlayCry::
+	ld a, [wCurPartySpecies]
+	cp EGG
+	jr z, .fail
+	call IsAPokemon
+	jr c, .fail
+	ld a, [wCurPartySpecies]
+	call PlayMonCry2
+	ret
+	
+.fail
+	ld a, 1
+	ld [wCurPartySpecies], a
+	ret

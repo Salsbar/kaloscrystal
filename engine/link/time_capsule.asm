@@ -1,11 +1,11 @@
 ; These functions seem to be related to backwards compatibility
 
-ValidateOTTrademon:
-	ld a, [wCurOTTradePartyMon]
+ValidateOTTrademon: ; fb57e
+	ld a, [wd003]
 	ld hl, wOTPartyMon1Species
 	call GetPartyLocation
 	push hl
-	ld a, [wCurOTTradePartyMon]
+	ld a, [wd003]
 	inc a
 	ld c, a
 	ld b, 0
@@ -30,7 +30,7 @@ ValidateOTTrademon:
 	cp LINK_TIMECAPSULE
 	jr nz, .normal
 	ld hl, wOTPartySpecies
-	ld a, [wCurOTTradePartyMon]
+	ld a, [wd003]
 	ld c, a
 	ld b, 0
 	add hl, bc
@@ -38,10 +38,10 @@ ValidateOTTrademon:
 
 	; Magnemite and Magneton's types changed
 	; from Electric to Electric/Steel.
-	cp MAGNEMITE
-	jr z, .normal
-	cp MAGNETON
-	jr z, .normal
+	;cp MAGNEMITE
+	;jr z, .normal
+	;cp MAGNETON
+	;jr z, .normal
 
 	ld [wCurSpecies], a
 	call GetBaseData
@@ -63,13 +63,14 @@ ValidateOTTrademon:
 .abnormal
 	scf
 	ret
+; fb5dd
 
-CheckAnyOtherAliveMonsForTrade:
-	ld a, [wCurTradePartyMon]
+Functionfb5dd: ; fb5dd
+	ld a, [wd002]
 	ld d, a
 	ld a, [wPartyCount]
 	ld b, a
-	ld c, 0
+	ld c, $0
 .loop
 	ld a, c
 	cp d
@@ -87,7 +88,7 @@ CheckAnyOtherAliveMonsForTrade:
 	inc c
 	dec b
 	jr nz, .loop
-	ld a, [wCurOTTradePartyMon]
+	ld a, [wd003]
 	ld hl, wOTPartyMon1HP
 	call GetPartyLocation
 	ld a, [hli]
@@ -99,8 +100,9 @@ CheckAnyOtherAliveMonsForTrade:
 .done
 	and a
 	ret
+; fb60d
 
-PlaceTradePartnerNamesAndParty:
+PlaceTradePartnerNamesAndParty: ; fb60d
 	hlcoord 4, 0
 	ld de, wPlayerName
 	call PlaceString
@@ -116,19 +118,19 @@ PlaceTradePartnerNamesAndParty:
 	call .PlaceSpeciesNames
 	hlcoord 7, 9
 	ld de, wOTPartySpecies
-.PlaceSpeciesNames:
-	ld c, 0
+.PlaceSpeciesNames: ; fb634
+	ld c, $0
 .loop
 	ld a, [de]
 	cp -1
 	ret z
-	ld [wNamedObjectIndex], a
+	ld [wd265], a
 	push bc
 	push hl
 	push de
 	push hl
 	ld a, c
-	ldh [hProduct], a
+	ld [hProduct], a
 	call GetPokemonName
 	pop hl
 	call PlaceString
@@ -140,5 +142,6 @@ PlaceTradePartnerNamesAndParty:
 	pop bc
 	inc c
 	jr .loop
+; fb656
 
 INCLUDE "data/pokemon/gen1_base_special.asm"

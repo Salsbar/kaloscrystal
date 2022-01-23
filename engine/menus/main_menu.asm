@@ -1,38 +1,16 @@
-	; MainMenuItems indexes
-	const_def
-	const MAINMENU_NEW_GAME               ; 0
-	const MAINMENU_CONTINUE               ; 1
-	const MAINMENU_MOBILE_MYSTERY         ; 2
-	const MAINMENU_MOBILE                 ; 3
-	const MAINMENU_MOBILE_STUDIUM         ; 4
-	const MAINMENU_MYSTERY_MOBILE_STUDIUM ; 5
-	const MAINMENU_MYSTERY                ; 6
-	const MAINMENU_MYSTERY_STUDIUM        ; 7
-	const MAINMENU_STUDIUM                ; 8
+GFX_49c0c: ; 49c0c
+INCBIN "gfx/unknown/049c0c.2bpp"
+; 49cdc
 
-	; MainMenu.Strings and MainMenu.Jumptable indexes
-	const_def
-	const MAINMENUITEM_CONTINUE       ; 0
-	const MAINMENUITEM_NEW_GAME       ; 1
-	const MAINMENUITEM_OPTION         ; 2
-	const MAINMENUITEM_MYSTERY_GIFT   ; 3
-	const MAINMENUITEM_MOBILE         ; 4
-	const MAINMENUITEM_MOBILE_STUDIUM ; 5
-	const MAINMENUITEM_DEBUG_ROOM     ; 6
-
-MobileMenuGFX:
-INCBIN "gfx/mobile/mobile_menu.2bpp"
-
-MainMenu:
-.loop
+MainMenu: ; 49cdc
 	xor a
 	ld [wDisableTextAcceleration], a
-	call ClearTilemapEtc
+	call Function49ed0
 	ld b, SCGB_DIPLOMA
 	call GetSGBLayout
 	call SetPalettes
-	ld hl, wGameTimerPaused
-	res GAME_TIMER_PAUSED_F, [hl]
+	ld hl, wGameTimerPause
+	res GAMETIMERPAUSE_TIMER_PAUSED_F, [hl]
 	call MainMenu_GetWhichMenu
 	ld [wWhichIndexSet], a
 	call MainMenu_PrintCurrentTimeAndDay
@@ -41,178 +19,157 @@ MainMenu:
 	call MainMenuJoypadLoop
 	call CloseWindow
 	jr c, .quit
-	call ClearTilemap
+	call ClearTileMap
 	ld a, [wMenuSelection]
 	ld hl, .Jumptable
 	rst JumpTable
-	jr .loop
+	jr MainMenu
 
 .quit
 	ret
+; 49d14
 
-.MenuHeader:
+.MenuHeader: ; 49d14
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 0, 0, 16, 7
 	dw .MenuData
 	db 1 ; default option
+; 49d1c
 
-.MenuData:
+.MenuData: ; 49d1c
 	db STATICMENU_CURSOR ; flags
 	db 0 ; items
 	dw MainMenuItems
 	dw PlaceMenuStrings
 	dw .Strings
+; 49d20
 
-.Strings:
-; entries correspond to MAINMENUITEM_* constants
+.Strings: ; 49d24
 	db "CONTINUE@"
 	db "NEW GAME@"
 	db "OPTION@"
 	db "MYSTERY GIFT@"
 	db "MOBILE@"
 	db "MOBILE STUDIUM@"
-if DEF(_DEBUG)
-	db "DEBUG ROOM@"
-endc
 
-.Jumptable:
-; entries correspond to MAINMENUITEM_* constants
+.Jumptable: ; 0x49d60
 	dw MainMenu_Continue
 	dw MainMenu_NewGame
-	dw MainMenu_Option
+	dw MainMenu_Options
 	dw MainMenu_MysteryGift
 	dw MainMenu_Mobile
 	dw MainMenu_MobileStudium
-if DEF(_DEBUG)
-	dw MainMenu_DebugRoom
-endc
+; 0x49d6c
+
+CONTINUE       EQU 0
+NEW_GAME       EQU 1
+OPTION         EQU 2
+MYSTERY_GIFT   EQU 3
+MOBILE         EQU 4
+MOBILE_STUDIUM EQU 5
 
 MainMenuItems:
-; entries correspond to MAINMENU_* constants
 
-	; MAINMENU_NEW_GAME
+NewGameMenu: ; 0x49d6c
 	db 2
-	db MAINMENUITEM_NEW_GAME
-	db MAINMENUITEM_OPTION
+	db NEW_GAME
+	db OPTION
 	db -1
 
-	; MAINMENU_CONTINUE
-	db 3 + DEF(_DEBUG)
-	db MAINMENUITEM_CONTINUE
-	db MAINMENUITEM_NEW_GAME
-	db MAINMENUITEM_OPTION
-if DEF(_DEBUG)
-	db MAINMENUITEM_DEBUG_ROOM
-endc
+ContinueMenu: ; 0x49d70
+	db 3
+	db CONTINUE
+	db NEW_GAME
+	db OPTION
 	db -1
 
-	; MAINMENU_MOBILE_MYSTERY
-	db 5 + DEF(_DEBUG)
-	db MAINMENUITEM_CONTINUE
-	db MAINMENUITEM_NEW_GAME
-	db MAINMENUITEM_OPTION
-	db MAINMENUITEM_MYSTERY_GIFT
-	db MAINMENUITEM_MOBILE
-if DEF(_DEBUG)
-	db MAINMENUITEM_DEBUG_ROOM
-endc
+MobileMysteryMenu: ; 0x49d75
+	db 5
+	db CONTINUE
+	db NEW_GAME
+	db OPTION
+	db MYSTERY_GIFT
+	db MOBILE
 	db -1
 
-	; MAINMENU_MOBILE
-	db 4 + DEF(_DEBUG)
-	db MAINMENUITEM_CONTINUE
-	db MAINMENUITEM_NEW_GAME
-	db MAINMENUITEM_OPTION
-	db MAINMENUITEM_MOBILE
-if DEF(_DEBUG)
-	db MAINMENUITEM_DEBUG_ROOM
-endc
+MobileMenu: ; 0x49d7c
+	db 4
+	db CONTINUE
+	db NEW_GAME
+	db OPTION
+	db MOBILE
 	db -1
 
-	; MAINMENU_MOBILE_STUDIUM
-	db 5 + DEF(_DEBUG)
-	db MAINMENUITEM_CONTINUE
-	db MAINMENUITEM_NEW_GAME
-	db MAINMENUITEM_OPTION
-	db MAINMENUITEM_MOBILE
-	db MAINMENUITEM_MOBILE_STUDIUM
-if DEF(_DEBUG)
-	db MAINMENUITEM_DEBUG_ROOM
-endc
+MobileStudiumMenu: ; 0x49d82
+	db 5
+	db CONTINUE
+	db NEW_GAME
+	db OPTION
+	db MOBILE
+	db MOBILE_STUDIUM
 	db -1
 
-	; MAINMENU_MYSTERY_MOBILE_STUDIUM
-	db 6 + DEF(_DEBUG)
-	db MAINMENUITEM_CONTINUE
-	db MAINMENUITEM_NEW_GAME
-	db MAINMENUITEM_OPTION
-	db MAINMENUITEM_MYSTERY_GIFT
-	db MAINMENUITEM_MOBILE
-	db MAINMENUITEM_MOBILE_STUDIUM
-if DEF(_DEBUG)
-	db MAINMENUITEM_DEBUG_ROOM
-endc
+MysteryMobileStudiumMenu: ; 0x49d89
+	db 6
+	db CONTINUE
+	db NEW_GAME
+	db OPTION
+	db MYSTERY_GIFT
+	db MOBILE
+	db MOBILE_STUDIUM
 	db -1
 
-	; MAINMENU_MYSTERY
-	db 4 + DEF(_DEBUG)
-	db MAINMENUITEM_CONTINUE
-	db MAINMENUITEM_NEW_GAME
-	db MAINMENUITEM_OPTION
-	db MAINMENUITEM_MYSTERY_GIFT
-if DEF(_DEBUG)
-	db MAINMENUITEM_DEBUG_ROOM
-endc
+MysteryMenu: ; 0x49d91
+	db 4
+	db CONTINUE
+	db NEW_GAME
+	db OPTION
+	db MYSTERY_GIFT
 	db -1
 
-	; MAINMENU_MYSTERY_STUDIUM
-	db 5 + DEF(_DEBUG)
-	db MAINMENUITEM_CONTINUE
-	db MAINMENUITEM_NEW_GAME
-	db MAINMENUITEM_OPTION
-	db MAINMENUITEM_MYSTERY_GIFT
-	db MAINMENUITEM_MOBILE_STUDIUM
-if DEF(_DEBUG)
-	db MAINMENUITEM_DEBUG_ROOM
-endc
+MysteryStudiumMenu: ; 0x49d97
+	db 5
+	db CONTINUE
+	db NEW_GAME
+	db OPTION
+	db MYSTERY_GIFT
+	db MOBILE_STUDIUM
 	db -1
 
-	; MAINMENU_STUDIUM
-	db 4 + DEF(_DEBUG)
-	db MAINMENUITEM_CONTINUE
-	db MAINMENUITEM_NEW_GAME
-	db MAINMENUITEM_OPTION
-	db MAINMENUITEM_MOBILE_STUDIUM
-if DEF(_DEBUG)
-	db MAINMENUITEM_DEBUG_ROOM
-endc
+StudiumMenu: ; 0x49d9e
+	db 4
+	db CONTINUE
+	db NEW_GAME
+	db OPTION
+	db MOBILE_STUDIUM
 	db -1
 
-MainMenu_GetWhichMenu:
+
+MainMenu_GetWhichMenu: ; 49da4
 	nop
 	nop
 	nop
 	ld a, [wSaveFileExists]
 	and a
 	jr nz, .next
-	ld a, MAINMENU_NEW_GAME
+	ld a, $0 ; New Game
 	ret
 
 .next
-	ldh a, [hCGB]
-	cp TRUE
-	ld a, MAINMENU_CONTINUE
+	ld a, [hCGB]
+	cp $1
+	ld a, $1
 	ret nz
 	ld a, BANK(sNumDailyMysteryGiftPartnerIDs)
-	call OpenSRAM
+	call GetSRAMBank
 	ld a, [sNumDailyMysteryGiftPartnerIDs]
-	cp -1 ; locked?
+	cp -1
 	call CloseSRAM
 	jr nz, .mystery_gift
 	; This check makes no difference.
 	ld a, [wStatusFlags]
 	bit STATUSFLAGS_MAIN_MENU_MOBILE_CHOICES_F, a
-	ld a, MAINMENU_CONTINUE
+	ld a, $1 ; Continue
 	jr z, .ok
 	jr .ok
 
@@ -220,7 +177,7 @@ MainMenu_GetWhichMenu:
 	jr .ok2
 
 .ok2
-	ld a, MAINMENU_CONTINUE
+	ld a, $1 ; Continue
 	ret
 
 .mystery_gift
@@ -234,10 +191,11 @@ MainMenu_GetWhichMenu:
 	jr .ok4
 
 .ok4
-	ld a, MAINMENU_MYSTERY
+	ld a, $6 ; Mystery Gift
 	ret
+; 49de4
 
-MainMenuJoypadLoop:
+MainMenuJoypadLoop: ; 49de4
 	call SetUpMenu
 .loop
 	call MainMenu_PrintCurrentTimeAndDay
@@ -260,13 +218,14 @@ MainMenuJoypadLoop:
 .b_button
 	scf
 	ret
+; 49e09
 
-MainMenu_PrintCurrentTimeAndDay:
+MainMenu_PrintCurrentTimeAndDay: ; 49e09
 	ld a, [wSaveFileExists]
 	and a
 	ret z
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call .PlaceBox
 	ld hl, wOptions
 	ld a, [hl]
@@ -276,24 +235,28 @@ MainMenu_PrintCurrentTimeAndDay:
 	pop af
 	ld [wOptions], a
 	ld a, $1
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	ret
+; 49e27
 
-.PlaceBox:
+
+.PlaceBox: ; 49e27
 	call CheckRTCStatus
-	and %10000000 ; Day count exceeded 16383
+	and $80
 	jr nz, .TimeFail
 	hlcoord 0, 14
 	ld b, 2
 	ld c, 18
-	call Textbox
+	call TextBox
 	ret
 
 .TimeFail:
-	call SpeechTextbox
+	call SpeechTextBox
 	ret
+; 49e3d
 
-.PlaceTime:
+
+.PlaceTime: ; 49e3d
 	ld a, [wSaveFileExists]
 	and a
 	ret z
@@ -304,9 +267,9 @@ MainMenu_PrintCurrentTimeAndDay:
 	call GetWeekday
 	ld b, a
 	decoord 1, 15
-	call .PrintDayOfWeek
+	call .PlaceCurrentDay
 	decoord 4, 16
-	ldh a, [hHours]
+	ld a, [hHours]
 	ld c, a
 	farcall PrintHour
 	ld [hl], ":"
@@ -316,23 +279,29 @@ MainMenu_PrintCurrentTimeAndDay:
 	call PrintNum
 	ret
 
-.minString: ; unreferenced
+.min
+; unused
 	db "min.@"
+; 49e75
 
-.PrintTimeNotSet:
+.PrintTimeNotSet: ; 49e75
 	hlcoord 1, 14
-	ld de, .TimeNotSetString
+	ld de, .TimeNotSet
 	call PlaceString
 	ret
+; 49e7f
 
-.TimeNotSetString:
+.TimeNotSet: ; 49e7f
 	db "TIME NOT SET@"
+; 49e8c
 
-.MainMenuTimeUnknownText: ; unreferenced
-	text_far _MainMenuTimeUnknownText
-	text_end
+.UnusedText: ; 49e8c
+	; Clock time unknown
+	text_jump UnknownText_0x1c5182
+	db "@"
+; 49e91
 
-.PrintDayOfWeek:
+.PlaceCurrentDay: ; 49e91
 	push de
 	ld hl, .Days
 	ld a, b
@@ -346,6 +315,7 @@ MainMenu_PrintCurrentTimeAndDay:
 	ld de, .Day
 	call PlaceString
 	ret
+; 49ea8
 
 .Days:
 	db "SUN@"
@@ -357,28 +327,35 @@ MainMenu_PrintCurrentTimeAndDay:
 	db "SATUR@"
 .Day:
 	db "DAY@"
+; 49ed0
 
-ClearTilemapEtc:
+Function49ed0: ; 49ed0
 	xor a
-	ldh [hMapAnims], a
-	call ClearTilemap
+	ld [hMapAnims], a
+	call ClearTileMap
 	call LoadFontsExtra
 	call LoadStandardFont
 	call ClearWindowData
 	ret
+; 49ee0
 
-MainMenu_NewGame:
+
+MainMenu_NewGame: ; 49ee0
 	farcall NewGame
 	ret
+; 49ee7
 
-MainMenu_Option:
-	farcall Option
+MainMenu_Options: ; 49ee7
+	farcall OptionsMenu
 	ret
+; 49eee
 
-MainMenu_Continue:
+MainMenu_Continue: ; 49eee
 	farcall Continue
 	ret
+; 49ef5
 
-MainMenu_MysteryGift:
+MainMenu_MysteryGift: ; 49ef5
 	farcall MysteryGift
 	ret
+; 49efc

@@ -1,4 +1,4 @@
-	object_const_def
+	const_def 2 ; object constants
 	const ROUTE45_POKEFAN_M1
 	const ROUTE45_POKEFAN_M2
 	const ROUTE45_POKEFAN_M3
@@ -14,15 +14,15 @@
 	const ROUTE45_YOUNGSTER
 
 Route45_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 0 ; callbacks
 
 TrainerBlackbeltKenji:
 	trainer BLACKBELT_T, KENJI3, EVENT_BEAT_BLACKBELT_KENJI, BlackbeltKenji3SeenText, BlackbeltKenji3BeatenText, 0, .Script
 
 .Script:
-	loadvar VAR_CALLERID, PHONE_BLACKBELT_KENJI
+	writecode VAR_CALLERID, PHONE_BLACKBELT_KENJI
 	endifjustbattled
 	opentext
 	checkcellnum PHONE_BLACKBELT_KENJI
@@ -34,7 +34,7 @@ TrainerBlackbeltKenji:
 	waitbutton
 	setevent EVENT_KENJI_ASKED_FOR_PHONE_NUMBER
 	scall Route45AskNumber1M
-	sjump .AskForNumber
+	jump .AskForNumber
 
 .AskedAlready:
 	scall Route45AskNumber2M
@@ -42,12 +42,12 @@ TrainerBlackbeltKenji:
 	askforphonenumber PHONE_BLACKBELT_KENJI
 	ifequal PHONE_CONTACTS_FULL, Route45PhoneFullM
 	ifequal PHONE_CONTACT_REFUSED, Route45NumberDeclinedM
-	gettrainername STRING_BUFFER_3, BLACKBELT_T, KENJI3
+	trainertotext BLACKBELT_T, KENJI3, MEM_BUFFER_0
 	scall Route45RegisteredNumberM
-	sjump Route45NumberAcceptedM
+	jump Route45NumberAcceptedM
 
 .Registered:
-	readvar VAR_KENJI_BREAK
+	checkcode VAR_KENJI_BREAK
 	ifnotequal 1, Route45NumberAcceptedM
 	checktime MORN
 	iftrue .Morning
@@ -60,7 +60,7 @@ TrainerBlackbeltKenji:
 	iffalse .NoRoom
 	clearevent EVENT_KENJI_ON_BREAK
 	special SampleKenjiBreakCountdown
-	sjump Route45NumberAcceptedM
+	jump Route45NumberAcceptedM
 
 .Morning:
 	writetext BlackbeltKenjiMorningText
@@ -75,51 +75,51 @@ TrainerBlackbeltKenji:
 	end
 
 .NoRoom:
-	sjump Route45PackFullM
+	jump Route45PackFullM
 
 Route45AskNumber1M:
-	jumpstd AskNumber1MScript
+	jumpstd asknumber1m
 	end
 
 Route45AskNumber2M:
-	jumpstd AskNumber2MScript
+	jumpstd asknumber2m
 	end
 
 Route45RegisteredNumberM:
-	jumpstd RegisteredNumberMScript
+	jumpstd registerednumberm
 	end
 
 Route45NumberAcceptedM:
-	jumpstd NumberAcceptedMScript
+	jumpstd numberacceptedm
 	end
 
 Route45NumberDeclinedM:
-	jumpstd NumberDeclinedMScript
+	jumpstd numberdeclinedm
 	end
 
 Route45PhoneFullM:
-	jumpstd PhoneFullMScript
+	jumpstd phonefullm
 	end
 
 Route45RematchM:
-	jumpstd RematchMScript
+	jumpstd rematchm
 	end
 
 Route45GiftM:
-	jumpstd GiftMScript
+	jumpstd giftm
 	end
 
 Route45PackFullM:
-	jumpstd PackFullMScript
+	jumpstd packfullm
 	end
 
 HikerParryHasIron:
 	setevent EVENT_PARRY_IRON
-	jumpstd PackFullMScript
+	jumpstd packfullm
 	end
 
 Route45RematchGiftM:
-	jumpstd RematchGiftMScript
+	jumpstd rematchgiftm
 	end
 
 TrainerHikerErik:
@@ -148,20 +148,20 @@ TrainerHikerParry:
 	trainer HIKER, PARRY3, EVENT_BEAT_HIKER_PARRY, HikerParry3SeenText, HikerParry3BeatenText, 0, .Script
 
 .Script:
-	loadvar VAR_CALLERID, PHONE_HIKER_PARRY
+	writecode VAR_CALLERID, PHONE_HIKER_PARRY
 	endifjustbattled
 	opentext
-	checkflag ENGINE_PARRY_READY_FOR_REMATCH
+	checkflag ENGINE_PARRY
 	iftrue .WantsBattle
 	checkcellnum PHONE_HIKER_PARRY
 	iftrue Route45NumberAcceptedM
 	checkevent EVENT_PARRY_ASKED_FOR_PHONE_NUMBER
 	iftrue .AskedAlready
 	writetext HikerParryAfterBattleText
-	promptbutton
+	buttonsound
 	setevent EVENT_PARRY_ASKED_FOR_PHONE_NUMBER
 	scall Route45AskNumber1M
-	sjump .AskForNumber
+	jump .AskForNumber
 
 .AskedAlready:
 	scall Route45AskNumber2M
@@ -169,14 +169,14 @@ TrainerHikerParry:
 	askforphonenumber PHONE_HIKER_PARRY
 	ifequal PHONE_CONTACTS_FULL, Route45PhoneFullM
 	ifequal PHONE_CONTACT_REFUSED, Route45NumberDeclinedM
-	gettrainername STRING_BUFFER_3, HIKER, PARRY1
+	trainertotext HIKER, PARRY1, MEM_BUFFER_0
 	scall Route45RegisteredNumberM
-	sjump Route45NumberAcceptedM
+	jump Route45NumberAcceptedM
 
 .WantsBattle:
 	scall Route45RematchM
 	winlosstext HikerParry3BeatenText, 0
-	readmem wParryFightCount
+	copybytetovar wParryFightCount
 	ifequal 2, .Fight2
 	ifequal 1, .Fight1
 	ifequal 0, .LoadFight0
@@ -190,23 +190,23 @@ TrainerHikerParry:
 	loadtrainer HIKER, PARRY3
 	startbattle
 	reloadmapafterbattle
-	loadmem wParryFightCount, 1
-	clearflag ENGINE_PARRY_READY_FOR_REMATCH
+	loadvar wParryFightCount, 1
+	clearflag ENGINE_PARRY
 	end
 
 .LoadFight1:
 	loadtrainer HIKER, PARRY1
 	startbattle
 	reloadmapafterbattle
-	loadmem wParryFightCount, 2
-	clearflag ENGINE_PARRY_READY_FOR_REMATCH
+	loadvar wParryFightCount, 2
+	clearflag ENGINE_PARRY
 	end
 
 .LoadFight2:
 	loadtrainer HIKER, PARRY2
 	startbattle
 	reloadmapafterbattle
-	clearflag ENGINE_PARRY_READY_FOR_REMATCH
+	clearflag ENGINE_PARRY
 	checkevent EVENT_PARRY_IRON
 	iftrue .HasIron
 	checkevent EVENT_GOT_IRON_FROM_PARRY
@@ -215,7 +215,7 @@ TrainerHikerParry:
 	verbosegiveitem IRON
 	iffalse HikerParryHasIron
 	setevent EVENT_GOT_IRON_FROM_PARRY
-	sjump Route45NumberAcceptedM
+	jump Route45NumberAcceptedM
 
 .GotIron:
 	end
@@ -228,7 +228,7 @@ TrainerHikerParry:
 	iffalse HikerParryHasIron
 	clearevent EVENT_PARRY_IRON
 	setevent EVENT_GOT_IRON_FROM_PARRY
-	sjump Route45NumberAcceptedM
+	jump Route45NumberAcceptedM
 
 TrainerHikerTimothy:
 	trainer HIKER, TIMOTHY, EVENT_BEAT_HIKER_TIMOTHY, HikerTimothySeenText, HikerTimothyBeatenText, 0, .Script
@@ -285,7 +285,7 @@ TrainerCamperQuentin:
 	closetext
 	end
 
-Route45DummyScript: ; unreferenced
+Route45DummyScript:
 	writetext Route45DummyText
 	waitbutton
 	closetext
@@ -307,7 +307,7 @@ Route45Elixer:
 	itemball ELIXER
 
 Route45MaxPotion:
-	itemball MAX_POTION
+	itemball SHELL_STONE
 
 Route45HiddenPpUp:
 	hiddenitem PP_UP, EVENT_ROUTE_45_HIDDEN_PP_UP
@@ -532,16 +532,16 @@ Route45SignText:
 Route45_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 1 ; warp events
 	warp_event  2,  5, DARK_CAVE_BLACKTHORN_ENTRANCE, 1
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 2 ; bg events
 	bg_event 10,  4, BGEVENT_READ, Route45Sign
 	bg_event 13, 80, BGEVENT_ITEM, Route45HiddenPpUp
 
-	def_object_events
+	db 13 ; object events
 	object_event 10, 16, SPRITE_POKEFAN_M, SPRITEMOVEDATA_STANDING_RIGHT, 0, 0, -1, -1, PAL_NPC_BROWN, OBJECTTYPE_TRAINER, 1, TrainerHikerErik, -1
 	object_event 15, 65, SPRITE_POKEFAN_M, SPRITEMOVEDATA_STANDING_RIGHT, 0, 0, -1, -1, PAL_NPC_BROWN, OBJECTTYPE_TRAINER, 2, TrainerHikerMichael, -1
 	object_event  5, 28, SPRITE_POKEFAN_M, SPRITEMOVEDATA_STANDING_UP, 0, 0, -1, -1, PAL_NPC_BROWN, OBJECTTYPE_TRAINER, 2, TrainerHikerParry, -1

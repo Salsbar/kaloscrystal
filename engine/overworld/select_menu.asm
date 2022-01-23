@@ -1,21 +1,27 @@
-SelectMenu::
+SelectMenu:: ; 13327
+
 	call CheckRegisteredItem
 	jr c, .NotRegistered
 	jp UseRegisteredItem
 
 .NotRegistered:
 	call OpenText
-	ld b, BANK(MayRegisterItemText)
-	ld hl, MayRegisterItemText
+	ld b, BANK(ItemMayBeRegisteredText)
+	ld hl, ItemMayBeRegisteredText
 	call MapTextbox
 	call WaitButton
 	jp CloseText
+; 13340
 
-MayRegisterItemText:
-	text_far _MayRegisterItemText
-	text_end
 
-CheckRegisteredItem:
+ItemMayBeRegisteredText: ; 13340
+	text_jump UnknownText_0x1c1cf3
+	db "@"
+; 13345
+
+
+CheckRegisteredItem: ; 13345
+
 	ld a, [wWhichRegisteredItem]
 	and a
 	jr z, .NoRegisteredItem
@@ -80,8 +86,10 @@ CheckRegisteredItem:
 	ld [wRegisteredItem], a
 	scf
 	ret
+; 133a6
 
-.CheckRegisteredNo:
+
+.CheckRegisteredNo: ; 133a6
 	ld a, [wWhichRegisteredItem]
 	and REGISTERED_NUMBER
 	dec a
@@ -94,8 +102,10 @@ CheckRegisteredItem:
 .NotEnoughItems:
 	scf
 	ret
+; 133b6
 
-.IsSameItem:
+
+.IsSameItem: ; 133b6
 	ld a, [wRegisteredItem]
 	cp [hl]
 	jr nz, .NotSameItem
@@ -106,10 +116,13 @@ CheckRegisteredItem:
 .NotSameItem:
 	scf
 	ret
+; 133c3
 
-UseRegisteredItem:
+
+UseRegisteredItem: ; 133c3
+
 	farcall CheckItemMenu
-	ld a, [wItemAttributeValue]
+	ld a, [wItemAttributeParamBuffer]
 	ld hl, .SwitchTo
 	rst JumpTable
 	ret
@@ -123,22 +136,25 @@ UseRegisteredItem:
 	dw .Current
 	dw .Party
 	dw .Overworld
+; 133df
 
-.NoFunction:
+.NoFunction: ; 133df
 	call OpenText
 	call CantUseItem
 	call CloseText
 	and a
 	ret
+; 133ea
 
-.Current:
+.Current: ; 133ea
 	call OpenText
 	call DoItemEffect
 	call CloseText
 	and a
 	ret
+; 133f5
 
-.Party:
+.Party: ; 133f5
 	call RefreshScreen
 	call FadeToMenu
 	call DoItemEffect
@@ -146,8 +162,9 @@ UseRegisteredItem:
 	call CloseText
 	and a
 	ret
+; 13406
 
-.Overworld:
+.Overworld: ; 13406
 	call RefreshScreen
 	ld a, 1
 	ld [wUsingItemWithSelect], a
@@ -159,10 +176,11 @@ UseRegisteredItem:
 	jr nz, ._cantuse
 	scf
 	ld a, HMENURETURN_SCRIPT
-	ldh [hMenuReturn], a
+	ld [hMenuReturn], a
 	ret
+; 13422
 
-.CantUse:
+.CantUse: ; 13422
 	call RefreshScreen
 
 ._cantuse
@@ -170,3 +188,4 @@ UseRegisteredItem:
 	call CloseText
 	and a
 	ret
+; 1342d

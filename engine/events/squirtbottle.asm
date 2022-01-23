@@ -1,4 +1,4 @@
-_Squirtbottle:
+_Squirtbottle: ; 50730
 	ld hl, .SquirtbottleScript
 	call QueueScript
 	ld a, $1
@@ -9,15 +9,16 @@ _Squirtbottle:
 	reloadmappart
 	special UpdateTimePals
 	callasm .CheckCanUseSquirtbottle
-	iffalse .SquirtbottleNothingScript
-	farsjump WateredWeirdTreeScript
+	iffalse .NothingHappenedScript
+	farjump WateredWeirdTreeScript
 
-.SquirtbottleNothingScript:
-	jumptext .SquirtbottleNothingText
+.NothingHappenedScript:
+	jumptext .NothingHappenedText
 
-.SquirtbottleNothingText:
-	text_far _SquirtbottleNothingText
-	text_end
+.NothingHappenedText:
+	; sprinkled water. But nothing happened…
+	text_jump UnknownText_0x1c0b3b
+	db "@"
 
 .CheckCanUseSquirtbottle:
 	ld a, [wMapGroup]
@@ -43,3 +44,4 @@ _Squirtbottle:
 	xor a
 	ld [wScriptVar], a
 	ret
+; 50779

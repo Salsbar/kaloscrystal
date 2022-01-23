@@ -1,4 +1,4 @@
-	object_const_def
+	const_def 2 ; object constants
 	const COPYCATSHOUSE2F_COPYCAT1 ; if player is male
 	const COPYCATSHOUSE2F_DODRIO
 	const COPYCATSHOUSE2F_FAIRYDOLL ; lost item
@@ -7,9 +7,9 @@
 	const COPYCATSHOUSE2F_COPYCAT2 ; if player is female
 
 CopycatsHouse2F_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 1 ; callbacks
 	callback MAPCALLBACK_OBJECTS, .Callback
 
 .Callback:
@@ -17,12 +17,12 @@ CopycatsHouse2F_MapScripts:
 	iftrue .Female
 	disappear COPYCATSHOUSE2F_COPYCAT2
 	appear COPYCATSHOUSE2F_COPYCAT1
-	sjump .Done
+	jump .Done
 .Female:
 	disappear COPYCATSHOUSE2F_COPYCAT1
 	appear COPYCATSHOUSE2F_COPYCAT2
 .Done:
-	endcallback
+	return
 
 Copycat:
 	faceplayer
@@ -37,7 +37,7 @@ Copycat:
 	applymovement COPYCATSHOUSE2F_COPYCAT1, CopycatSpinAroundMovementData
 	faceplayer
 	variablesprite SPRITE_COPYCAT, SPRITE_CHRIS
-	sjump .Default_Merge_1
+	jump .Default_Merge_1
 
 .Default_Female_1:
 	applymovement COPYCATSHOUSE2F_COPYCAT2, CopycatSpinAroundMovementData
@@ -51,7 +51,7 @@ Copycat:
 	checkflag ENGINE_PLAYER_IS_FEMALE
 	iftrue .Default_Female_2a
 	writetext CopycatText_Male_1
-	sjump .Default_Merge_2a
+	jump .Default_Merge_2a
 
 .Default_Female_2a:
 	writetext CopycatText_Female_1
@@ -61,7 +61,7 @@ Copycat:
 	checkflag ENGINE_PLAYER_IS_FEMALE
 	iftrue .Default_Female_3a
 	applymovement COPYCATSHOUSE2F_COPYCAT1, CopycatSpinAroundMovementData
-	sjump .Default_Merge_3a
+	jump .Default_Merge_3a
 
 .Default_Female_3a:
 	applymovement COPYCATSHOUSE2F_COPYCAT2, CopycatSpinAroundMovementData
@@ -80,7 +80,7 @@ Copycat:
 	checkflag ENGINE_PLAYER_IS_FEMALE
 	iftrue .Default_Female_2b
 	writetext CopycatText_Male_2
-	sjump .Default_Merge_2b
+	jump .Default_Merge_2b
 
 .Default_Female_2b:
 	writetext CopycatText_Female_2
@@ -90,7 +90,7 @@ Copycat:
 	checkflag ENGINE_PLAYER_IS_FEMALE
 	iftrue .Default_Female_3b
 	applymovement COPYCATSHOUSE2F_COPYCAT1, CopycatSpinAroundMovementData
-	sjump .Default_Merge_3b
+	jump .Default_Merge_3b
 
 .Default_Female_3b:
 	applymovement COPYCATSHOUSE2F_COPYCAT2, CopycatSpinAroundMovementData
@@ -108,17 +108,17 @@ Copycat:
 .ReturnLostItem:
 	opentext
 	writetext CopycatText_GiveDoll
-	promptbutton
+	buttonsound
 	takeitem LOST_ITEM
 	setevent EVENT_RETURNED_LOST_ITEM_TO_COPYCAT
 	clearevent EVENT_COPYCATS_HOUSE_2F_DOLL
-	sjump .GivePass
+	jump .GivePass
 
 .TryGivePassAgain:
 	opentext
 .GivePass:
 	writetext CopycatText_GivePass
-	promptbutton
+	buttonsound
 	verbosegiveitem PASS
 	iffalse .Cancel
 	setevent EVENT_GOT_PASS_FROM_COPYCAT
@@ -133,7 +133,7 @@ Copycat:
 	applymovement COPYCATSHOUSE2F_COPYCAT1, CopycatSpinAroundMovementData
 	faceplayer
 	variablesprite SPRITE_COPYCAT, SPRITE_CHRIS
-	sjump .GotPass_Merge_1
+	jump .GotPass_Merge_1
 
 .GotPass_Female_1:
 	applymovement COPYCATSHOUSE2F_COPYCAT2, CopycatSpinAroundMovementData
@@ -145,7 +145,7 @@ Copycat:
 	checkflag ENGINE_PLAYER_IS_FEMALE
 	iftrue .GotPass_Female_2
 	writetext CopycatText_Male_3
-	sjump .GotPass_Merge_2
+	jump .GotPass_Merge_2
 
 .GotPass_Female_2:
 	writetext CopycatText_Female_3
@@ -155,7 +155,7 @@ Copycat:
 	checkflag ENGINE_PLAYER_IS_FEMALE
 	iftrue .GotPass_Female_3
 	applymovement COPYCATSHOUSE2F_COPYCAT1, CopycatSpinAroundMovementData
-	sjump .GotPass_Merge_3
+	jump .GotPass_Merge_3
 
 .GotPass_Female_3:
 	applymovement COPYCATSHOUSE2F_COPYCAT2, CopycatSpinAroundMovementData
@@ -173,8 +173,8 @@ Copycat:
 CopycatsDodrio:
 	opentext
 	writetext CopycatsDodrioText1
-	cry DODRIO
-	promptbutton
+	cry MANDIBUZZ
+	buttonsound
 	writetext CopycatsDodrioText2
 	waitbutton
 	closetext
@@ -184,7 +184,7 @@ CopycatsHouse2FDoll:
 	jumptext CopycatsHouse2FDollText
 
 CopycatsHouse2FBookshelf:
-	jumpstd PictureBookshelfScript
+	jumpstd picturebookshelf
 
 CopycatSpinAroundMovementData:
 	turn_head DOWN
@@ -250,7 +250,7 @@ CopycatText_Worried:
 
 CopycatText_GiveDoll:
 	text "COPYCAT: Yay!"
-	line "That's my CLEFAIRY"
+	line "That's my AUDINO"
 	cont "# DOLL!"
 
 	para "See the tear where"
@@ -340,7 +340,7 @@ CopycatText_Female_3:
 	done
 
 CopycatsDodrioText1:
-	text "DODRIO: Gii giii!"
+	text "MANDIBUZZ: Craa!"
 	done
 
 CopycatsDodrioText2:
@@ -361,16 +361,16 @@ CopycatsHouse2FDollText:
 CopycatsHouse2F_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 1 ; warp events
 	warp_event  3,  0, COPYCATS_HOUSE_1F, 3
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 2 ; bg events
 	bg_event  0,  1, BGEVENT_READ, CopycatsHouse2FBookshelf
 	bg_event  1,  1, BGEVENT_READ, CopycatsHouse2FBookshelf
 
-	def_object_events
+	db 6 ; object events
 	object_event  4,  3, SPRITE_COPYCAT, SPRITEMOVEDATA_STANDING_LEFT, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, Copycat, EVENT_COPYCAT_1
 	object_event  6,  4, SPRITE_MOLTRES, SPRITEMOVEDATA_POKEMON, 0, 0, -1, -1, PAL_NPC_BROWN, OBJECTTYPE_SCRIPT, 0, CopycatsDodrio, -1
 	object_event  6,  1, SPRITE_FAIRY, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, CopycatsHouse2FDoll, EVENT_COPYCATS_HOUSE_2F_DOLL

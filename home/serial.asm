@@ -1,4 +1,4 @@
-Serial::
+Serial:: ; 6ef
 ; The serial interrupt.
 
 	push af
@@ -6,7 +6,7 @@ Serial::
 	push de
 	push hl
 
-	ldh a, [hMobileReceive]
+	ld a, [hMobileReceive]
 	and a
 	jr nz, .mobile
 
@@ -14,24 +14,24 @@ Serial::
 	bit 0, a
 	jr nz, .printer
 
-	ldh a, [hSerialConnectionStatus]
+	ld a, [hSerialConnectionStatus]
 	inc a ; is it equal to CONNECTION_NOT_ESTABLISHED?
 	jr z, .establish_connection
 
-	ldh a, [rSB]
-	ldh [hSerialReceive], a
+	ld a, [rSB]
+	ld [hSerialReceive], a
 
-	ldh a, [hSerialSend]
-	ldh [rSB], a
+	ld a, [hSerialSend]
+	ld [rSB], a
 
-	ldh a, [hSerialConnectionStatus]
+	ld a, [hSerialConnectionStatus]
 	cp USING_INTERNAL_CLOCK
 	jr z, .player2
 
-	ld a, (0 << rSC_ON) | (0 << rSC_CLOCK)
-	ldh [rSC], a
-	ld a, (1 << rSC_ON) | (0 << rSC_CLOCK)
-	ldh [rSC], a
+	ld a, 0 << rSC_ON
+	ld [rSC], a
+	ld a, 1 << rSC_ON
+	ld [rSC], a
 	jr .player2
 
 .mobile
@@ -43,43 +43,43 @@ Serial::
 	jr .end
 
 .establish_connection
-	ldh a, [rSB]
+	ld a, [rSB]
 	cp USING_EXTERNAL_CLOCK
 	jr z, .player1
 	cp USING_INTERNAL_CLOCK
 	jr nz, .player2
 
 .player1
-	ldh [hSerialReceive], a
-	ldh [hSerialConnectionStatus], a
+	ld [hSerialReceive], a
+	ld [hSerialConnectionStatus], a
 	cp USING_INTERNAL_CLOCK
 	jr z, ._player2
 
 	xor a
-	ldh [rSB], a
-
+	ld [rSB], a
 	ld a, 3
-	ldh [rDIV], a
-.delay_loop
-	ldh a, [rDIV]
-	bit 7, a
-	jr nz, .delay_loop
+	ld [rDIV], a
 
-	ld a, (0 << rSC_ON) | (0 << rSC_CLOCK)
-	ldh [rSC], a
-	ld a, (1 << rSC_ON) | (0 << rSC_CLOCK)
-	ldh [rSC], a
+.wait_bit_7
+	ld a, [rDIV]
+	bit 7, a
+	jr nz, .wait_bit_7
+
+	ld a, 0 << rSC_ON
+	ld [rSC], a
+	ld a, 1 << rSC_ON
+	ld [rSC], a
 	jr .player2
 
 ._player2
 	xor a
-	ldh [rSB], a
+	ld [rSB], a
 
 .player2
 	ld a, TRUE
-	ldh [hSerialReceivedNewData], a
+	ld [hSerialReceivedNewData], a
 	ld a, SERIAL_NO_DATA_BYTE
-	ldh [hSerialSend], a
+	ld [hSerialSend], a
 
 .end
 	pop hl
@@ -87,26 +87,23 @@ Serial::
 	pop bc
 	pop af
 	reti
+; 75f
 
-Serial_ExchangeBytes::
-; send bc bytes from hl, receive bc bytes to de
-	ld a, TRUE
-	ldh [hSerialIgnoringInitialData], a
-
+Serial_ExchangeBytes:: ; 75f
+	ld a, $1
+	ld [hSerialIgnoringInitialData], a
 .loop
 	ld a, [hl]
-	ldh [hSerialSend], a
+	ld [hSerialSend], a
 	call Serial_ExchangeByte
 	push bc
 	ld b, a
 	inc hl
-
-	ld a, 48
+	ld a, $30
 .wait
 	dec a
 	jr nz, .wait
-
-	ldh a, [hSerialIgnoringInitialData]
+	ld a, [hSerialIgnoringInitialData]
 	and a
 	ld a, b
 	pop bc
@@ -115,7 +112,7 @@ Serial_ExchangeBytes::
 	cp SERIAL_PREAMBLE_BYTE
 	jr nz, .loop
 	xor a
-	ldh [hSerialIgnoringInitialData], a
+	ld [hSerialIgnoringInitialData], a
 	jr .loop
 
 .load
@@ -126,29 +123,30 @@ Serial_ExchangeBytes::
 	or c
 	jr nz, .loop
 	ret
+; 78a
 
-Serial_ExchangeByte::
-.timeout_loop
+Serial_ExchangeByte:: ; 78a
+.loop
 	xor a
-	ldh [hSerialReceivedNewData], a
-	ldh a, [hSerialConnectionStatus]
+	ld [hSerialReceivedNewData], a
+	ld a, [hSerialConnectionStatus]
 	cp USING_INTERNAL_CLOCK
 	jr nz, .not_player_2
-	ld a, (0 << rSC_ON) | (1 << rSC_CLOCK)
-	ldh [rSC], a
-	ld a, (1 << rSC_ON) | (1 << rSC_CLOCK)
-	ldh [rSC], a
+	ld a, (0 << rSC_ON) | 1
+	ld [rSC], a
+	ld a, (1 << rSC_ON) | 1
+	ld [rSC], a
 .not_player_2
-.loop
-	ldh a, [hSerialReceivedNewData]
+.loop2
+	ld a, [hSerialReceivedNewData]
 	and a
-	jr nz, .await_new_data
-	ldh a, [hSerialConnectionStatus]
+	jr nz, .reset_ffca
+	ld a, [hSerialConnectionStatus]
 	cp USING_EXTERNAL_CLOCK
-	jr nz, .not_player_1_or_timed_out
-	call CheckLinkTimeoutFramesNonzero
-	jr z, .not_player_1_or_timed_out
-	call .ShortDelay
+	jr nz, .not_player_1_or_wLinkTimeoutFrames_zero
+	call CheckwLinkTimeoutFramesNonzero
+	jr z, .not_player_1_or_wLinkTimeoutFrames_zero
+	call .delay_15_cycles
 	push hl
 	ld hl, wLinkTimeoutFrames + 1
 	inc [hl]
@@ -158,52 +156,51 @@ Serial_ExchangeByte::
 
 .no_rollover_up
 	pop hl
-	call CheckLinkTimeoutFramesNonzero
-	jr nz, .loop
+	call CheckwLinkTimeoutFramesNonzero
+	jr nz, .loop2
 	jp SerialDisconnected
 
-.not_player_1_or_timed_out
-	ldh a, [rIE]
+.not_player_1_or_wLinkTimeoutFrames_zero
+	ld a, [rIE]
 	and (1 << SERIAL) | (1 << TIMER) | (1 << LCD_STAT) | (1 << VBLANK)
 	cp 1 << SERIAL
-	jr nz, .loop
-	ld a, [wLinkByteTimeout]
+	jr nz, .loop2
+	ld a, [wcf5d]
 	dec a
-	ld [wLinkByteTimeout], a
-	jr nz, .loop
-	ld a, [wLinkByteTimeout + 1]
+	ld [wcf5d], a
+	jr nz, .loop2
+	ld a, [wcf5d + 1]
 	dec a
-	ld [wLinkByteTimeout + 1], a
-	jr nz, .loop
-	ldh a, [hSerialConnectionStatus]
+	ld [wcf5d + 1], a
+	jr nz, .loop2
+	ld a, [hSerialConnectionStatus]
 	cp USING_EXTERNAL_CLOCK
-	jr z, .await_new_data
+	jr z, .reset_ffca
 
 	ld a, 255
-.long_delay_loop
+.delay_255_cycles
 	dec a
-	jr nz, .long_delay_loop
+	jr nz, .delay_255_cycles
 
-.await_new_data
+.reset_ffca
 	xor a
-	ldh [hSerialReceivedNewData], a
-	ldh a, [rIE]
+	ld [hSerialReceivedNewData], a
+	ld a, [rIE]
 	and (1 << SERIAL) | (1 << TIMER) | (1 << LCD_STAT) | (1 << VBLANK)
 	sub 1 << SERIAL
-	jr nz, .non_serial_interrupts_enabled
+	jr nz, .rIE_not_equal_8
 
-	; a == 0
-	assert LOW(SERIAL_LINK_BYTE_TIMEOUT) == 0
-	ld [wLinkByteTimeout], a
-	ld a, HIGH(SERIAL_LINK_BYTE_TIMEOUT)
-	ld [wLinkByteTimeout + 1], a
+	; LOW($5000)
+	ld [wcf5d], a
+	ld a, HIGH($5000)
+	ld [wcf5d + 1], a
 
-.non_serial_interrupts_enabled
-	ldh a, [hSerialReceive]
+.rIE_not_equal_8
+	ld a, [hSerialReceive]
 	cp SERIAL_NO_DATA_BYTE
 	ret nz
-	call CheckLinkTimeoutFramesNonzero
-	jr z, .timed_out
+	call CheckwLinkTimeoutFramesNonzero
+	jr z, .linkTimeoutFrames_zero
 	push hl
 	ld hl, wLinkTimeoutFrames + 1
 	ld a, [hl]
@@ -215,87 +212,94 @@ Serial_ExchangeByte::
 
 .no_rollover
 	pop hl
-	call CheckLinkTimeoutFramesNonzero
+	call CheckwLinkTimeoutFramesNonzero
 	jr z, SerialDisconnected
 
-.timed_out
-	ldh a, [rIE]
+.linkTimeoutFrames_zero
+	ld a, [rIE]
 	and (1 << SERIAL) | (1 << TIMER) | (1 << LCD_STAT) | (1 << VBLANK)
 	cp 1 << SERIAL
 	ld a, SERIAL_NO_DATA_BYTE
 	ret z
 	ld a, [hl]
-	ldh [hSerialSend], a
+	ld [hSerialSend], a
 	call DelayFrame
-	jp .timeout_loop
+	jp .loop
 
-.ShortDelay:
+.delay_15_cycles
 	ld a, 15
-.short_delay_loop
+.delay_cycles
 	dec a
-	jr nz, .short_delay_loop
+	jr nz, .delay_cycles
 	ret
+; 82b
 
-CheckLinkTimeoutFramesNonzero::
+CheckwLinkTimeoutFramesNonzero:: ; 82b
 	push hl
 	ld hl, wLinkTimeoutFrames
 	ld a, [hli]
 	or [hl]
 	pop hl
 	ret
+; 833
 
-; This sets wLinkTimeoutFrames to $ffff, since
-; a is always 0 when it is called.
-SerialDisconnected::
-	dec a
+SerialDisconnected:: ; 833
+	dec a ; a is always 0 when this is called
 	ld [wLinkTimeoutFrames], a
 	ld [wLinkTimeoutFrames + 1], a
 	ret
+; 83b
 
-; This is used to check that both players entered the same Cable Club room.
-Serial_ExchangeSyncBytes::
-	ld hl, wLinkPlayerSyncBuffer
-	ld de, wLinkReceivedSyncBuffer
+; This is used to exchange the button press and selected menu item on the link menu.
+; The data is sent thrice and read twice to increase reliability.
+Serial_ExchangeLinkMenuSelection:: ; 83b
+	ld hl, wPlayerLinkAction
+	ld de, wOtherPlayerLinkMode
 	ld c, 2
 	ld a, TRUE
-	ldh [hSerialIgnoringInitialData], a
-.exchange
+	ld [hSerialIgnoringInitialData], a
+.asm_847
 	call DelayFrame
 	ld a, [hl]
-	ldh [hSerialSend], a
+	ld [hSerialSend], a
 	call Serial_ExchangeByte
 	ld b, a
 	inc hl
-	ldh a, [hSerialIgnoringInitialData]
+	ld a, [hSerialIgnoringInitialData]
 	and a
 	ld a, FALSE
-	ldh [hSerialIgnoringInitialData], a
-	jr nz, .exchange
+	ld [hSerialIgnoringInitialData], a
+	jr nz, .asm_847
 	ld a, b
 	ld [de], a
 	inc de
 	dec c
-	jr nz, .exchange
+	jr nz, .asm_847
 	ret
+; 862
 
-Serial_PrintWaitingTextAndSyncAndExchangeNybble::
-	call LoadTilemapToTempTilemap
+Serial_PrintWaitingTextAndSyncAndExchangeNybble:: ; 862
+	call LoadTileMapToTempTileMap
 	callfar PlaceWaitingText
 	call WaitLinkTransfer
-	jp SafeLoadTempTilemapToTilemap
+	jp Call_LoadTempTileMapToTileMap
+; 871
 
-Serial_SyncAndExchangeNybble:: ; unreferenced
-	call LoadTilemapToTempTilemap
+Serial_SyncAndExchangeNybble:: ; 871
+	call LoadTileMapToTempTileMap
 	callfar PlaceWaitingText
-	jp WaitLinkTransfer ; pointless
+	jp WaitLinkTransfer
+; 87d
 
-WaitLinkTransfer::
+; One "giant" leap for machinekind
+
+WaitLinkTransfer:: ; 87d
 	ld a, $ff
 	ld [wOtherPlayerLinkAction], a
 .loop
 	call LinkTransfer
 	call DelayFrame
-	call CheckLinkTimeoutFramesNonzero
+	call CheckwLinkTimeoutFramesNonzero
 	jr z, .check
 	push hl
 	ld hl, wLinkTimeoutFrames + 1
@@ -334,8 +338,9 @@ WaitLinkTransfer::
 	ld a, [wOtherPlayerLinkAction]
 	ld [wOtherPlayerLinkMode], a
 	ret
+; 8c1
 
-LinkTransfer::
+LinkTransfer:: ; 8c1
 	push bc
 	ld b, SERIAL_TIMECAPSULE
 	ld a, [wLinkMode]
@@ -352,57 +357,60 @@ LinkTransfer::
 	call .Receive
 	ld a, [wPlayerLinkAction]
 	add b
-	ldh [hSerialSend], a
-	ldh a, [hSerialConnectionStatus]
+	ld [hSerialSend], a
+	ld a, [hSerialConnectionStatus]
 	cp USING_INTERNAL_CLOCK
 	jr nz, .player_1
-	ld a, (0 << rSC_ON) | (1 << rSC_CLOCK)
-	ldh [rSC], a
-	ld a, (1 << rSC_ON) | (1 << rSC_CLOCK)
-	ldh [rSC], a
+	ld a, (0 << rSC_ON) | 1
+	ld [rSC], a
+	ld a, (1 << rSC_ON) | 1
+	ld [rSC], a
 
 .player_1
 	call .Receive
 	pop bc
 	ret
+; 8f3
 
-.Receive:
-	ldh a, [hSerialReceive]
+.Receive: ; 8f3
+	ld a, [hSerialReceive]
 	ld [wOtherPlayerLinkMode], a
 	and $f0
 	cp b
 	ret nz
 	xor a
-	ldh [hSerialReceive], a
+	ld [hSerialReceive], a
 	ld a, [wOtherPlayerLinkMode]
 	and $f
 	ld [wOtherPlayerLinkAction], a
 	ret
+; 908
 
-LinkDataReceived::
+LinkDataReceived:: ; 908
 ; Let the other system know that the data has been received.
 	xor a
-	ldh [hSerialSend], a
-	ldh a, [hSerialConnectionStatus]
+	ld [hSerialSend], a
+	ld a, [hSerialConnectionStatus]
 	cp USING_INTERNAL_CLOCK
 	ret nz
-	ld a, (0 << rSC_ON) | (1 << rSC_CLOCK)
-	ldh [rSC], a
-	ld a, (1 << rSC_ON) | (1 << rSC_CLOCK)
-	ldh [rSC], a
+	ld a, (0 << rSC_ON) | 1
+	ld [rSC], a
+	ld a, (1 << rSC_ON) | 1
+	ld [rSC], a
 	ret
+; 919
 
-SetBitsForTimeCapsuleRequestIfNotLinked:: ; unreferenced
-; Similar to SetBitsForTimeCapsuleRequest (see engine/link/link.asm).
+Unreferenced_Function919:: ; 919
 	ld a, [wLinkMode]
 	and a
 	ret nz
 	ld a, USING_INTERNAL_CLOCK
-	ldh [rSB], a
+	ld [rSB], a
 	xor a
-	ldh [hSerialReceive], a
-	ld a, (0 << rSC_ON) | (0 << rSC_CLOCK)
-	ldh [rSC], a
-	ld a, (1 << rSC_ON) | (0 << rSC_CLOCK)
-	ldh [rSC], a
+	ld [hSerialReceive], a
+	ld a, 0 << rSC_ON
+	ld [rSC], a
+	ld a, 1 << rSC_ON
+	ld [rSC], a
 	ret
+; 92e

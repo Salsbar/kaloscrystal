@@ -1,4 +1,5 @@
-	object_const_def
+	const_def 2 ; object constants
+	const ROUTE35_VIRIZION
 	const ROUTE35_YOUNGSTER1
 	const ROUTE35_YOUNGSTER2
 	const ROUTE35_LASS1
@@ -12,9 +13,35 @@
 	const ROUTE35_POKE_BALL
 
 Route35_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 1 ; callbacks
+	callback MAPCALLBACK_OBJECTS, .Virizion
+
+.Virizion:
+	checkevent EVENT_FOUGHT_VIRIZION
+	iftrue .NoAppear
+	appear ROUTE35_VIRIZION
+	return
+
+.NoAppear:
+	disappear ROUTE35_VIRIZION
+	return
+
+Virizion:
+	faceplayer
+	opentext
+	writetext VirizionText
+	cry VIRIZION
+	pause 15
+	closetext
+	setevent EVENT_FOUGHT_VIRIZION
+	writecode VAR_BATTLETYPE, BATTLETYPE_FORCEITEM
+	loadwildmon VIRIZION, 25
+	startbattle
+	disappear ROUTE35_VIRIZION
+	reloadmapafterbattle
+	end
 
 TrainerBirdKeeperBryan:
 	trainer BIRD_KEEPER, BRYAN, EVENT_BEAT_BIRD_KEEPER_BRYAN, BirdKeeperBryanSeenText, BirdKeeperBryanBeatenText, 0, .Script
@@ -31,7 +58,7 @@ TrainerJugglerIrwin:
 	trainer JUGGLER, IRWIN1, EVENT_BEAT_JUGGLER_IRWIN, JugglerIrwin1SeenText, JugglerIrwin1BeatenText, 0, .Script
 
 .Script:
-	loadvar VAR_CALLERID, PHONE_JUGGLER_IRWIN
+	writecode VAR_CALLERID, PHONE_JUGGLER_IRWIN
 	endifjustbattled
 	opentext
 	checkcellnum PHONE_JUGGLER_IRWIN
@@ -39,10 +66,10 @@ TrainerJugglerIrwin:
 	checkevent EVENT_IRWIN_ASKED_FOR_PHONE_NUMBER
 	iftrue .AskedAlready
 	writetext JugglerIrwinAfterBattleText
-	promptbutton
+	buttonsound
 	setevent EVENT_IRWIN_ASKED_FOR_PHONE_NUMBER
 	scall Route35AskNumber1M
-	sjump .AskForNumber
+	jump .AskForNumber
 
 .AskedAlready:
 	scall Route35AskNumber2M
@@ -50,36 +77,36 @@ TrainerJugglerIrwin:
 	askforphonenumber PHONE_JUGGLER_IRWIN
 	ifequal PHONE_CONTACTS_FULL, Route35PhoneFullM
 	ifequal PHONE_CONTACT_REFUSED, Route35NumberDeclinedM
-	gettrainername STRING_BUFFER_3, JUGGLER, IRWIN1
+	trainertotext JUGGLER, IRWIN1, MEM_BUFFER_0
 	scall Route35RegisteredNumberM
-	sjump Route35NumberAcceptedM
+	jump Route35NumberAcceptedM
 
 Route35AskNumber1M:
-	jumpstd AskNumber1MScript
+	jumpstd asknumber1m
 	end
 
 Route35AskNumber2M:
-	jumpstd AskNumber2MScript
+	jumpstd asknumber2m
 	end
 
 Route35RegisteredNumberM:
-	jumpstd RegisteredNumberMScript
+	jumpstd registerednumberm
 	end
 
 Route35NumberAcceptedM:
-	jumpstd NumberAcceptedMScript
+	jumpstd numberacceptedm
 	end
 
 Route35NumberDeclinedM:
-	jumpstd NumberDeclinedMScript
+	jumpstd numberdeclinedm
 	end
 
 Route35PhoneFullM:
-	jumpstd PhoneFullMScript
+	jumpstd phonefullm
 	end
 
 Route35RematchM:
-	jumpstd RematchMScript
+	jumpstd rematchm
 	end
 
 TrainerCamperIvan:
@@ -130,10 +157,10 @@ TrainerBugCatcherArnie:
 	trainer BUG_CATCHER, ARNIE1, EVENT_BEAT_BUG_CATCHER_ARNIE, BugCatcherArnieSeenText, BugCatcherArnieBeatenText, 0, .Script
 
 .Script:
-	loadvar VAR_CALLERID, PHONE_BUG_CATCHER_ARNIE
+	writecode VAR_CALLERID, PHONE_BUG_CATCHER_ARNIE
 	endifjustbattled
 	opentext
-	checkflag ENGINE_ARNIE_READY_FOR_REMATCH
+	checkflag ENGINE_ARNIE
 	iftrue .WantsBattle
 	checkflag ENGINE_YANMA_SWARM
 	iftrue .YanmaSwarming
@@ -142,10 +169,10 @@ TrainerBugCatcherArnie:
 	checkevent EVENT_ARNIE_ASKED_FOR_PHONE_NUMBER
 	iftrue .AskedAlready
 	writetext BugCatcherArnieAfterBattleText
-	promptbutton
+	buttonsound
 	setevent EVENT_ARNIE_ASKED_FOR_PHONE_NUMBER
 	scall Route35AskNumber1M
-	sjump .AskForNumber
+	jump .AskForNumber
 
 .AskedAlready:
 	scall Route35AskNumber2M
@@ -153,14 +180,14 @@ TrainerBugCatcherArnie:
 	askforphonenumber PHONE_BUG_CATCHER_ARNIE
 	ifequal PHONE_CONTACTS_FULL, Route35PhoneFullM
 	ifequal PHONE_CONTACT_REFUSED, Route35NumberDeclinedM
-	gettrainername STRING_BUFFER_3, BUG_CATCHER, ARNIE1
+	trainertotext BUG_CATCHER, ARNIE1, MEM_BUFFER_0
 	scall Route35RegisteredNumberM
-	sjump Route35NumberAcceptedM
+	jump Route35NumberAcceptedM
 
 .WantsBattle:
 	scall Route35RematchM
 	winlosstext BugCatcherArnieBeatenText, 0
-	readmem wArnieFightCount
+	copybytetovar wArnieFightCount
 	ifequal 4, .Fight4
 	ifequal 3, .Fight3
 	ifequal 2, .Fight2
@@ -182,39 +209,39 @@ TrainerBugCatcherArnie:
 	loadtrainer BUG_CATCHER, ARNIE1
 	startbattle
 	reloadmapafterbattle
-	loadmem wArnieFightCount, 1
-	clearflag ENGINE_ARNIE_READY_FOR_REMATCH
+	loadvar wArnieFightCount, 1
+	clearflag ENGINE_ARNIE
 	end
 
 .LoadFight1:
 	loadtrainer BUG_CATCHER, ARNIE2
 	startbattle
 	reloadmapafterbattle
-	loadmem wArnieFightCount, 2
-	clearflag ENGINE_ARNIE_READY_FOR_REMATCH
+	loadvar wArnieFightCount, 2
+	clearflag ENGINE_ARNIE
 	end
 
 .LoadFight2:
 	loadtrainer BUG_CATCHER, ARNIE3
 	startbattle
 	reloadmapafterbattle
-	loadmem wArnieFightCount, 3
-	clearflag ENGINE_ARNIE_READY_FOR_REMATCH
+	loadvar wArnieFightCount, 3
+	clearflag ENGINE_ARNIE
 	end
 
 .LoadFight3:
 	loadtrainer BUG_CATCHER, ARNIE4
 	startbattle
 	reloadmapafterbattle
-	loadmem wArnieFightCount, 4
-	clearflag ENGINE_ARNIE_READY_FOR_REMATCH
+	loadvar wArnieFightCount, 4
+	clearflag ENGINE_ARNIE
 	end
 
 .LoadFight4:
 	loadtrainer BUG_CATCHER, ARNIE5
 	startbattle
 	reloadmapafterbattle
-	clearflag ENGINE_ARNIE_READY_FOR_REMATCH
+	clearflag ENGINE_ARNIE
 	end
 
 .YanmaSwarming:
@@ -274,6 +301,10 @@ Route35TMRollout:
 Route35FruitTree:
 	fruittree FRUITTREE_ROUTE_35
 
+VirizionText:
+	text "Viiii!"
+	done
+	
 CamperIvanSeenText:
 	text "I've been getting"
 	line "#MON data off"
@@ -399,7 +430,7 @@ BugCatcherArnieBeatenText:
 	done
 
 BugCatcherArnieAfterBattleText:
-	text "My VENONAT won me"
+	text "My KARRABLAST won"
 	line "the Bug-Catching"
 
 	para "Contest at the"
@@ -408,7 +439,7 @@ BugCatcherArnieAfterBattleText:
 
 BugCatcherArnieYanmaText:
 	text "Wow… Look at all"
-	line "those YANMA!"
+	line "those DURANT!"
 
 	para "I'm so blown away,"
 	line "I can't move."
@@ -463,18 +494,19 @@ Route35SignText:
 Route35_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 3 ; warp events
 	warp_event  9, 33, ROUTE_35_GOLDENROD_GATE, 1
 	warp_event 10, 33, ROUTE_35_GOLDENROD_GATE, 2
 	warp_event  3,  5, ROUTE_35_NATIONAL_PARK_GATE, 3
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 2 ; bg events
 	bg_event  1,  7, BGEVENT_READ, Route35Sign
 	bg_event 11, 31, BGEVENT_READ, Route35Sign
 
-	def_object_events
+	db 12 ; object events
+	object_event  0, 11, SPRITE_MONSTER, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_GREEN, OBJECTTYPE_SCRIPT, 0, Virizion, EVENT_ROUTE_35_VIRIZION
 	object_event  4, 19, SPRITE_YOUNGSTER, SPRITEMOVEDATA_SPINRANDOM_FAST, 0, 0, -1, -1, PAL_NPC_GREEN, OBJECTTYPE_TRAINER, 2, TrainerCamperIvan, -1
 	object_event  8, 20, SPRITE_YOUNGSTER, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_GREEN, OBJECTTYPE_TRAINER, 3, TrainerCamperElliot, -1
 	object_event  7, 20, SPRITE_LASS, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_GREEN, OBJECTTYPE_TRAINER, 3, TrainerPicnickerBrooke, -1

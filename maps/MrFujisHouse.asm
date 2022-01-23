@@ -1,4 +1,4 @@
-	object_const_def
+	const_def 2 ; object constants
 	const MRFUJISHOUSE_SUPER_NERD
 	const MRFUJISHOUSE_LASS
 	const MRFUJISHOUSE_PSYDUCK
@@ -6,9 +6,9 @@
 	const MRFUJISHOUSE_PIDGEY
 
 MrFujisHouse_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 0 ; callbacks
 
 MrFujisHouseSuperNerdScript:
 	jumptextfaceplayer MrFujisHouseSuperNerdText
@@ -19,7 +19,7 @@ MrFujisHouseLassScript:
 MrFujisPsyduck:
 	opentext
 	writetext MrFujisPsyduckText
-	cry PSYDUCK
+	cry DUCKLETT
 	waitbutton
 	closetext
 	end
@@ -27,7 +27,7 @@ MrFujisPsyduck:
 MrFujisNidorino:
 	opentext
 	writetext MrFujisNidorinoText
-	cry NIDORINO
+	cry HERDIER
 	waitbutton
 	closetext
 	end
@@ -35,13 +35,13 @@ MrFujisNidorino:
 MrFujisPidgey:
 	opentext
 	writetext MrFujisPidgeyText
-	cry PIDGEY
+	cry PIDOVE
 	waitbutton
 	closetext
 	end
 
 MrFujisHouseBookshelf:
-	jumpstd DifficultBookshelfScript
+	jumpstd difficultbookshelf
 
 MrFujisHouseSuperNerdText:
 	text "MR.FUJI does live"
@@ -66,31 +66,31 @@ MrFujisHouseLassText:
 	done
 
 MrFujisPsyduckText:
-	text "PSYDUCK: Gu-guwa?"
+	text "DUCKLETT: Gu-guwa?"
 	done
 
 MrFujisNidorinoText:
-	text "NIDORINO: Gyun!"
+	text "HERDIER: Gyun!"
 	done
 
 MrFujisPidgeyText:
-	text "PIDGEY: Pijji!"
+	text "PIDOVE: Pijji!"
 	done
 
 MrFujisHouse_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 2 ; warp events
 	warp_event  2,  7, LAVENDER_TOWN, 2
 	warp_event  3,  7, LAVENDER_TOWN, 2
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 2 ; bg events
 	bg_event  0,  1, BGEVENT_READ, MrFujisHouseBookshelf
 	bg_event  1,  1, BGEVENT_READ, MrFujisHouseBookshelf
 
-	def_object_events
+	db 5 ; object events
 	object_event  4,  1, SPRITE_SUPER_NERD, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_GREEN, OBJECTTYPE_SCRIPT, 0, MrFujisHouseSuperNerdScript, -1
 	object_event  3,  4, SPRITE_LASS, SPRITEMOVEDATA_WANDER, 1, 1, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, MrFujisHouseLassScript, -1
 	object_event  7,  4, SPRITE_RHYDON, SPRITEMOVEDATA_POKEMON, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, MrFujisPsyduck, -1

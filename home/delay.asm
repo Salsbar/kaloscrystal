@@ -1,4 +1,4 @@
-DelayFrame::
+DelayFrame:: ; 45a
 ; Wait for one frame
 	ld a, 1
 	ld [wVBlankOccurred], a
@@ -10,10 +10,13 @@ DelayFrame::
 	and a
 	jr nz, .halt
 	ret
+; 468
 
-DelayFrames::
+
+DelayFrames:: ; 468
 ; Wait c frames
 	call DelayFrame
 	dec c
 	jr nz, DelayFrames
 	ret
+; 46f

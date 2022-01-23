@@ -2,23 +2,23 @@
 ; Each move is given an identifier for what usedmovetext to use (0-4).
 ; Made redundant in English localization, where all are just "[mon]¯used [move]!"
 
-MoveGrammar:
+MoveGrammar: ; 105e7a
 ; 0: originally "[mon]の¯[move]¯つかった!" ("[mon]¯used¯[move]!")
 	db SWORDS_DANCE
 	db GROWTH
 	db STRENGTH
 	db HARDEN
 	db MINIMIZE
-	db SMOKESCREEN
+	;db SMOKESCREEN
 	db WITHDRAW
 	db DEFENSE_CURL
-	db EGG_BOMB
+	;db EGG_BOMB
 	db SMOG
-	db BONE_CLUB
+	;db BONE_CLUB
 	db FLASH
-	db SPLASH
+	;db SPLASH
 	db ACID_ARMOR
-	db BONEMERANG
+	;db BONEMERANG
 	db REST
 	db SHARPEN
 	db SUBSTITUTE
@@ -49,8 +49,8 @@ MoveGrammar:
 	db AGILITY
 	db MIMIC
 	db DOUBLE_TEAM
-	db BARRAGE
-	db TRANSFORM
+	;db BARRAGE
+	;db TRANSFORM
 	db STRUGGLE
 	db SCARY_FACE
 	db 0 ; end set
@@ -82,12 +82,12 @@ MoveGrammar:
 	db SCREECH
 	db METRONOME
 	db LICK
-	db CLAMP
-	db CONSTRICT
+	;db CLAMP
+	;db CONSTRICT
 	db POISON_GAS
 	db BUBBLE
 	db SLASH
-	db SPIDER_WEB
+	;db SPIDER_WEB
 	db NIGHTMARE
 	db CURSE
 	db FORESIGHT
@@ -99,3 +99,4 @@ MoveGrammar:
 ; 4: originally "[mon]の¯[move]!" ("[mon]'s¯[move]!")
 ; Any move not listed above uses this grammar.
 	db -1 ; end
+; 105ed0

@@ -5,12 +5,10 @@
 	const ROOF_AZALEA    ; 2
 	const ROOF_OLIVINE   ; 3
 	const ROOF_GOLDENROD ; 4
-NUM_ROOFS EQU const_value
 
-MapGroupRoofs:
-; entries correspond to MAPGROUP_* constants
+MapGroupRoofs: ; 1c021i
+; entries correspond to map groups
 ; values are indexes for Roofs (see below)
-	table_width 1, MapGroupRoofs
 	db -1             ;  0
 	db ROOF_OLIVINE   ;  1 (Olivine)
 	db ROOF_AZALEA    ;  2 (Mahogany)
@@ -38,14 +36,13 @@ MapGroupRoofs:
 	db ROOF_NEW_BARK  ; 24 (New Bark)
 	db -1             ; 25
 	db ROOF_NEW_BARK  ; 26 (Cherrygrove)
-	assert_table_length NUM_MAP_GROUPS + 1
+; 1c03c
 
-Roofs:
+Roofs: ; 1c03c
 ; entries correspond to ROOF_* constants
-	table_width ROOF_LENGTH * LEN_2BPP_TILE, Roofs
-INCBIN "gfx/tilesets/roofs/new_bark.2bpp"
-INCBIN "gfx/tilesets/roofs/violet.2bpp"
-INCBIN "gfx/tilesets/roofs/azalea.2bpp"
-INCBIN "gfx/tilesets/roofs/olivine.2bpp"
-INCBIN "gfx/tilesets/roofs/goldenrod.2bpp"
-	assert_table_length NUM_ROOFS
+INCBIN "gfx/tilesets/roofs/0.2bpp"
+INCBIN "gfx/tilesets/roofs/1.2bpp"
+INCBIN "gfx/tilesets/roofs/2.2bpp"
+INCBIN "gfx/tilesets/roofs/3.2bpp"
+INCBIN "gfx/tilesets/roofs/4.2bpp"
+; 1c30c

@@ -1,6 +1,6 @@
 ; See also data/battle/held_heal_status.asm
 
-StatusHealingActions:
+StatusHealingActions: ; f071
 	;  item,         party menu action text, status
 	db ANTIDOTE,     PARTYMENUTEXT_HEAL_PSN, 1 << PSN
 	db BURN_HEAL,    PARTYMENUTEXT_HEAL_BRN, 1 << BRN
@@ -17,3 +17,4 @@ StatusHealingActions:
 	db MINT_BERRY,   PARTYMENUTEXT_HEAL_SLP, SLP
 	db MIRACLEBERRY, PARTYMENUTEXT_HEAL_ALL, %11111111
 	db -1, 0, 0 ; end
+; f09e

@@ -1,117 +1,120 @@
-Music_LookKimonoGirl:
-	channel_count 3
-	channel 1, Music_LookKimonoGirl_Ch1
-	channel 2, Music_LookKimonoGirl_Ch2
-	channel 3, Music_LookKimonoGirl_Ch3
+Music_LookKimonoGirl: ; f79b8
+	musicheader 3, 1, Music_LookKimonoGirl_Ch1
+	musicheader 1, 2, Music_LookKimonoGirl_Ch2
+	musicheader 1, 3, Music_LookKimonoGirl_Ch3
+; f79c1
 
-	db $3 ; unused, leftover from a channel 4
+	db $3
 
-Music_LookKimonoGirl_Ch1:
+Music_LookKimonoGirl_Ch1: ; f79c2
 	tempo 160
-	volume 7, 7
-	stereo_panning FALSE, TRUE
-	duty_cycle 1
-	note_type 6, 8, 7
-	pitch_offset 1
-	sound_call Music_LookKimonoGirl_Ch2.sub2
-	pitch_offset 0
-.mainloop:
-	note_type 12, 11, 2
-	sound_call .sub1
-	sound_call .sub1
-	sound_call .sub2
-	sound_call .sub2
-	sound_call .sub1
-	sound_call .sub1
-	sound_call .sub2
-	volume_envelope 11, 4
+	volume $77
+	stereopanning $f
+	dutycycle $1
+	notetype $6, $87
+	tone $0001
+	callchannel Music_LookKimonoGirl_branch_f7aa8
+	tone 0
+Music_LookKimonoGirl_branch_f79d7: ; f79d7
+	notetype $c, $b2
+	callchannel Music_LookKimonoGirl_branch_f7a13
+	callchannel Music_LookKimonoGirl_branch_f7a13
+	callchannel Music_LookKimonoGirl_branch_f7a34
+	callchannel Music_LookKimonoGirl_branch_f7a34
+	callchannel Music_LookKimonoGirl_branch_f7a13
+	callchannel Music_LookKimonoGirl_branch_f7a13
+	callchannel Music_LookKimonoGirl_branch_f7a34
+	intensity $b4
 	octave 3
 	note E_, 1
-	volume_envelope 5, 4
+	intensity $54
 	octave 4
 	note E_, 1
-	volume_envelope 11, 4
+	intensity $b4
 	octave 3
 	note D_, 1
-	volume_envelope 5, 4
+	intensity $54
 	octave 4
 	note D_, 1
-	volume_envelope 11, 4
+	intensity $b4
 	octave 2
 	note B_, 1
-	volume_envelope 5, 4
+	intensity $54
 	octave 3
 	note B_, 1
-	volume_envelope 11, 4
+	intensity $b4
 	octave 2
 	note A_, 1
-	volume_envelope 5, 4
+	intensity $54
 	octave 3
 	note A_, 1
-	sound_loop 0, .mainloop
+	loopchannel 0, Music_LookKimonoGirl_branch_f79d7
+; f7a13
 
-.sub1:
-	volume_envelope 11, 4
+Music_LookKimonoGirl_branch_f7a13: ; f7a13
+	intensity $b4
 	octave 2
 	note F_, 1
-	volume_envelope 7, 4
+	intensity $74
 	octave 3
 	note F_, 1
-	volume_envelope 11, 4
+	intensity $b4
 	octave 2
 	note A_, 1
-	volume_envelope 7, 4
+	intensity $74
 	octave 3
 	note A_, 1
-	volume_envelope 11, 4
+	intensity $b4
 	octave 2
 	note B_, 1
-	volume_envelope 7, 4
+	intensity $74
 	octave 3
 	note B_, 1
-	volume_envelope 11, 4
+	intensity $b4
 	octave 3
 	note D_, 1
-	volume_envelope 7, 4
+	intensity $74
 	octave 4
 	note D_, 1
-	sound_ret
+	endchannel
+; f7a34
 
-.sub2:
-	volume_envelope 11, 4
+Music_LookKimonoGirl_branch_f7a34: ; f7a34
+	intensity $b4
 	octave 2
 	note E_, 1
-	volume_envelope 7, 4
+	intensity $74
 	octave 3
 	note E_, 1
-	volume_envelope 11, 4
+	intensity $b4
 	octave 2
 	note A_, 1
-	volume_envelope 7, 4
+	intensity $74
 	octave 3
 	note A_, 1
-	volume_envelope 11, 4
+	intensity $b4
 	octave 2
 	note B_, 1
-	volume_envelope 7, 4
+	intensity $74
 	octave 3
 	note B_, 1
-	volume_envelope 11, 4
+	intensity $b4
 	octave 3
 	note D_, 1
-	volume_envelope 7, 4
+	intensity $74
 	octave 4
 	note D_, 1
-	sound_ret
+	endchannel
+; f7a55
 
-Music_LookKimonoGirl_Ch2:
-	duty_cycle 0
-	note_type 6, 10, 7
-	stereo_panning TRUE, FALSE
-	sound_call .sub2
-.mainloop:
-	duty_cycle 3
-	note_type 12, 9, 1
+Music_LookKimonoGirl_Ch2: ; f7a55
+	dutycycle $0
+	notetype $6, $a7
+	stereopanning $f0
+	callchannel Music_LookKimonoGirl_branch_f7aa8
+Music_LookKimonoGirl_branch_f7a5f: ; f7a5f
+	dutycycle $3
+	notetype $c, $91
 	octave 5
 	note E_, 1
 	note D_, 1
@@ -131,7 +134,7 @@ Music_LookKimonoGirl_Ch2:
 	note A_, 1
 	note E_, 1
 	note D_, 1
-	sound_call .sub1
+	callchannel Music_LookKimonoGirl_branch_f7a94
 	octave 5
 	note F_, 1
 	note D_, 1
@@ -151,10 +154,11 @@ Music_LookKimonoGirl_Ch2:
 	note A_, 1
 	note E_, 1
 	note D_, 1
-	sound_call .sub1
-	sound_loop 0, .mainloop
+	callchannel Music_LookKimonoGirl_branch_f7a94
+	loopchannel 0, Music_LookKimonoGirl_branch_f7a5f
+; f7a94
 
-.sub1:
+Music_LookKimonoGirl_branch_f7a94: ; f7a94
 	octave 5
 	note B_, 1
 	note A_, 1
@@ -174,60 +178,62 @@ Music_LookKimonoGirl_Ch2:
 	octave 3
 	note B_, 1
 	note E_, 1
-	sound_ret
+	endchannel
+; f7aa8
 
-.sub2:
+Music_LookKimonoGirl_branch_f7aa8: ; f7aa8
 	octave 4
 	note E_, 1
 	octave 5
 	note E_, 16
-	rest 1
+	note __, 1
 	note E_, 2
-	rest 3
-	volume_envelope 11, 7
+	note __, 3
+	intensity $b7
 	note E_, 2
-	rest 2
-	volume_envelope 11, 7
+	note __, 2
+	intensity $b7
 	note E_, 2
-	rest 1
-	volume_envelope 10, 7
+	note __, 1
+	intensity $a7
 	note E_, 2
-	rest 1
-	note_type 6, 6, 5
+	note __, 1
+	notetype $6, $65
 	note E_, 2
-	rest 1
-	volume_envelope 5, 4
+	note __, 1
+	intensity $54
 	note E_, 2
-	rest 1
-	volume_envelope 6, 3
+	note __, 1
+	intensity $63
 	note E_, 2
 	note E_, 2
-	volume_envelope 9, 1
+	intensity $91
 	note E_, 2
-	volume_envelope 10, 1
+	intensity $a1
 	note E_, 1
-	note_type 8, 11, 1
+	notetype $8, $b1
 	note E_, 1
 	note E_, 1
-	sound_ret
+	endchannel
+; f7ad4
 
-Music_LookKimonoGirl_Ch3:
-	stereo_panning TRUE, TRUE
-	vibrato 18, 2, 4
-	note_type 6, 1, 3
-	rest 1
-	rest 16
+Music_LookKimonoGirl_Ch3: ; f7ad4
+	stereopanning $ff
+	vibrato $12, $24
+	notetype $6, $13
+	note __, 1
+	note __, 16
 	octave 5
 	note E_, 1
 	note F_, 1
 	note E_, 2
-	note_type 12, 1, 3
+	notetype $c, $13
 	note E_, 12
-	note_type 6, 1, 3
+	notetype $6, $13
 	octave 5
 	note D_, 2
 	note E_, 2
-.mainloop:
+Music_LookKimonoGirl_branch_f7aec: ; f7aec
 	octave 5
 	note D_, 4
 	note E_, 4
@@ -263,4 +269,5 @@ Music_LookKimonoGirl_Ch3:
 	note E_, 2
 	note D_, 8
 	note E_, 8
-	sound_loop 0, .mainloop
+	loopchannel 0, Music_LookKimonoGirl_branch_f7aec
+; f7b13

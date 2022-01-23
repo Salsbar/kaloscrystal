@@ -1,4 +1,4 @@
-BattleCommand_ClearHazards:
+BattleCommand_ClearHazards: ; 37b39
 ; clearhazards
 
 	ld a, BATTLE_VARS_SUBSTATUS4
@@ -7,12 +7,12 @@ BattleCommand_ClearHazards:
 	jr z, .not_leeched
 	res SUBSTATUS_LEECH_SEED, [hl]
 	ld hl, ShedLeechSeedText
-	call StdBattleTextbox
+	call StdBattleTextBox
 .not_leeched
 
 	ld hl, wPlayerScreens
 	ld de, wPlayerWrapCount
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
 	jr z, .got_screens_wrap
 	ld hl, wEnemyScreens
@@ -23,7 +23,7 @@ BattleCommand_ClearHazards:
 	res SCREENS_SPIKES, [hl]
 	ld hl, BlewSpikesText
 	push de
-	call StdBattleTextbox
+	call StdBattleTextBox
 	pop de
 .no_spikes
 
@@ -33,4 +33,6 @@ BattleCommand_ClearHazards:
 	xor a
 	ld [de], a
 	ld hl, ReleasedByText
-	jp StdBattleTextbox
+	jp StdBattleTextBox
+
+; 37b74

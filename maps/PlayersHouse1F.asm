@@ -1,4 +1,4 @@
-	object_const_def
+	const_def 2 ; object constants
 	const PLAYERSHOUSE1F_MOM1
 	const PLAYERSHOUSE1F_MOM2
 	const PLAYERSHOUSE1F_MOM3
@@ -6,11 +6,11 @@
 	const PLAYERSHOUSE1F_POKEFAN_F
 
 PlayersHouse1F_MapScripts:
-	def_scene_scripts
+	db 2 ; scene scripts
 	scene_script .DummyScene0 ; SCENE_DEFAULT
 	scene_script .DummyScene1 ; SCENE_FINISHED
 
-	def_callbacks
+	db 0 ; callbacks
 
 .DummyScene0:
 	end
@@ -27,16 +27,16 @@ MeetMomRightScript:
 	turnobject PLAYER, LEFT
 	checkevent EVENT_TEMPORARY_UNTIL_MAP_RELOAD_1
 	iffalse .OnRight
-	applymovement PLAYERSHOUSE1F_MOM1, MomTurnsTowardPlayerMovement
-	sjump MeetMomScript
+	applymovement PLAYERSHOUSE1F_MOM1, MovementData_0x7a5fc
+	jump MeetMomScript
 
 .OnRight:
-	applymovement PLAYERSHOUSE1F_MOM1, MomWalksToPlayerMovement
+	applymovement PLAYERSHOUSE1F_MOM1, MovementData_0x7a5fe
 MeetMomScript:
 	opentext
-	writetext ElmsLookingForYouText
-	promptbutton
-	getstring STRING_BUFFER_4, PokegearName
+	writetext UnknownText_0x7a604
+	buttonsound
+	stringtotext GearName, MEM_BUFFER_1
 	scall PlayersHouse1FReceiveItemStd
 	setflag ENGINE_POKEGEAR
 	setflag ENGINE_PHONE_CARD
@@ -44,55 +44,55 @@ MeetMomScript:
 	setscene SCENE_FINISHED
 	setevent EVENT_PLAYERS_HOUSE_MOM_1
 	clearevent EVENT_PLAYERS_HOUSE_MOM_2
-	writetext MomGivesPokegearText
-	promptbutton
+	writetext UnknownText_0x7a6bd
+	buttonsound
 	special SetDayOfWeek
 .SetDayOfWeek:
-	writetext IsItDSTText
+	writetext UnknownText_0x7a742
 	yesorno
 	iffalse .WrongDay
 	special InitialSetDSTFlag
 	yesorno
 	iffalse .SetDayOfWeek
-	sjump .DayOfWeekDone
+	jump .DayOfWeekDone
 
 .WrongDay:
 	special InitialClearDSTFlag
 	yesorno
 	iffalse .SetDayOfWeek
 .DayOfWeekDone:
-	writetext ComeHomeForDSTText
+	writetext UnknownText_0x7a763
 	yesorno
 	iffalse .ExplainPhone
-	sjump .KnowPhone
+	jump .KnowPhone
 
 .KnowPhone:
-	writetext KnowTheInstructionsText
-	promptbutton
-	sjump .FinishPhone
+	writetext UnknownText_0x7a7cb
+	buttonsound
+	jump .FinishPhone
 
 .ExplainPhone:
-	writetext DontKnowTheInstructionsText
-	promptbutton
-	sjump .FinishPhone
+	writetext UnknownText_0x7a807
+	buttonsound
+	jump .FinishPhone
 
 .FinishPhone:
-	writetext InstructionsNextText
+	writetext UnknownText_0x7a850
 	waitbutton
 	closetext
 	checkevent EVENT_TEMPORARY_UNTIL_MAP_RELOAD_1
 	iftrue .FromRight
 	checkevent EVENT_TEMPORARY_UNTIL_MAP_RELOAD_2
 	iffalse .FromLeft
-	sjump .Finish
+	jump .Finish
 
 .FromRight:
-	applymovement PLAYERSHOUSE1F_MOM1, MomTurnsBackMovement
-	sjump .Finish
+	applymovement PLAYERSHOUSE1F_MOM1, MovementData_0x7a600
+	jump .Finish
 
 .FromLeft:
-	applymovement PLAYERSHOUSE1F_MOM1, MomWalksBackMovement
-	sjump .Finish
+	applymovement PLAYERSHOUSE1F_MOM1, MovementData_0x7a602
+	jump .Finish
 
 .Finish:
 	special RestartMapMusic
@@ -101,13 +101,13 @@ MeetMomScript:
 
 MeetMomTalkedScript:
 	playmusic MUSIC_MOM
-	sjump MeetMomScript
+	jump MeetMomScript
 
-PokegearName:
+GearName:
 	db "#GEAR@"
 
 PlayersHouse1FReceiveItemStd:
-	jumpstd ReceiveItemScript
+	jumpstd receiveitem
 	end
 
 MomScript:
@@ -124,19 +124,19 @@ MomScript:
 	iftrue .GaveMysteryEgg
 	checkevent EVENT_GOT_A_POKEMON_FROM_ELM
 	iftrue .GotAPokemon
-	writetext HurryUpElmIsWaitingText
+	writetext UnknownText_0x7a8b5
 	waitbutton
 	closetext
 	end
 
 .GotAPokemon:
-	writetext SoWhatWasProfElmsErrandText
+	writetext UnknownText_0x7a8e5
 	waitbutton
 	closetext
 	end
 
 .FirstTimeBanking:
-	writetext ImBehindYouText
+	writetext UnknownText_0x7a957
 	waitbutton
 	closetext
 	end
@@ -162,18 +162,18 @@ NeighborScript:
 
 .MornScript:
 	writetext NeighborMornIntroText
-	promptbutton
-	sjump .Main
+	buttonsound
+	jump .Main
 
 .DayScript:
 	writetext NeighborDayIntroText
-	promptbutton
-	sjump .Main
+	buttonsound
+	jump .Main
 
 .NiteScript:
 	writetext NeighborNiteIntroText
-	promptbutton
-	sjump .Main
+	buttonsound
+	jump .Main
 
 .Main:
 	writetext NeighborText
@@ -182,35 +182,35 @@ NeighborScript:
 	turnobject PLAYERSHOUSE1F_POKEFAN_F, RIGHT
 	end
 
-PlayersHouse1FTVScript:
-	jumptext PlayersHouse1FTVText
+TVScript:
+	jumptext TVText
 
-PlayersHouse1FStoveScript:
-	jumptext PlayersHouse1FStoveText
+StoveScript:
+	jumptext StoveText
 
-PlayersHouse1FSinkScript:
-	jumptext PlayersHouse1FSinkText
+SinkScript:
+	jumptext SinkText
 
-PlayersHouse1FFridgeScript:
-	jumptext PlayersHouse1FFridgeText
+FridgeScript:
+	jumptext FridgeText
 
-MomTurnsTowardPlayerMovement:
+MovementData_0x7a5fc:
 	turn_head RIGHT
 	step_end
 
-MomWalksToPlayerMovement:
+MovementData_0x7a5fe:
 	slow_step RIGHT
 	step_end
 
-MomTurnsBackMovement:
+MovementData_0x7a600:
 	turn_head LEFT
 	step_end
 
-MomWalksBackMovement:
+MovementData_0x7a602:
 	slow_step LEFT
 	step_end
 
-ElmsLookingForYouText:
+UnknownText_0x7a604:
 	text "Oh, <PLAYER>…! Our"
 	line "neighbor, PROF."
 
@@ -230,7 +230,7 @@ ElmsLookingForYouText:
 	para "Here you go!"
 	done
 
-MomGivesPokegearText:
+UnknownText_0x7a6bd:
 	text "#MON GEAR, or"
 	line "just #GEAR."
 
@@ -245,12 +245,12 @@ MomGivesPokegearText:
 	line "that!"
 	done
 
-IsItDSTText:
+UnknownText_0x7a742:
 	text "Is it Daylight"
 	line "Saving Time now?"
 	done
 
-ComeHomeForDSTText:
+UnknownText_0x7a763:
 	text "Come home to"
 	line "adjust your clock"
 
@@ -262,7 +262,7 @@ ComeHomeForDSTText:
 	cont "the PHONE?"
 	done
 
-KnowTheInstructionsText:
+UnknownText_0x7a7cb:
 	text "Don't you just"
 	line "turn the #GEAR"
 
@@ -270,7 +270,7 @@ KnowTheInstructionsText:
 	line "PHONE icon?"
 	done
 
-DontKnowTheInstructionsText:
+UnknownText_0x7a807:
 	text "I'll read the"
 	line "instructions."
 
@@ -279,7 +279,7 @@ DontKnowTheInstructionsText:
 	cont "PHONE icon."
 	done
 
-InstructionsNextText:
+UnknownText_0x7a850:
 	text "Phone numbers are"
 	line "stored in memory."
 
@@ -290,14 +290,14 @@ InstructionsNextText:
 	line "convenient?"
 	done
 
-HurryUpElmIsWaitingText:
+UnknownText_0x7a8b5:
 	text "PROF.ELM is wait-"
 	line "ing for you."
 
 	para "Hurry up, baby!"
 	done
 
-SoWhatWasProfElmsErrandText:
+UnknownText_0x7a8e5:
 	text "So, what was PROF."
 	line "ELM's errand?"
 
@@ -311,7 +311,7 @@ SoWhatWasProfElmsErrandText:
 	cont "rely on you."
 	done
 
-ImBehindYouText:
+UnknownText_0x7a957:
 	text "<PLAYER>, do it!"
 
 	para "I'm behind you all"
@@ -351,20 +351,20 @@ NeighborText:
 	line "#MON!"
 	done
 
-PlayersHouse1FStoveText:
+StoveText:
 	text "Mom's specialty!"
 
-	para "CINNABAR VOLCANO"
-	line "BURGER!"
+	para "VOLCANO"
+	line "BAKE MEAT!"
 	done
 
-PlayersHouse1FSinkText:
+SinkText:
 	text "The sink is spot-"
 	line "less. Mom likes it"
 	cont "clean."
 	done
 
-PlayersHouse1FFridgeText:
+FridgeText:
 	text "Let's see what's"
 	line "in the fridge…"
 
@@ -372,7 +372,7 @@ PlayersHouse1FFridgeText:
 	line "tasty LEMONADE!"
 	done
 
-PlayersHouse1FTVText:
+TVText:
 	text "There's a movie on"
 	line "TV: Stars dot the"
 
@@ -386,22 +386,22 @@ PlayersHouse1FTVText:
 PlayersHouse1F_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 3 ; warp events
 	warp_event  6,  7, NEW_BARK_TOWN, 2
 	warp_event  7,  7, NEW_BARK_TOWN, 2
 	warp_event  9,  0, PLAYERS_HOUSE_2F, 1
 
-	def_coord_events
+	db 2 ; coord events
 	coord_event  8,  4, SCENE_DEFAULT, MeetMomLeftScript
 	coord_event  9,  4, SCENE_DEFAULT, MeetMomRightScript
 
-	def_bg_events
-	bg_event  0,  1, BGEVENT_READ, PlayersHouse1FStoveScript
-	bg_event  1,  1, BGEVENT_READ, PlayersHouse1FSinkScript
-	bg_event  2,  1, BGEVENT_READ, PlayersHouse1FFridgeScript
-	bg_event  4,  1, BGEVENT_READ, PlayersHouse1FTVScript
+	db 4 ; bg events
+	bg_event  0,  1, BGEVENT_READ, StoveScript
+	bg_event  1,  1, BGEVENT_READ, SinkScript
+	bg_event  2,  1, BGEVENT_READ, FridgeScript
+	bg_event  4,  1, BGEVENT_READ, TVScript
 
-	def_object_events
+	db 5 ; object events
 	object_event  7,  4, SPRITE_MOM, SPRITEMOVEDATA_STANDING_LEFT, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, MomScript, EVENT_PLAYERS_HOUSE_MOM_1
 	object_event  2,  2, SPRITE_MOM, SPRITEMOVEDATA_STANDING_UP, 0, 0, -1, MORN, 0, OBJECTTYPE_SCRIPT, 0, MomScript, EVENT_PLAYERS_HOUSE_MOM_2
 	object_event  7,  4, SPRITE_MOM, SPRITEMOVEDATA_STANDING_LEFT, 0, 0, -1, DAY, 0, OBJECTTYPE_SCRIPT, 0, MomScript, EVENT_PLAYERS_HOUSE_MOM_2

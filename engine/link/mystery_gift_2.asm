@@ -1,62 +1,62 @@
-StageDataForMysteryGift:
+PrepMysteryGiftDataToSend: ; 2c642 (b:4642)
 	ld de, wMysteryGiftStaging
-	ld a, GS_VERSION + 1
+	ld a, $1
 	ld [de], a
-	inc de ; wMysteryGiftStaging+1
+	inc de ; wc801
 	ld a, BANK(sGameData)
-	call OpenSRAM
+	call GetSRAMBank
 	ld hl, sPlayerData + wPlayerID - wPlayerData
 	ld a, [hli]
 	ld [de], a
 	ld b, a
-	inc de ; wMysteryGiftStaging+2
+	inc de ; wc802
 	ld a, [hl]
 	ld [de], a
 	ld c, a
-	inc de ; wMysteryGiftStaging+3
+	inc de ; wc803
 	push bc
 	ld hl, sPlayerData + wPlayerName - wPlayerData
 	ld bc, NAME_LENGTH
 	call CopyBytes
-	push de ; wMysteryGiftStaging+14
+	push de ; wc80e
 	ld hl, sPokemonData + wPokedexCaught - wPokemonData
 	ld b, wEndPokedexCaught - wPokedexCaught
 	call CountSetBits
 	pop de
 	pop bc
-	ld a, [wNumSetBits]
+	ld a, [wd265]
 	ld [de], a
-	inc de ; wMysteryGiftStaging+15
+	inc de ; wc80f
 	call CloseSRAM
 	call Random
 	and 1
 	ld [de], a
-	inc de ; wMysteryGiftStaging+16
+	inc de ; wc810
 	call .RandomSample
 	ld [de], a
-	inc de ; wMysteryGiftStaging+17
+	inc de ; wc811
 	ld a, c
 	ld c, b
 	ld b, a
 	call .RandomSample
 	ld [de], a
-	inc de ; wMysteryGiftStaging+18
+	inc de ; wc812
 	ld a, BANK(sBackupMysteryGiftItem)
-	call OpenSRAM
+	call GetSRAMBank
 	ld a, [sBackupMysteryGiftItem]
 	ld [de], a
 	inc de
-	ld a, [sNumDailyMysteryGiftPartnerIDs]
+	ld a, [sBackupMysteryGiftItem + 1]
 	ld [de], a
-	ld a, wMysteryGiftPlayerDataEnd - wMysteryGiftPlayerData
-	ld [wUnusedMysteryGiftStagedDataLength], a
+	ld a, $14
+	ld [wca00], a
 	call CloseSRAM
 	ld hl, wMysteryGiftStaging
 	ld de, wMysteryGiftPlayerData
 	ld bc, wMysteryGiftPlayerDataEnd - wMysteryGiftPlayerData
 	jp CopyBytes
 
-.RandomSample:
+.RandomSample: ; 2c6ac (b:46ac)
 	push de
 	call Random
 	cp 10 percent
@@ -121,7 +121,7 @@ StageDataForMysteryGift:
 	pop de
 	ret
 
-MysteryGiftGetItem:
+MysteryGiftGetItemHeldEffect: ; 2c708 (b:4708)
 	ld a, c
 	cp MysteryGiftItems.End - MysteryGiftItems
 	jr nc, MysteryGiftFallbackItem
@@ -131,7 +131,7 @@ MysteryGiftGetItem:
 	ld c, [hl]
 	ret
 
-MysteryGiftGetDecoration:
+MysteryGiftGetDecoration: ; 2c715 (b:4715)
 	ld a, c
 	cp MysteryGiftDecos.End - MysteryGiftDecos
 	jr nc, MysteryGiftFallbackItem
@@ -141,9 +141,11 @@ MysteryGiftGetDecoration:
 	ld c, [hl]
 	ret
 
-MysteryGiftFallbackItem:
+MysteryGiftFallbackItem: ; 2c722 (b:4722)
 	ld c, DECO_POLKADOT_BED ; GREAT_BALL
 	ret
+; 2c725 (b:4725)
+
 
 INCLUDE "data/items/mystery_gift_items.asm"
 

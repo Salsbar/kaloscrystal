@@ -1,4 +1,4 @@
-CreditsScript:
+CreditsScript: ; 10acb4
 
 ; Clear the banner.
 	db CREDITS_CLEAR
@@ -284,3 +284,4 @@ CreditsScript:
 	db CREDITS_WAIT, 20
 
 	db CREDITS_END
+; 10ae13

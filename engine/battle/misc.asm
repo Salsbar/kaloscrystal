@@ -1,7 +1,7 @@
-_DisappearUser:
+_DisappearUser: ; fbd54
 	xor a
-	ldh [hBGMapMode], a
-	ldh a, [hBattleTurn]
+	ld [hBGMapMode], a
+	ld a, [hBattleTurn]
 	and a
 	jr z, .player
 	call GetEnemyFrontpicCoords
@@ -12,17 +12,17 @@ _DisappearUser:
 	call ClearBox
 	jr FinishAppearDisappearUser
 
-_AppearUserRaiseSub:
+_AppearUserRaiseSub: ; fbd69 (3e:7d69)
 	farcall BattleCommand_RaiseSubNoAnim
 	jr AppearUser
 
-_AppearUserLowerSub:
+_AppearUserLowerSub: ; fbd71 (3e:7d71)
 	farcall BattleCommand_LowerSubNoAnim
 
-AppearUser:
+AppearUser: ; fbd77 (3e:7d77)
 	xor a
-	ldh [hBGMapMode], a
-	ldh a, [hBattleTurn]
+	ld [hBGMapMode], a
+	ld a, [hBattleTurn]
 	and a
 	jr z, .player
 	call GetEnemyFrontpicCoords
@@ -32,34 +32,36 @@ AppearUser:
 	call GetPlayerBackpicCoords
 	ld a, $31
 .okay
-	ldh [hGraphicStartTile], a
+	ld [hGraphicStartTile], a
 	predef PlaceGraphic
-FinishAppearDisappearUser:
+FinishAppearDisappearUser: ; fbd91 (3e:7d91)
 	ld a, $1
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	ret
 
-GetEnemyFrontpicCoords:
+GetEnemyFrontpicCoords: ; fbd96 (3e:7d96)
 	hlcoord 12, 0
 	lb bc, 7, 7
 	ret
 
-GetPlayerBackpicCoords:
+GetPlayerBackpicCoords: ; fbd9d (3e:7d9d)
 	hlcoord 2, 6
 	lb bc, 6, 6
 	ret
 
-DoWeatherModifiers:
+
+DoWeatherModifiers: ; fbda4
+
 	ld de, WeatherTypeModifiers
 	ld a, [wBattleWeather]
 	ld b, a
-	ld a, [wCurType]
+	ld a, [wd265] ; move type
 	ld c, a
 
 .CheckWeatherType:
 	ld a, [de]
 	inc de
-	cp -1
+	cp $ff
 	jr z, .done_weather_types
 
 	cp b
@@ -74,6 +76,7 @@ DoWeatherModifiers:
 	inc de
 	jr .CheckWeatherType
 
+
 .done_weather_types
 	ld de, WeatherMoveModifiers
 
@@ -84,7 +87,7 @@ DoWeatherModifiers:
 .CheckWeatherMove:
 	ld a, [de]
 	inc de
-	cp -1
+	cp $ff
 	jr z, .done
 
 	cp b
@@ -101,32 +104,32 @@ DoWeatherModifiers:
 
 .ApplyModifier:
 	xor a
-	ldh [hMultiplicand + 0], a
+	ld [hMultiplicand + 0], a
 	ld hl, wCurDamage
 	ld a, [hli]
-	ldh [hMultiplicand + 1], a
+	ld [hMultiplicand + 1], a
 	ld a, [hl]
-	ldh [hMultiplicand + 2], a
+	ld [hMultiplicand + 2], a
 
 	inc de
 	ld a, [de]
-	ldh [hMultiplier], a
+	ld [hMultiplier], a
 
 	call Multiply
 
 	ld a, 10
-	ldh [hDivisor], a
-	ld b, 4
+	ld [hDivisor], a
+	ld b, $4
 	call Divide
 
-	ldh a, [hQuotient + 1]
+	ld a, [hQuotient + 0]
 	and a
 	ld bc, -1
 	jr nz, .Update
 
-	ldh a, [hQuotient + 2]
+	ld a, [hQuotient + 1]
 	ld b, a
-	ldh a, [hQuotient + 3]
+	ld a, [hQuotient + 2]
 	ld c, a
 	or b
 	jr nz, .Update
@@ -144,7 +147,8 @@ DoWeatherModifiers:
 
 INCLUDE "data/battle/weather_modifiers.asm"
 
-DoBadgeTypeBoosts:
+
+DoBadgeTypeBoosts: ; fbe24
 	ld a, [wLinkMode]
 	and a
 	ret nz
@@ -153,7 +157,7 @@ DoBadgeTypeBoosts:
 	and a
 	ret nz
 
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
 	ret nz
 
@@ -176,7 +180,7 @@ DoBadgeTypeBoosts:
 	rr c
 	jr nc, .NextBadge
 
-	ld a, [wCurType]
+	ld a, [wd265] ; move type
 	cp [hl]
 	jr z, .ApplyBoost
 

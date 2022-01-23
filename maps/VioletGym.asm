@@ -1,33 +1,33 @@
-	object_const_def
+	const_def 2 ; object constants
 	const VIOLETGYM_FALKNER
 	const VIOLETGYM_YOUNGSTER1
 	const VIOLETGYM_YOUNGSTER2
-	const VIOLETGYM_GYM_GUIDE
+	const VIOLETGYM_GYM_GUY
 
 VioletGym_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 0 ; callbacks
 
 VioletGymFalknerScript:
 	faceplayer
 	opentext
 	checkevent EVENT_BEAT_FALKNER
 	iftrue .FightDone
-	writetext FalknerIntroText
+	writetext UnknownText_0x68473
 	waitbutton
 	closetext
-	winlosstext FalknerWinLossText, 0
+	winlosstext UnknownText_0x6854a, 0
 	loadtrainer FALKNER, FALKNER1
 	startbattle
 	reloadmapafterbattle
 	setevent EVENT_BEAT_FALKNER
 	opentext
-	writetext ReceivedZephyrBadgeText
+	writetext UnknownText_0x685af
 	playsound SFX_GET_BADGE
 	waitsfx
 	setflag ENGINE_ZEPHYRBADGE
-	readvar VAR_BADGES
+	checkcode VAR_BADGES
 	scall VioletGymActivateRockets
 .FightDone:
 	checkevent EVENT_GOT_TM31_MUD_SLAP
@@ -36,18 +36,18 @@ VioletGymFalknerScript:
 	setevent EVENT_BEAT_BIRD_KEEPER_ABE
 	setmapscene ELMS_LAB, SCENE_ELMSLAB_NOTHING
 	specialphonecall SPECIALCALL_ASSISTANT
-	writetext FalknerZephyrBadgeText
-	promptbutton
+	writetext UnknownText_0x685c8
+	buttonsound
 	verbosegiveitem TM_MUD_SLAP
 	iffalse .NoRoomForMudSlap
 	setevent EVENT_GOT_TM31_MUD_SLAP
-	writetext FalknerTMMudSlapText
+	writetext UnknownText_0x68648
 	waitbutton
 	closetext
 	end
 
 .SpeechAfterTM:
-	writetext FalknerFightDoneText
+	writetext UnknownText_0x68735
 	waitbutton
 .NoRoomForMudSlap:
 	closetext
@@ -59,10 +59,10 @@ VioletGymActivateRockets:
 	end
 
 .GoldenrodRockets:
-	jumpstd GoldenrodRocketsScript
+	jumpstd goldenrodrockets
 
 .RadioTowerRockets:
-	jumpstd RadioTowerRocketsScript
+	jumpstd radiotowerrockets
 
 TrainerBirdKeeperRod:
 	trainer BIRD_KEEPER, ROD, EVENT_BEAT_BIRD_KEEPER_ROD, BirdKeeperRodSeenText, BirdKeeperRodBeatenText, 0, .Script
@@ -86,18 +86,18 @@ TrainerBirdKeeperAbe:
 	closetext
 	end
 
-VioletGymGuideScript:
+VioletGymGuyScript:
 	faceplayer
 	opentext
 	checkevent EVENT_BEAT_FALKNER
-	iftrue .VioletGymGuideWinScript
-	writetext VioletGymGuideText
+	iftrue .VioletGymGuyWinScript
+	writetext VioletGymGuyText
 	waitbutton
 	closetext
 	end
 
-.VioletGymGuideWinScript:
-	writetext VioletGymGuideWinText
+.VioletGymGuyWinScript:
+	writetext VioletGymGuyWinText
 	waitbutton
 	closetext
 	end
@@ -105,12 +105,12 @@ VioletGymGuideScript:
 VioletGymStatue:
 	checkflag ENGINE_ZEPHYRBADGE
 	iftrue .Beaten
-	jumpstd GymStatue1Script
+	jumpstd gymstatue1
 .Beaten:
-	gettrainername STRING_BUFFER_4, FALKNER, FALKNER1
-	jumpstd GymStatue2Script
+	trainertotext FALKNER, FALKNER1, MEM_BUFFER_1
+	jumpstd gymstatue2
 
-FalknerIntroText:
+UnknownText_0x68473:
 	text "I'm FALKNER, the"
 	line "VIOLET #MON GYM"
 	cont "leader!"
@@ -133,7 +133,7 @@ FalknerIntroText:
 	line "#MON!"
 	done
 
-FalknerWinLossText:
+UnknownText_0x6854a:
 	text "…Darn! My dad's"
 	line "cherished bird"
 	cont "#MON…"
@@ -146,12 +146,12 @@ FalknerWinLossText:
 	cont "ZEPHYRBADGE."
 	done
 
-ReceivedZephyrBadgeText:
+UnknownText_0x685af:
 	text "<PLAYER> received"
 	line "ZEPHYRBADGE."
 	done
 
-FalknerZephyrBadgeText:
+UnknownText_0x685c8:
 	text "ZEPHYRBADGE"
 	line "raises the attack"
 	cont "power of #MON."
@@ -166,7 +166,7 @@ FalknerZephyrBadgeText:
 	line "too."
 	done
 
-FalknerTMMudSlapText:
+UnknownText_0x68648:
 	text "By using a TM, a"
 	line "#MON will"
 
@@ -191,7 +191,7 @@ FalknerTMMudSlapText:
 	cont "and offensive."
 	done
 
-FalknerFightDoneText:
+UnknownText_0x68735:
 	text "There are #MON"
 	line "GYMS in cities and"
 	cont "towns ahead."
@@ -250,7 +250,7 @@ BirdKeeperAbeAfterBattleText:
 	cont "rookie trainer…"
 	done
 
-VioletGymGuideText:
+VioletGymGuyText:
 	text "Hey! I'm no train-"
 	line "er but I can give"
 	cont "some advice!"
@@ -271,7 +271,7 @@ VioletGymGuideText:
 	line "this in mind."
 	done
 
-VioletGymGuideWinText:
+VioletGymGuyWinText:
 	text "Nice battle! Keep"
 	line "it up, and you'll"
 
@@ -282,18 +282,18 @@ VioletGymGuideWinText:
 VioletGym_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 2 ; warp events
 	warp_event  4, 15, VIOLET_CITY, 2
 	warp_event  5, 15, VIOLET_CITY, 2
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 2 ; bg events
 	bg_event  3, 13, BGEVENT_READ, VioletGymStatue
 	bg_event  6, 13, BGEVENT_READ, VioletGymStatue
 
-	def_object_events
+	db 4 ; object events
 	object_event  5,  1, SPRITE_FALKNER, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_SCRIPT, 0, VioletGymFalknerScript, -1
 	object_event  7,  6, SPRITE_YOUNGSTER, SPRITEMOVEDATA_STANDING_LEFT, 2, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_TRAINER, 3, TrainerBirdKeeperRod, -1
 	object_event  2, 10, SPRITE_YOUNGSTER, SPRITEMOVEDATA_STANDING_RIGHT, 2, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_TRAINER, 3, TrainerBirdKeeperAbe, -1
-	object_event  7, 13, SPRITE_GYM_GUIDE, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, VioletGymGuideScript, -1
+	object_event  7, 13, SPRITE_GYM_GUY, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, VioletGymGuyScript, -1

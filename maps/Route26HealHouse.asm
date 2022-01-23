@@ -1,15 +1,15 @@
-	object_const_def
+	const_def 2 ; object constants
 	const ROUTE26HEALHOUSE_TEACHER
 
 Route26HealHouse_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 0 ; callbacks
 
 Route26HealHouseTeacherScript:
 	faceplayer
 	opentext
-	writetext Route26HealHouseRestAWhileText
+	writetext UnknownText_0x7b14d
 	waitbutton
 	closetext
 	special FadeBlackQuickly
@@ -21,15 +21,15 @@ Route26HealHouseTeacherScript:
 	special FadeInQuickly
 	special RestartMapMusic
 	opentext
-	writetext Route26HealHouseKeepAtItText
+	writetext UnknownText_0x7b18b
 	waitbutton
 	closetext
 	end
 
 Route26HealHouseBookshelf:
-	jumpstd PictureBookshelfScript
+	jumpstd picturebookshelf
 
-Route26HealHouseRestAWhileText:
+UnknownText_0x7b14d:
 	text "Your #MON look"
 	line "a little tired."
 
@@ -37,7 +37,7 @@ Route26HealHouseRestAWhileText:
 	line "them a while."
 	done
 
-Route26HealHouseKeepAtItText:
+UnknownText_0x7b18b:
 	text "There!"
 
 	para "Your #MON are"
@@ -49,15 +49,15 @@ Route26HealHouseKeepAtItText:
 Route26HealHouse_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 2 ; warp events
 	warp_event  2,  7, ROUTE_26, 2
 	warp_event  3,  7, ROUTE_26, 2
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 2 ; bg events
 	bg_event  0,  1, BGEVENT_READ, Route26HealHouseBookshelf
 	bg_event  1,  1, BGEVENT_READ, Route26HealHouseBookshelf
 
-	def_object_events
+	db 1 ; object events
 	object_event  2,  3, SPRITE_TEACHER, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_SCRIPT, 0, Route26HealHouseTeacherScript, -1

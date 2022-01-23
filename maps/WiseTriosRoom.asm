@@ -1,4 +1,4 @@
-	object_const_def
+	const_def 2 ; object constants
 	const WISETRIOSROOM_SAGE1
 	const WISETRIOSROOM_SAGE2
 	const WISETRIOSROOM_SAGE3
@@ -7,11 +7,11 @@
 	const WISETRIOSROOM_SAGE6
 
 WiseTriosRoom_MapScripts:
-	def_scene_scripts
+	db 2 ; scene scripts
 	scene_script .DummyScene0 ; SCENE_DEFAULT
 	scene_script .DummyScene1 ; SCENE_FINISHED
 
-	def_callbacks
+	db 1 ; callbacks
 	callback MAPCALLBACK_OBJECTS, .WiseTrioCallback
 
 .DummyScene0:
@@ -29,17 +29,17 @@ WiseTriosRoom_MapScripts:
 	iftrue .WiseTrio2
 	clearevent EVENT_WISE_TRIOS_ROOM_WISE_TRIO_1
 	setevent EVENT_WISE_TRIOS_ROOM_WISE_TRIO_2
-	endcallback
+	return
 
 .WiseTrio2:
 	setevent EVENT_WISE_TRIOS_ROOM_WISE_TRIO_1
 	clearevent EVENT_WISE_TRIOS_ROOM_WISE_TRIO_2
-	endcallback
+	return
 
 .NoWiseTrio:
 	setevent EVENT_WISE_TRIOS_ROOM_WISE_TRIO_1
 	setevent EVENT_WISE_TRIOS_ROOM_WISE_TRIO_2
-	endcallback
+	return
 
 WiseTriosRoomSage1Script:
 	jumptextfaceplayer WiseTriosRoomSage1Text
@@ -55,14 +55,14 @@ WiseTriosRoom_CannotEnterTinTowerScript:
 	turnobject PLAYER, DOWN
 	showemote EMOTE_SHOCK, WISETRIOSROOM_SAGE3, 20
 	follow PLAYER, WISETRIOSROOM_SAGE3
-	applymovement PLAYER, WiseTriosRoomSageBlocksPlayerMovement
+	applymovement PLAYER, MovementData_0x98622
 	stopfollow
 	turnobject PLAYER, RIGHT
 	opentext
-	writetext WiseTriosRoomSage3BlocksExitText
+	writetext UnknownText_0x98712
 	waitbutton
 	closetext
-	applymovement WISETRIOSROOM_SAGE3, WiseTriosRoomSageReturnsMovement
+	applymovement WISETRIOSROOM_SAGE3, MovementData_0x98625
 	turnobject WISETRIOSROOM_SAGE3, LEFT
 	end
 
@@ -71,7 +71,7 @@ TrainerSageGaku:
 
 .Script:
 	opentext
-	writetext SageGakuAfterBattleText
+	writetext UnknownText_0x98938
 	waitbutton
 	closetext
 	end
@@ -81,7 +81,7 @@ TrainerSageMasa:
 
 .Script:
 	opentext
-	writetext SageMasaAfterBattleText
+	writetext UnknownText_0x98a35
 	waitbutton
 	closetext
 	end
@@ -95,12 +95,12 @@ TrainerSageKoji:
 	pause 10
 	showemote EMOTE_SHOCK, WISETRIOSROOM_SAGE6, 20
 	opentext
-	writetext SageKojiAfterBattleQuestionText
-	promptbutton
-	writetext SageKojiAfterBattleSpeechText
+	writetext UnknownText_0x98c6c
+	buttonsound
+	writetext UnknownText_0x98cac
 	waitbutton
 	closetext
-	applymovement WISETRIOSROOM_SAGE6, WiseTriosRoomSageAllowsPassageMovement
+	applymovement WISETRIOSROOM_SAGE6, MovementData_0x98628
 	turnobject WISETRIOSROOM_SAGE6, UP
 	setevent EVENT_KOJI_ALLOWS_YOU_PASSAGE_TO_TIN_TOWER
 	setscene SCENE_FINISHED
@@ -108,22 +108,22 @@ TrainerSageKoji:
 
 .KojiAllowsPassage:
 	opentext
-	writetext SageKojiAfterBattleFinalText
+	writetext UnknownText_0x98db5
 	waitbutton
 	closetext
 	end
 
-WiseTriosRoomSageBlocksPlayerMovement:
+MovementData_0x98622:
 	step LEFT
 	step LEFT
 	step_end
 
-WiseTriosRoomSageReturnsMovement:
+MovementData_0x98625:
 	step RIGHT
 	step DOWN
 	step_end
 
-WiseTriosRoomSageAllowsPassageMovement:
+MovementData_0x98628:
 	step RIGHT
 	step DOWN
 	step_end
@@ -131,8 +131,9 @@ WiseTriosRoomSageAllowsPassageMovement:
 WiseTriosRoomSage1Text:
 	text "Astounding…"
 
-	para "SUICUNE, ENTEI and"
-	line "RAIKOU have arisen"
+	para "TORNADUS, THUNDU-"
+	line "RUS, and even ZY-"
+	cont "GARDE have arisen"
 	cont "from their sleep…"
 
 	para "Is the legend"
@@ -153,7 +154,7 @@ WiseTriosRoomSage2Text:
 	line "by someone."
 	done
 
-WiseTriosRoomSage3BlocksExitText:
+UnknownText_0x98712:
 	text "TIN TOWER may be"
 	line "entered by those"
 
@@ -161,13 +162,13 @@ WiseTriosRoomSage3BlocksExitText:
 	line "GYM BADGE."
 
 	para "However, now that"
-	line "SUICUNE, RAIKOU"
+	line "TORNADUS, THUNDU-"
 
-	para "and ENTEI have"
-	line "arisen, I ask you"
+	para "RUS, and ZYGARDE"
+	line "have arisen, I ask"
 
-	para "to refrain from"
-	line "entering!"
+	para "you to refrain"
+	line "from entering!"
 	done
 
 WiseTriosRoomSage3Text:
@@ -198,7 +199,7 @@ SageGakuSeenText:
 	line "come true!"
 
 	para "The legendary"
-	line "#MON SUICUNE"
+	line "#MON ZYGARDE"
 	cont "has arrived!"
 
 	para "We, the WISE TRIO,"
@@ -213,13 +214,14 @@ SageGakuBeatenText:
 	line "thought? Perhaps…"
 	done
 
-SageGakuAfterBattleText:
+UnknownText_0x98938:
 	text "Ah, so it is you"
 	line "who claim to have"
 
-	para "seen SUICUNE,"
-	line "ENTEI and RAIKOU"
-	cont "while they slept?"
+	para "seen ZYGARDE and"
+	line "the two storm"
+	cont "#MON while they"
+	cont "slept?"
 
 	para "Unbelievable!"
 
@@ -241,16 +243,16 @@ SageMasaBeatenText:
 	line "the truth…"
 	done
 
-SageMasaAfterBattleText:
+UnknownText_0x98a35:
 	text "In the past, there"
 	line "were two nine-tier"
 	cont "towers here."
 
-	para "The BRASS TOWER,"
+	para "The TIN TOWER,"
 	line "which was said to"
 
-	para "awaken #MON,"
-	line "and the TIN TOWER,"
+	para "awaken #MON, and"
+	line "the BRASS TOWER,"
 
 	para "where #MON were"
 	line "said to rest."
@@ -262,7 +264,7 @@ SageMasaAfterBattleText:
 	line "magnificent."
 
 	para "At the time, an"
-	line "immense, silver-"
+	line "immense, black-"
 
 	para "colored #MON"
 	line "was said to make"
@@ -301,7 +303,7 @@ SageKojiBeatenText:
 	line "Why?"
 	done
 
-SageKojiAfterBattleQuestionText:
+UnknownText_0x98c6c:
 	text "You… Are you the"
 	line "trainer who is"
 
@@ -309,7 +311,7 @@ SageKojiAfterBattleQuestionText:
 	line "legendary #MON?"
 	done
 
-SageKojiAfterBattleSpeechText:
+UnknownText_0x98cac:
 	text "I see…"
 
 	para "We, the WISE TRIO,"
@@ -331,31 +333,31 @@ SageKojiAfterBattleSpeechText:
 	line "and enter the TIN"
 	cont "TOWER ahead."
 
-	para "SUICUNE will put"
+	para "ZYGARDE will put"
 	line "you to the test."
 	done
 
-SageKojiAfterBattleFinalText:
+UnknownText_0x98db5:
 	text "Please, do go on."
 
-	para "SUICUNE will put"
+	para "ZYGARDE will put"
 	line "you to the test."
 	done
 
 WiseTriosRoom_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 3 ; warp events
 	warp_event  7,  4, ECRUTEAK_CITY, 4
 	warp_event  7,  5, ECRUTEAK_CITY, 5
 	warp_event  1,  4, ECRUTEAK_TIN_TOWER_ENTRANCE, 5
 
-	def_coord_events
+	db 1 ; coord events
 	coord_event  7,  4, SCENE_DEFAULT, WiseTriosRoom_CannotEnterTinTowerScript
 
-	def_bg_events
+	db 0 ; bg events
 
-	def_object_events
+	db 6 ; object events
 	object_event  6,  2, SPRITE_SAGE, SPRITEMOVEDATA_SPINRANDOM_SLOW, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, WiseTriosRoomSage1Script, EVENT_WISE_TRIOS_ROOM_WISE_TRIO_1
 	object_event  6,  7, SPRITE_SAGE, SPRITEMOVEDATA_WALK_LEFT_RIGHT, 1, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, WiseTriosRoomSage2Script, EVENT_WISE_TRIOS_ROOM_WISE_TRIO_1
 	object_event  7,  5, SPRITE_SAGE, SPRITEMOVEDATA_STANDING_LEFT, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, WiseTriosRoomSage3Script, EVENT_WISE_TRIOS_ROOM_WISE_TRIO_1

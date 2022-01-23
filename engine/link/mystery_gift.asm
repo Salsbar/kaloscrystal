@@ -1,31 +1,5 @@
-; hMGRole values
-IR_RECEIVER EQU 1
-IR_SENDER   EQU 2
-
-; hMGStatusFlags error bits
-MG_WRONG_CHECKSUM_F EQU 0
-MG_TIMED_OUT_F      EQU 1
-MG_CANCELED_F       EQU 4
-MG_WRONG_PREFIX_F   EQU 7
-
-; hMGStatusFlags values
-MG_WRONG_CHECKSUM EQU 1 << MG_WRONG_CHECKSUM_F
-MG_TIMED_OUT      EQU 1 << MG_TIMED_OUT_F
-MG_CANCELED       EQU 1 << MG_CANCELED_F
-MG_WRONG_PREFIX   EQU 1 << MG_WRONG_PREFIX_F
-MG_NOT_OKAY       EQU MG_WRONG_CHECKSUM | MG_TIMED_OUT | MG_CANCELED | MG_WRONG_PREFIX
-MG_OKAY           EQU ~MG_NOT_OKAY
-MG_START_END      EQU %11111111
-
-REGION_PREFIX EQU $96
-REGION_CODE   EQU $90 ; USA
-
-MESSAGE_PREFIX EQU $5a
-
-NAME_CARD_PREFIX EQU $3c
-
-DoMysteryGift:
-	call ClearTilemap
+DoMysteryGift: ; 1048ba (41:48ba)
+	call ClearTileMap
 	call ClearSprites
 	call WaitBGMap
 	call InitMysteryGiftLayout
@@ -33,48 +7,45 @@ DoMysteryGift:
 	ld de, .String_PressAToLink_BToCancel
 	call PlaceString
 	call WaitBGMap
-
-	; Prepare the first of two messages for wMysteryGiftPartnerData
-	farcall StageDataForMysteryGift
-	call ClearMysteryGiftTrainer
-	ld a, 2
-	ld [wMysteryGiftMessageCount], a
-	ld a, wMysteryGiftPartnerDataEnd - wMysteryGiftPartnerData
-	ld [wMysteryGiftStagedDataLength], a
-
-	ldh a, [rIE]
+	farcall PrepMysteryGiftDataToSend
+	call MysteryGift_ClearTrainerData
+	ld a, $2
+	ld [wca01], a
+	ld a, $14
+	ld [wca02], a
+	ld a, [rIE]
 	push af
-	call ExchangeMysteryGiftData
+
+	call Function104a95
+
 	ld d, a
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	pop af
-	ldh [rIE], a
-
+	ld [rIE], a
 	push de
-	call ClearTilemap
+	call ClearTileMap
 	call EnableLCD
 	call WaitBGMap
 	ld b, SCGB_DIPLOMA
 	call GetSGBLayout
 	call SetPalettes
 	pop de
-
 	hlcoord 2, 8
 	ld a, d
-	ld de, .MysteryGiftCanceledText ; Link has been canceled
-	cp MG_CANCELED
+	ld de, .Text_LinkCanceled ; Link has been canceled
+	cp $10
 	jp z, .LinkCanceled
-	cp MG_OKAY
+	cp $6c
 	jp nz, .CommunicationError
-	ld a, [wMysteryGiftGameVersion]
-	cp POKEMON_PIKACHU_2_VERSION
+	ld a, [wc900]
+	cp 3
 	jr z, .skip_checks
 	call .CheckAlreadyGotFiveGiftsToday
-	ld hl, .MysteryGiftFiveADayText ; Only 5 gifts a day
+	ld hl, .Text_MaxFiveGifts ; Only 5 gifts a day
 	jp nc, .PrintTextAndExit
 	call .CheckAlreadyGotAGiftFromThatPerson
-	ld hl, .MysteryGiftOneADayText ; Only one gift a day per person
+	ld hl, .Text_MaxOneGiftPerPerson ; Only one gift a day per person
 	jp c, .PrintTextAndExit
 .skip_checks
 	ld a, [wMysteryGiftPlayerBackupItem]
@@ -83,12 +54,12 @@ DoMysteryGift:
 	ld a, [wMysteryGiftPartnerBackupItem]
 	and a
 	jp nz, .FriendNotReady
-	ld a, [wMysteryGiftGameVersion]
-	cp POKEMON_PIKACHU_2_VERSION
+	ld a, [wc900]
+	cp 3
 	jr z, .skip_append_save
 	call .AddMysteryGiftPartnerID
-	ld a, [wMysteryGiftGameVersion]
-	cp RESERVED_GAME_VERSION
+	ld a, [wc900]
+	cp 4
 	jr z, .skip_append_save
 	call .SaveMysteryGiftTrainerName
 	farcall RestoreMobileEventIndex
@@ -97,107 +68,114 @@ DoMysteryGift:
 .skip_append_save
 	ld a, [wMysteryGiftPartnerSentDeco]
 	and a
-	jr z, .SentItem
-; sent decoration
+	jr z, .item
 	ld a, [wMysteryGiftPartnerWhichDeco]
 	ld c, a
 	farcall MysteryGiftGetDecoration
 	push bc
-	call CheckAndSetMysteryGiftDecorationAlreadyReceived
+	call MysteryGift_CheckAndSetDecorationAlreadyReceived
 	pop bc
-	jr nz, .SentItem
-; keep the decoration if it wasn't already received
+	jr nz, .item
 	callfar GetDecorationName_c
 	ld h, d
 	ld l, e
 	ld de, wStringBuffer1
 	ld bc, ITEM_NAME_LENGTH
 	call CopyBytes
-	ld hl, .MysteryGiftSentHomeText ; sent decoration to home
+	ld hl, .Text_SentToHome ; sent decoration to home
 	jr .PrintTextAndExit
 
-.SentItem:
+.item
 	call GetMysteryGiftBank
 	ld a, [wMysteryGiftPartnerWhichItem]
 	ld c, a
-	farcall MysteryGiftGetItem
+	farcall MysteryGiftGetItemHeldEffect
 	ld a, c
 	ld [sBackupMysteryGiftItem], a
-	ld [wNamedObjectIndex], a
+	ld [wNamedObjectIndexBuffer], a
 	call CloseSRAM
 	call GetItemName
-	ld hl, .MysteryGiftSentText ; sent item/decoration
+	ld hl, .Text_Sent ; sent item
 	jr .PrintTextAndExit
 
-.LinkCanceled:
-	ld hl, .MysteryGiftCanceledText ; Link has been canceled
+.LinkCanceled: ; 1049af (41:49af)
+	ld hl, .Text_LinkCanceled ; Link has been canceled
 	jr .PrintTextAndExit
 
-.CommunicationError:
-	ld hl, .MysteryGiftCommErrorText ; Communication error
+.CommunicationError: ; 1049b4 (41:49b4)
+	ld hl, .Text_CommunicationError ; Communication error
 	call PrintText
 	jp DoMysteryGift
 
-.GiftWaiting:
-	ld hl, .RetrieveMysteryGiftText ; receive gift at counter
+.GiftWaiting: ; 1049bd (41:49bd)
+	ld hl, .Text_ReceiveGiftAtCounter ; receive gift at counter
 	jr .PrintTextAndExit
 
-.FriendNotReady:
-	ld hl, .YourFriendIsNotReadyText ; friend not ready
-	; fallthrough
+.FriendNotReady: ; 1049c2 (41:49c2)
+	ld hl, .Text_FriendNotReady ; friend not ready
 
-.PrintTextAndExit:
+.PrintTextAndExit: ; 1049c5 (41:49c5)
 	call PrintText
 	ld a, LCDC_DEFAULT
-	ldh [rLCDC], a
+	ld [rLCDC], a
 	ret
+; 1049cd (41:49cd)
 
-.String_PressAToLink_BToCancel:
+.String_PressAToLink_BToCancel: ; 1049cd
 	db   "Press A to"
 	next "link IR-Device"
 	next "Press B to"
 	next "cancel it."
 	db   "@"
+; 1049fd
 
-.MysteryGiftCanceledText:
-	text_far _MysteryGiftCanceledText
-	text_end
+.Text_LinkCanceled: ; 1049fd
+	text_jump UnknownText_0x1c0436
+	db "@"
+; 104a02
 
-.MysteryGiftCommErrorText:
-	text_far _MysteryGiftCommErrorText
-	text_end
+.Text_CommunicationError: ; 104a02
+	text_jump UnknownText_0x1c0454
+	db "@"
+; 104a07
 
-.RetrieveMysteryGiftText:
-	text_far _RetrieveMysteryGiftText
-	text_end
+.Text_ReceiveGiftAtCounter: ; 104a07
+	text_jump UnknownText_0x1c046a
+	db "@"
+; 104a0c
 
-.YourFriendIsNotReadyText:
-	text_far _YourFriendIsNotReadyText
-	text_end
+.Text_FriendNotReady: ; 104a0c
+	text_jump UnknownText_0x1c048e
+	db "@"
+; 104a11
 
-.MysteryGiftFiveADayText:
-	text_far _MysteryGiftFiveADayText
-	text_end
+.Text_MaxFiveGifts: ; 104a11
+	text_jump UnknownText_0x1c04a7
+	db "@"
+; 104a16
 
-.MysteryGiftOneADayText:
-	text_far _MysteryGiftOneADayText
-	text_end
+.Text_MaxOneGiftPerPerson: ; 104a16
+	text_jump UnknownText_0x1c04c6
+	db "@"
+; 104a1b
 
-.MysteryGiftSentText:
-	text_far _MysteryGiftSentText
-	text_end
+.Text_Sent: ; 104a1b
+	text_jump UnknownText_0x1c04e9
+	db "@"
+; 104a20
 
-.MysteryGiftSentHomeText:
-	text_far _MysteryGiftSentHomeText
-	text_end
+.Text_SentToHome: ; 104a20
+	text_jump UnknownText_0x1c04fa
+	db "@"
+; 104a25
 
-.CheckAlreadyGotFiveGiftsToday:
+.CheckAlreadyGotFiveGiftsToday: ; 104a25 (41:4a25)
 	call GetMysteryGiftBank
 	ld a, [sNumDailyMysteryGiftPartnerIDs]
-	cp MAX_MYSTERY_GIFT_PARTNERS
+	cp $5
 	jp CloseSRAM
 
-.CheckAlreadyGotAGiftFromThatPerson:
+.CheckAlreadyGotAGiftFromThatPerson: ; 104a30 (41:4a30)
 	call GetMysteryGiftBank
 	ld a, [wMysteryGiftPartnerID]
 	ld b, a
@@ -225,14 +203,14 @@ DoMysteryGift:
 .No:
 	jp CloseSRAM
 
-.AddMysteryGiftPartnerID:
+.AddMysteryGiftPartnerID: ; 104a56 (41:4a56)
 	call GetMysteryGiftBank
 	ld hl, sNumDailyMysteryGiftPartnerIDs
 	ld a, [hl]
 	inc [hl]
-	ld hl, sDailyMysteryGiftPartnerIDs ; could have done "inc hl" instead
+	ld hl, sDailyMysteryGiftPartnerIDs ; inc hl
 	ld e, a
-	ld d, 0
+	ld d, $0
 	add hl, de
 	add hl, de
 	ld a, [wMysteryGiftPartnerID]
@@ -241,991 +219,862 @@ DoMysteryGift:
 	ld [hl], a
 	jp CloseSRAM
 
-.SaveMysteryGiftTrainerName:
+.SaveMysteryGiftTrainerName: ; 104a71 (41:4a71)
 	call GetMysteryGiftBank
-	ld a, TRUE
+	ld a, $1
 	ld [sMysteryGiftTrainerHouseFlag], a
 	ld hl, wMysteryGiftPartnerName
 	ld de, sMysteryGiftPartnerName
 	ld bc, NAME_LENGTH
 	call CopyBytes
-	assert sMysteryGiftPartnerName + NAME_LENGTH == sMysteryGiftUnusedFlag
-	ld a, TRUE
+	ld a, $1
 	ld [de], a
 	inc de
-	assert sMysteryGiftUnusedFlag + 1 == sMysteryGiftTrainer
-	ld hl, wMysteryGiftTrainer
-	ld bc, wMysteryGiftTrainerEnd - wMysteryGiftTrainer
+	ld hl, wMysteryGiftTrainerData
+	ld bc, (1 + 1 + NUM_MOVES) * PARTY_LENGTH + 2
 	call CopyBytes
 	jp CloseSRAM
 
-ExchangeMysteryGiftData:
+Function104a95: ; 104a95 (41:4a95)
 	di
 	farcall ClearChannels
-	call InitializeIRCommunicationInterrupts
+	call Function104d5e
 
-.restart
-	call BeginIRCommunication
-	call InitializeIRCommunicationRoles
-	ldh a, [hMGStatusFlags]
-	cp MG_CANCELED
-	jp z, EndOrContinueMysteryGiftIRCommunication
-	cp MG_OKAY
-	jr nz, .restart
+.loop2
+	call Function104d96
+	call Function104ddd
+	ld a, [hMGStatusFlags]
+	cp $10
+	jp z, Function104bd0
+	cp $6c
+	jr nz, .loop2
 
-	ldh a, [hMGRole]
-	cp IR_SENDER
-	jr z, SenderExchangeMysteryGiftDataPayloads
-; receiver
-	ld hl, hMGExchangedByte
-	ld b, 1
-	call TryReceivingIRDataBlock
-	jr nz, .failed
-	call ReceiveMysteryGiftDataPayload_GotRegionPrefix
-	jp nz, EndOrContinueMysteryGiftIRCommunication
-	jr ReceiverExchangeMysteryGiftDataPayloads_GotPayload
-
-.failed
+	ld a, [hPrintNum9]
+	cp $2
+	jr z, Function104b22
+	ld hl, hPrintNum1
+	ld b, $1
+	call Function104d56
+	jr nz, .ly_loop
+	call Function104b49
+	jp nz, Function104bd0
+	jr Function104b0a
 	; Delay frame
-.wait_frame
-	ldh a, [rLY]
+.ly_loop
+	ld a, [rLY]
 	cp LY_VBLANK
-	jr c, .wait_frame
-
+	jr c, .ly_loop
 	ld c, LOW(rRP)
-	ld a, rRP_ENABLE_READ_MASK
-	ldh [c], a
-
-	ld b, 60 * 4 ; 4 seconds
-.continue
+	ld a, $c0
+	ld [$ff00+c], a
+	ld b, 240 ; This might have been intended as a 4-second timeout buffer.
+	          ; However, it is reset with each frame.
+.loop3
 	push bc
-	call MysteryGift_UpdateJoypad
-	ld b, 1 << rRP_RECEIVING
+	call MysteryGift_ReadJoypad
+
+	ld b, $2
 	ld c, LOW(rRP)
-.in_vblank
-	ldh a, [c]
+	; Delay frame
+.ly_loop2
+	ld a, [$ff00+c]
 	and b
 	ld b, a
-	ldh a, [rLY]
+	ld a, [rLY]
 	cp LY_VBLANK
-	jr nc, .in_vblank
-.wait_vblank
-	ldh a, [c]
+	jr nc, .ly_loop2
+.ly_loop3
+	ld a, [$ff00+c]
 	and b
 	ld b, a
-	ldh a, [rLY]
+	ld a, [rLY]
 	cp LY_VBLANK
-	jr c, .wait_vblank
+	jr c, .ly_loop3
+
 	ld a, b
 	pop bc
-	; Restart if the 4-second timeout has elapsed
 	dec b
-	jr z, .restart
-	; Restart if rRP is not receiving data
+	jr z, .loop2 ; we never jump here
 	or a
-	jr nz, .restart
-	; Check if we've pressed the B button to cancel
-	ldh a, [hMGJoypadReleased]
+	jr nz, .loop2
+	; Check if we've pressed the B button
+	ld a, [hMGJoypadReleased]
 	bit B_BUTTON_F, a
-	jr z, .continue
-	ld a, MG_CANCELED
-	ldh [hMGStatusFlags], a
-	jp EndOrContinueMysteryGiftIRCommunication
+	jr z, .loop3
+	ld a, $10
+	ld [hMGStatusFlags], a
+	jp Function104bd0
 
-ReceiverExchangeMysteryGiftDataPayloads:
-	; Receive the data payload
-	call ReceiveMysteryGiftDataPayload
-	jp nz, EndOrContinueMysteryGiftIRCommunication
-	; fallthrough
-ReceiverExchangeMysteryGiftDataPayloads_GotPayload:
-	; Switch roles
-	call BeginSendingIRCommunication
-	jp nz, EndOrContinueMysteryGiftIRCommunication
-	; Send the data payload
-	call SendMysteryGiftDataPayload
-	jp nz, EndOrContinueMysteryGiftIRCommunication
-	; Switch roles
-	call BeginReceivingIRCommunication
-	jp nz, EndOrContinueMysteryGiftIRCommunication
-	; Receive an empty block
-	call ReceiveEmptyIRDataBlock
-	jp EndOrContinueMysteryGiftIRCommunication
+Function104b04: ; 104b04 (41:4b04)
+	call Function104b40
+	jp nz, Function104bd0
+Function104b0a: ; 104b0a (41:4b0a)
+	call Function104d38
+	jp nz, Function104bd0
+	call Function104b88
+	jp nz, Function104bd0
+	call Function104d43
+	jp nz, Function104bd0
+	call Function105033
+	jp Function104bd0
 
-SenderExchangeMysteryGiftDataPayloads:
-	; Send the data payload
-	call SendMysteryGiftDataPayload
-	jp nz, EndOrContinueMysteryGiftIRCommunication
-	; Switch roles
-	call BeginReceivingIRCommunication
-	jp nz, EndOrContinueMysteryGiftIRCommunication
-	; Receive the data payload
-	call ReceiveMysteryGiftDataPayload
-	jp nz, EndOrContinueMysteryGiftIRCommunication
-	; Switch roles
-	call BeginSendingIRCommunication
-	jp nz, EndOrContinueMysteryGiftIRCommunication
-	; Send an empty block
-	call SendEmptyIRDataBlock
-	jp EndOrContinueMysteryGiftIRCommunication
+Function104b22: ; 104b22 (41:4b22)
+	call Function104b88
+	jp nz, Function104bd0
+	call Function104d43
+	jp nz, Function104bd0
+	call Function104b40
+	jp nz, Function104bd0
+	call Function104d38
+	jp nz, Function104bd0
+	call Function10502e
+	jp Function104bd0
 
-ReceiveMysteryGiftDataPayload:
-	; Receive the region prefix
-	ld hl, hMGExchangedByte
-	ld b, 1
-	call TryReceivingIRDataBlock
+Function104b40: ; 104b40 (41:4b40)
+	ld hl, hPrintNum1
+	ld b, $1
+	call Function104d56
 	ret nz
-	; fallthrough
-ReceiveMysteryGiftDataPayload_GotRegionPrefix:
-	; Receive an empty block
-	call ReceiveEmptyIRDataBlock
-	ldh a, [hMGStatusFlags]
-	cp MG_OKAY
+
+Function104b49: ; 104b49 (41:4b49)
+	call Function105033
+	ld a, [hMGStatusFlags]
+	cp $6c
 	ret nz
-	; Verify the received region prefix
-	ldh a, [hMGExchangedByte]
-	cp REGION_PREFIX
-	jp nz, WrongMysteryGiftRegion
-	ld a, REGION_CODE
-	ldh [hMGExchangedByte], a
-	; Switch roles
-	call BeginSendingIRCommunication
+	ld a, [hPrintNum1]
+	cp $96
+	jp nz, Function104d32
+	ld a, $90
+	ld [hPrintNum1], a
+	call Function104d38
 	ret nz
-	; Send the region code
-	ld hl, hMGExchangedByte
-	ld b, 1
-	call TrySendingIRDataBlock
+	ld hl, hPrintNum1
+	ld b, $1
+	call Function104d4e
 	ret nz
-	; Send an empty block
-	call SendEmptyIRDataBlock
-	ldh a, [hMGStatusFlags]
-	cp MG_OKAY
+	call Function10502e
+	ld a, [hMGStatusFlags]
+	cp $6c
 	ret nz
-	; Switch roles
-	call BeginReceivingIRCommunication
+	call Function104d43
 	ret nz
-	; Receive the staged data
-	ld hl, wMysteryGiftTrainer
-	ld a, [wMysteryGiftStagedDataLength]
+	ld hl, wMysteryGiftTrainerData
+	ld a, [wca02]
 	ld b, a
-	call TryReceivingIRDataBlock
+	call Function104d56
 	ret nz
-	; Receive an empty block
-	call ReceiveEmptyIRDataBlock
-	ldh a, [hMGStatusFlags]
-	cp MG_OKAY
+	call Function105033
+	ld a, [hMGStatusFlags]
+	cp $6c
 	ret
 
-SendMysteryGiftDataPayload:
-	; Send the region prefix
-	ld a, REGION_PREFIX
-	ldh [hMGExchangedByte], a
-	ld hl, hMGExchangedByte
-	ld b, 1
-	call TrySendingIRDataBlock
+Function104b88: ; 104b88 (41:4b88)
+	ld a, $96
+	ld [hPrintNum1], a
+	ld hl, hPrintNum1
+	ld b, $1
+	call Function104d4e
 	ret nz
-	; Send an empty block
-	call SendEmptyIRDataBlock
-	ldh a, [hMGStatusFlags]
-	cp MG_OKAY
+	call Function10502e
+	ld a, [hMGStatusFlags]
+	cp $6c
 	ret nz
-	; Switch roles
-	call BeginReceivingIRCommunication
+	call Function104d43
 	ret nz
-	; Receive the region code
-	ld hl, hMGExchangedByte
-	ld b, 1
-	call TryReceivingIRDataBlock
+	ld hl, hPrintNum1
+	ld b, $1
+	call Function104d56
 	ret nz
-	; Receive an empty block
-	call ReceiveEmptyIRDataBlock
-	ldh a, [hMGStatusFlags]
-	cp MG_OKAY
+	call Function105033
+	ld a, [hMGStatusFlags]
+	cp $6c
 	ret nz
-	; Verify the received region code
-	ldh a, [hMGExchangedByte]
-	cp REGION_CODE
-	jp nz, WrongMysteryGiftRegion
-	; Switch roles
-	call BeginSendingIRCommunication
+	ld a, [hPrintNum1]
+	cp $90
+	jp nz, Function104d32
+	call Function104d38
 	ret nz
-	; Send the staged data
-	ld hl, wMysteryGiftStaging
-	ld a, [wMysteryGiftStagedDataLength]
+	ld hl, wLinkData
+	ld a, [wca02]
 	ld b, a
-	call TrySendingIRDataBlock
+	call Function104d4e
 	ret nz
-	; Send an empty block
-	call SendEmptyIRDataBlock
-	ldh a, [hMGStatusFlags]
-	cp MG_OKAY
+	call Function10502e
+	ld a, [hMGStatusFlags]
+	cp $6c
 	ret
 
-EndOrContinueMysteryGiftIRCommunication:
+Function104bd0: ; 104bd0 (41:4bd0)
 	nop
-	ldh a, [hMGStatusFlags]
-	; Quit if player canceled
-	cp MG_CANCELED
+	ld a, [hMGStatusFlags]
+	cp $10
 	jr z, .quit
-	; Quit if there was a communication error
-	cp MG_OKAY
+	cp $6c
 	jr nz, .quit
-	; Quit if all messages are sent/received
-	ld hl, wMysteryGiftMessageCount
+	ld hl, wca01
 	dec [hl]
 	jr z, .quit
-	; Quit if communicating with Pokémon Pikachu 2 device
-	ld hl, wMysteryGiftTrainer
+	ld hl, wMysteryGiftTrainerData
 	ld de, wMysteryGiftPartnerData
 	ld bc, wMysteryGiftPartnerDataEnd - wMysteryGiftPartnerData
 	call CopyBytes
-	ld a, [wMysteryGiftTrainer] ; first byte is the version
-	cp POKEMON_PIKACHU_2_VERSION
+	ld a, [wMysteryGiftTrainerData]
+	cp $3
 	jr nc, .quit
-
-	; Prepare the second message for wMysteryGiftTrainer
 	farcall StagePartyDataForMysteryGift
-	call ClearMysteryGiftTrainer
-	ld a, wMysteryGiftTrainerEnd - wMysteryGiftTrainer
-	ld [wMysteryGiftStagedDataLength], a
+	call MysteryGift_ClearTrainerData
+	ld a, $26
+	ld [wca02], a
+	ld a, [hPrintNum9]
+	cp $2
+	jr z, .asm_104c10
+	call Function104d43
+	jr nz, Function104bd0
+	jp Function104b04
 
-	ldh a, [hMGRole]
-	cp IR_SENDER
-	jr z, .sender
-; receiver
-	call BeginReceivingIRCommunication
-	jr nz, EndOrContinueMysteryGiftIRCommunication
-	jp ReceiverExchangeMysteryGiftDataPayloads
-
-.sender
-	call BeginSendingIRCommunication
-	jr nz, EndOrContinueMysteryGiftIRCommunication
-	jp SenderExchangeMysteryGiftDataPayloads
+.asm_104c10
+	call Function104d38
+	jr nz, Function104bd0
+	jp Function104b22
 
 .quit
-	ldh a, [hMGStatusFlags]
+	ld a, [hMGStatusFlags]
 	push af
-	call EndIRCommunication
+	call Function104da0
 	xor a
-	ldh [rIF], a
-	ldh a, [rIE]
-	or 1 << VBLANK
-	ldh [rIE], a
+	ld [rIF], a
+	ld a, [rIE]
+	or $1
+	ld [rIE], a
 	ei
 	call DelayFrame
 	pop af
 	ret
 
-ExchangeNameCardData:
+Function104c2d: ; 104c2d (41:4c2d)
 	di
 	farcall ClearChannels
-	call InitializeIRCommunicationInterrupts
+	call Function104d5e
+.asm_104c37
+	call Function104d96
+	call Function104ddd
+	ld a, [hMGStatusFlags]
+	cp $10
+	jp z, Function104d1c
+	cp $6c
+	jr nz, .asm_104c37
+	ld a, [hPrintNum9]
+	cp $2
+	jr z, .asm_104c6c
+	call Function104c8a
+	jp nz, Function104d1c
+	call Function104d38
+	jp nz, Function104d1c
+	call Function104cd2
+	jp nz, Function104d1c
+	call Function104d43
+	jp nz, Function104d1c
+	call Function105033
+	jp Function104d1c
+.asm_104c6c
+	call Function104cd2
+	jp nz, Function104d1c
+	call Function104d43
+	jp nz, Function104d1c
+	call Function104c8a
+	jp nz, Function104d1c
+	call Function104d38
+	jp nz, Function104d1c
+	call Function10502e
+	jp Function104d1c
 
-.restart
-	call BeginIRCommunication
-	call InitializeIRCommunicationRoles
-	ldh a, [hMGStatusFlags]
-	cp MG_CANCELED
-	jp z, EndNameCardIRCommunication
-	cp MG_OKAY
-	jr nz, .restart
-
-	ldh a, [hMGRole]
-	cp IR_SENDER
-	jr z, .sender
-; receiver
-	; Receive the data payload
-	call ReceiveNameCardDataPayload
-	jp nz, EndNameCardIRCommunication
-	; Switch roles
-	call BeginSendingIRCommunication
-	jp nz, EndNameCardIRCommunication
-	; Send the data payload
-	call SendNameCardDataPayload
-	jp nz, EndNameCardIRCommunication
-	; Switch roles
-	call BeginReceivingIRCommunication
-	jp nz, EndNameCardIRCommunication
-	; Receive an empty block
-	call ReceiveEmptyIRDataBlock
-	jp EndNameCardIRCommunication
-
-.sender
-	; Send the data payload
-	call SendNameCardDataPayload
-	jp nz, EndNameCardIRCommunication
-	; Switch roles
-	call BeginReceivingIRCommunication
-	jp nz, EndNameCardIRCommunication
-	; Receive the data payload
-	call ReceiveNameCardDataPayload
-	jp nz, EndNameCardIRCommunication
-	; Switch roles
-	call BeginSendingIRCommunication
-	jp nz, EndNameCardIRCommunication
-	; Send an empty block
-	call SendEmptyIRDataBlock
-	jp EndNameCardIRCommunication
-
-ReceiveNameCardDataPayload:
-	; Receive the Name Card prefix
-	ld hl, hMGExchangedByte
-	ld b, 1
-	call TryReceivingIRDataBlock
+Function104c8a: ; 104c8a (41:4c8a)
+	ld hl, hPrintNum1
+	ld b, $1
+	call Function104d56
 	ret nz
-	; Receive an empty block
-	call ReceiveEmptyIRDataBlock
-	ldh a, [hMGStatusFlags]
-	cp MG_OKAY
+	call Function105033
+	ld a, [hMGStatusFlags]
+	cp $6c
 	ret nz
-	; Verify the received Name Card prefix
-	ldh a, [hMGExchangedByte]
-	cp NAME_CARD_PREFIX
-	jp nz, WrongMysteryGiftRegion
+	ld a, [hPrintNum1]
+	cp $3c
+	jp nz, Function104d32
 	swap a
-	ldh [hMGExchangedByte], a
-	; Switch roles
-	call BeginSendingIRCommunication
+	ld [hPrintNum1], a
+	call Function104d38
 	ret nz
-	; Send the swapped Name Card prefix
-	ld hl, hMGExchangedByte
-	ld b, 1
-	call TrySendingIRDataBlock
+	ld hl, hPrintNum1
+	ld b, $1
+	call Function104d4e
 	ret nz
-	; Send an empty block
-	call SendEmptyIRDataBlock
-	ldh a, [hMGStatusFlags]
-	cp MG_OKAY
+	call Function10502e
+	ld a, [hMGStatusFlags]
+	cp $6c
 	ret nz
-	; Switch roles
-	call BeginReceivingIRCommunication
+	call Function104d43
 	ret nz
-	; Receive the staged data
-	ld hl, wNameCardData
-	ld a, [wMysteryGiftStagedDataLength]
+	ld hl, wMysteryGiftTrainerData
+	ld a, [wca02]
 	ld b, a
-	call TryReceivingIRDataBlock
+	call Function104d56
 	ret nz
-	; Receive an empty block
-	call ReceiveEmptyIRDataBlock
-	ldh a, [hMGStatusFlags]
-	cp MG_OKAY
+	call Function105033
+	ld a, [hMGStatusFlags]
+	cp $6c
 	ret
 
-SendNameCardDataPayload:
-	; Send the Name Card prefix
-	ld a, NAME_CARD_PREFIX
-	ldh [hMGExchangedByte], a
-	ld hl, hMGExchangedByte
-	ld b, 1
-	call TrySendingIRDataBlock
+Function104cd2: ; 104cd2 (41:4cd2)
+	ld a, $3c
+	ld [hPrintNum1], a
+	ld hl, hPrintNum1
+	ld b, $1
+	call Function104d4e
 	ret nz
-	; Send an empty block
-	call SendEmptyIRDataBlock
-	ldh a, [hMGStatusFlags]
-	cp MG_OKAY
+	call Function10502e
+	ld a, [hMGStatusFlags]
+	cp $6c
 	ret nz
-	; Switch roles
-	call BeginReceivingIRCommunication
+	call Function104d43
 	ret nz
-	; Receive the swapped Name Card prefix
-	ld hl, hMGExchangedByte
-	ld b, 1
-	call TryReceivingIRDataBlock
+	ld hl, hPrintNum1
+	ld b, $1
+	call Function104d56
 	ret nz
-	; Receive an empty block
-	call ReceiveEmptyIRDataBlock
-	ldh a, [hMGStatusFlags]
-	cp MG_OKAY
+	call Function105033
+	ld a, [hMGStatusFlags]
+	cp $6c
 	ret nz
-	; Verify the received swapped Name Card prefix
-	ldh a, [hMGExchangedByte]
+	ld a, [hPrintNum1]
 	swap a
-	cp NAME_CARD_PREFIX
-	jp nz, WrongMysteryGiftRegion
-	; Switch roles
-	call BeginSendingIRCommunication
+	cp $3c
+	jp nz, Function104d32
+	call Function104d38
 	ret nz
-	; Send the staged data
-	ld hl, wMysteryGiftStaging
-	ld a, [wMysteryGiftStagedDataLength]
+	ld hl, wLinkData
+	ld a, [wca02]
 	ld b, a
-	call TrySendingIRDataBlock
+	call Function104d4e
 	ret nz
-	; Send an empty block
-	call SendEmptyIRDataBlock
-	ldh a, [hMGStatusFlags]
-	cp MG_OKAY
+	call Function10502e
+	ld a, [hMGStatusFlags]
+	cp $6c
 	ret
 
-EndNameCardIRCommunication:
+Function104d1c: ; 104d1c (41:4d1c)
 	nop
-	ldh a, [hMGStatusFlags]
+	ld a, [hMGStatusFlags]
 	push af
-	call EndIRCommunication
+	call Function104da0
 	xor a
-	ldh [rIF], a
-	ldh a, [rIE]
-	or 1 << VBLANK
-	ldh [rIE], a
+	ld [rIF], a
+	ld a, [rIE]
+	or $1
+	ld [rIE], a
 	ei
 	call DelayFrame
 	pop af
 	ret
 
-WrongMysteryGiftRegion:
-	ld a, MG_WRONG_PREFIX
-	ldh [hMGStatusFlags], a
+Function104d32: ; 104d32 (41:4d32)
+	ld a, $80
+	ld [hMGStatusFlags], a
 	and a
 	ret
 
-BeginSendingIRCommunication:
-	call BeginIRCommunication
-	call SendIRHelloMessage
-	ldh a, [hMGStatusFlags]
-	cp MG_OKAY
+Function104d38: ; 104d38 (41:4d38)
+	call Function104d96
+	call Function104e46
+	ld a, [hMGStatusFlags]
+	cp $6c
 	ret
 
-BeginReceivingIRCommunication:
-	call BeginIRCommunication
-	call ReceiveIRHelloMessage
-	ldh a, [hMGStatusFlags]
-	cp MG_OKAY
+Function104d43: ; 104d43 (41:4d43)
+	call Function104d96
+	call Function104dfe
+	ld a, [hMGStatusFlags]
+	cp $6c
 	ret
 
-TrySendingIRDataBlock:
-	call SendIRDataBlock
-	ldh a, [hMGStatusFlags]
-	cp MG_OKAY
+Function104d4e: ; 104d4e (41:4d4e)
+	call Function104e93
+	ld a, [hMGStatusFlags]
+	cp $6c
 	ret
 
-TryReceivingIRDataBlock:
-	call ReceiveIRDataBlock
-	ldh a, [hMGStatusFlags]
-	cp MG_OKAY
+Function104d56: ; 104d56 (41:4d56)
+	call Function104f57
+	ld a, [hMGStatusFlags]
+	cp $6c
 	ret
 
-InitializeIRCommunicationInterrupts:
-	call StartFastIRTimer
-	ld a, 1 << TIMER
-	ldh [rIE], a
+Function104d5e: ; 104d5e (41:4d5e)
+	call Function104d74
+	ld a, $4
+	ld [rIE], a
 	xor a
-	ldh [rIF], a
-	call BeginIRCommunication
-; waits for ~$40400 cycles = ~0.25 seconds
+	ld [rIF], a
+	call Function104d96
 	xor a
 	ld b, a
-.busy_wait
+.asm_104d6d
 	inc a
-	jr nz, .busy_wait
+	jr nz, .asm_104d6d
 	inc b
-	jr nz, .busy_wait
+	jr nz, .asm_104d6d
 	ret
 
-StartFastIRTimer:
-; Starts a 65,536 Hz timer that interrupts every 3 increments (21,845 Hz).
+Function104d74: ; 104d74 (41:4d74)
 	xor a
-	ldh [rTAC], a
-	ld a, -2
-	ldh [rTMA], a
-	ldh [rTIMA], a
-	ld a, rTAC_65536_HZ
-	ldh [rTAC], a
-	or 1 << rTAC_ON
-	ldh [rTAC], a
+	ld [rTAC], a
+	ld a, $fe
+	ld [rTMA], a
+	ld [rTIMA], a
+	ld a, $2
+	ld [rTAC], a
+	or $4
+	ld [rTAC], a
 	ret
 
-StartSlowIRTimer:
-; Starts a 65,536 Hz timer that interrupts every 256 increments (256 Hz).
+Function104d86: ; 104d86 (41:4d86)
 	xor a
-	ldh [rTAC], a
-	ldh [rTMA], a
-	ldh [rTIMA], a
-	ld a, rTAC_65536_HZ
-	ldh [rTAC], a
-	or 1 << rTAC_ON
-	ldh [rTAC], a
+	ld [rTAC], a
+	ld [rTMA], a
+	ld [rTIMA], a
+	ld a, $2
+	ld [rTAC], a
+	or $4
+	ld [rTAC], a
 	ret
 
-BeginIRCommunication:
-	ld a, rRP_ENABLE_READ_MASK
-	call ToggleIRCommunication
-	ld a, IR_RECEIVER
-	ldh [hMGRole], a
+Function104d96: ; 104d96 (41:4d96)
+	ld a, $c0
+	call Function104e8c
+	ld a, $1
+	ld [hPrintNum9], a
 	ret
 
-EndIRCommunication:
+Function104da0: ; 104da0 (41:4da0)
 	xor a
-	call ToggleIRCommunication
-	ld a, rTAC_65536_HZ
-	ldh [rTAC], a
+	call Function104e8c
+	ld a, $2
+	ld [rTAC], a
 	ret
 
-ReceiveInfraredLEDOn:
-; Count interrupts of the partner's IR LED on; quit after 256-d interrupts.
-.recv_loop
+Function104da9: ; 104da9 (41:4da9)
 	inc d
 	ret z
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	halt
-	ldh a, [c]
-	bit rRP_RECEIVING, a
-	jr z, .recv_loop
+	ld a, [$ff00+c]
+	bit 1, a
+	jr z, Function104da9
 	or a
 	ret
 
-ReceiveInfraredLEDOff:
-; Count interrupts of the partner's IR LED off; quit after 256-d interrupts.
-.no_recv_loop
+Function104db7: ; 104db7 (41:4db7)
 	inc d
 	ret z
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	halt
-	ldh a, [c]
-	bit rRP_RECEIVING, a
-	jr nz, .no_recv_loop
+	ld a, [$ff00+c]
+	bit 1, a
+	jr nz, Function104db7
 	or a
 	ret
 
-SendInfraredLEDOn:
-; Holds the IR LED on for d-1 interrupts.
-	ld a, rRP_ENABLE_READ_MASK | (1 << rRP_LED_ON)
-	ldh [c], a
+Function104dc5: ; 104dc5 (41:4dc5)
+	ld a, $c1
+	ld [$ff00+c], a
 .wait
 	dec d
 	ret z
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	halt
 	jr .wait
 
-SendInfraredLEDOff:
-; Holds the IR LED off for d-1 interrupts.
-	ld a, rRP_ENABLE_READ_MASK
-	ldh [c], a
+Function104dd1: ; 104dd1 (41:4dd1)
+	ld a, $c0
+	ld [$ff00+c], a
 .wait
 	dec d
 	ret z
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	halt
 	jr .wait
 
-InitializeIRCommunicationRoles:
-	ld d, 0
+Function104ddd: ; 104ddd (41:4ddd)
+	ld d, $0
 	ld e, d
-
-	ld a, IR_RECEIVER
-	ldh [hMGRole], a
+	ld a, $1
+	ld [hPrintNum9], a
 .loop
-	call MysteryGift_UpdateJoypad
-	ld b, 1 << rRP_RECEIVING
+	call MysteryGift_ReadJoypad
+	ld b, $2
 	ld c, LOW(rRP)
-	; Check if we've pressed the B button to cancel
-	ldh a, [hMGJoypadReleased]
+	ld a, [hMGJoypadReleased]
 	bit B_BUTTON_F, a
-	jr z, .not_canceled
-	ld a, MG_CANCELED
-	ldh [hMGStatusFlags], a
+	jr z, .next
+	ld a, $10
+	ld [hMGStatusFlags], a
 	ret
 
-.not_canceled
-	; Check if we've pressed the A button to start sending
-	bit A_BUTTON_F, a
-	jr nz, SendIRHelloMessageAfterDelay
-	; If rRP is not receiving data, keep checking for input
-	ldh a, [c]
+.next
+	bit 0, a
+	jr nz, Function104e3a
+	ld a, [$ff00+c]
 	and b
 	jr nz, .loop
-	; fallthrough
 
-ReceiveIRHelloMessage:
+Function104dfe: ; 104dfe (41:4dfe)
 	ld c, LOW(rRP)
-	ld d, 0
+	ld d, $0
 	ld e, d
-
-	call ReceiveInfraredLEDOff
-	jp z, InfraredLEDReceiveTimedOut
+	call Function104db7
+	jp z, Function104f42
 	ld d, e
-	call ReceiveInfraredLEDOn
-	jp z, InfraredLEDReceiveTimedOut
-	call ReceiveInfraredLEDOff
-	jp z, InfraredLEDReceiveTimedOut
-	call ReceiveInfraredLEDOn
-	jp z, InfraredLEDReceiveTimedOut
-
-	ld a, MG_OKAY
-	ldh [hMGStatusFlags], a
-
-	ld d, 61
-	call SendInfraredLEDOff
-	ld d, 5
-	call SendInfraredLEDOn
-	ld d, 21
-	call SendInfraredLEDOff
-	ld d, 5
-	call SendInfraredLEDOn
-	ld d, 5
-	call SendInfraredLEDOff
+	call Function104da9
+	jp z, Function104f42
+	call Function104db7
+	jp z, Function104f42
+	call Function104da9
+	jp z, Function104f42
+	ld a, $6c
+	ld [hMGStatusFlags], a
+	ld d, $3d
+	call Function104dd1
+	ld d, $5
+	call Function104dc5
+	ld d, $15
+	call Function104dd1
+	ld d, $5
+	call Function104dc5
+	ld d, $5
+	call Function104dd1
 	ret
 
-SendIRHelloMessageAfterDelay:
+Function104e3a: ; 104e3a (41:4e3a)
 	; Wait a random amount of time
 	call Random
 	ld e, a
 	and $f
 	ld d, a
-.wait_loop
+.loop
 	dec de
 	ld a, d
 	or e
-	jr nz, .wait_loop
-	; fallthrough
-
-SendIRHelloMessage:
-	ld a, IR_SENDER
-	ldh [hMGRole], a
-
+	jr nz, .loop
+Function104e46: ; 104e46 (41:4e46)
+	ld a, $2
+	ld [hPrintNum9], a
 	ld c, LOW(rRP)
-	ld d, 0
+	ld d, $0
 	ld e, d
-
-	ld d, 61
-	call SendInfraredLEDOff
-	ld d, 5
-	call SendInfraredLEDOn
-	ld d, 21
-	call SendInfraredLEDOff
-	ld d, 5
-	call SendInfraredLEDOn
-	ld d, 5
-	call SendInfraredLEDOff
-
+	ld d, $3d
+	call Function104dd1
+	ld d, $5
+	call Function104dc5
+	ld d, $15
+	call Function104dd1
+	ld d, $5
+	call Function104dc5
+	ld d, $5
+	call Function104dd1
 	ld d, e
-	call ReceiveInfraredLEDOff
-	jp z, InfraredLEDReceiveTimedOut
+	call Function104db7
+	jp z, Function104f42
 	ld d, e
-	call ReceiveInfraredLEDOn
-	jp z, InfraredLEDReceiveTimedOut
-	call ReceiveInfraredLEDOff
-	jp z, InfraredLEDReceiveTimedOut
-	call ReceiveInfraredLEDOn
-	jp z, InfraredLEDReceiveTimedOut
-
-	ld d, 61
-	call SendInfraredLEDOff
-
-	ld a, MG_OKAY
-	ldh [hMGStatusFlags], a
+	call Function104da9
+	jp z, Function104f42
+	call Function104db7
+	jp z, Function104f42
+	call Function104da9
+	jp z, Function104f42
+	ld d, $3d
+	call Function104dd1
+	ld a, $6c
+	ld [hMGStatusFlags], a
 	ret
 
-ToggleIRCommunication:
-	ldh [rRP], a
-	ld a, MG_START_END
-	ldh [hMGStatusFlags], a
+Function104e8c: ; 104e8c (41:4e8c)
+	ld [rRP], a
+	ld a, $ff
+	ld [hMGStatusFlags], a
 	ret
 
-SendIRDataBlock:
-; Send b bytes of data in three messages:
-; 1. two bytes: MESSAGE_PREFIX and the length b
-; 2. b bytes: the actual data
-; 3. two bytes: a little-endian checksum
-; Then receive a one-byte acknowledgement message: the status.
+Function104e93: ; 104e93 (41:4e93)
 	xor a
-	ldh [hMGChecksum + 0], a
-	ldh [hMGChecksum + 1], a
+	ld [hPrintNum5], a
+	ld [hPrintNum6], a
 	push hl
 	push bc
 	ld c, LOW(rRP)
-	ld d, 61
-	call SendInfraredLEDOff
-	ld hl, hMGExchangedWord
-	ld a, MESSAGE_PREFIX
+	ld d, $3d
+	call Function104dd1
+	ld hl, hPrintNum2
+	ld a, $5a
 	ld [hli], a
 	ld [hl], b
 	dec hl
-	ld b, 2
-	call SendIRDataMessage
+	ld b, $2
+	call Function104ed6
 	pop bc
 	pop hl
-	call SendIRDataMessage
-	ldh a, [hMGChecksum + 0]
-	ldh [hMGExchangedWord + 0], a
-	ldh a, [hMGChecksum + 1]
-	ldh [hMGExchangedWord + 1], a
+	call Function104ed6
+	ld a, [hPrintNum5]
+	ld [hPrintNum2], a
+	ld a, [hPrintNum6]
+	ld [hPrintNum3], a
 	push hl
-	ld hl, hMGExchangedWord
-	ld b, 2
-	call SendIRDataMessage
+	ld hl, hPrintNum2
+	ld b, $2
+	call Function104ed6
 	ld hl, hMGStatusFlags
-	ld b, 1
-	call ReceiveIRDataMessage
-	ldh a, [hMGExchangedWord + 0]
-	ldh [hMGChecksum + 0], a
-	ldh a, [hMGExchangedWord + 1]
-	ldh [hMGChecksum + 1], a
+	ld b, $1
+	call Function104faf
+	ld a, [hPrintNum2]
+	ld [hPrintNum5], a
+	ld a, [hPrintNum3]
+	ld [hPrintNum6], a
 	pop hl
 	ret
 
-SendIRDataMessage:
-; Send b bytes of data one bit at a time, and update the checksum.
+Function104ed6: ; 104ed6 (41:4ed6)
 	ld c, LOW(rRP)
-
-	ld d, 5
-	call SendInfraredLEDOff
-	ld d, 5
-	call SendInfraredLEDOn
-	ld d, 21
-	call SendInfraredLEDOff
-
-	; b = -b - 1; then count up to 0
+	ld d, $5
+	call Function104dd1
+	ld d, $5
+	call Function104dc5
+	ld d, $15
+	call Function104dd1
 	ld a, b
 	cpl
 	ld b, a
-
-	ld a, -12
-	ldh [rTMA], a
-.byte_loop
+	ld a, $f4
+	ld [rTMA], a
+.asm_104eee
 	inc b
-	jr z, .done
-	ld a, 8
-	ldh [hMGNumBits], a
-	; Get the next data byte
+	jr z, .asm_104f2e
+	ld a, $8
+	ld [hPrintNum4], a
 	ld a, [hli]
 	ld e, a
-	; Add the next data byte to the checksum
-	ldh a, [hMGChecksum + 0]
+	ld a, [hPrintNum5]
 	add e
-	ldh [hMGChecksum + 0], a
-	ldh a, [hMGChecksum + 1]
+	ld [hPrintNum5], a
+	ld a, [hPrintNum6]
 	adc 0
-	ldh [hMGChecksum + 1], a
-	; Send each bit of the byte
-.bit_loop
+	ld [hPrintNum6], a
+.asm_104f02
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	halt
-	ld a, rRP_ENABLE_READ_MASK | (1 << rRP_LED_ON)
-	ldh [rRP], a
-	; Turn the LED off for longer if the bit is 1
-	ld d, 1
+	ld a, $c1
+	ld [rRP], a
+	ld d, $1
 	ld a, e
 	rlca
 	ld e, a
-	jr nc, .wait
+	jr nc, .asm_104f13
 	inc d
-.wait
-	ldh a, [rTIMA]
-	cp -8
-	jr c, .wait
-	ld a, rRP_ENABLE_READ_MASK
-	ldh [rRP], a
+.asm_104f13
+	ld a, [rTIMA]
+	cp $f8
+	jr c, .asm_104f13
+	ld a, $c0
+	ld [rRP], a
 	dec d
-	jr z, .no_halt
+	jr z, .asm_104f25
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	halt
-.no_halt
-	ldh a, [hMGNumBits]
+.asm_104f25
+	ld a, [hPrintNum4]
 	dec a
-	jr z, .byte_loop
-	ldh [hMGNumBits], a
-	jr .bit_loop
-
-.done
-	ld a, -2
-	ldh [rTMA], a
+	jr z, .asm_104eee
+	ld [hPrintNum4], a
+	jr .asm_104f02
+.asm_104f2e
+	ld a, $fe
+	ld [rTMA], a
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	halt
-
-	ld d, 5
-	call SendInfraredLEDOn
-	ld d, 17
-	call SendInfraredLEDOff
+	ld d, $5
+	call Function104dc5
+	ld d, $11
+	call Function104dd1
 	ret
 
-InfraredLEDReceiveTimedOut:
-	ldh a, [hMGStatusFlags]
-	or MG_TIMED_OUT
-	ldh [hMGStatusFlags], a
+Function104f42: ; 104f42 (41:4f42)
+	ld a, [hMGStatusFlags]
+	or $2
+	ld [hMGStatusFlags], a
 	ret
 
-ReceivedWrongIRChecksum:
-	ldh a, [hMGStatusFlags]
-	or MG_WRONG_CHECKSUM
-	ldh [hMGStatusFlags], a
+Function104f49: ; 104f49 (41:4f49)
+	ld a, [hMGStatusFlags]
+	or $1
+	ld [hMGStatusFlags], a
 	ret
 
-ReceivedWrongIRMessagePrefix:
-	ldh a, [hMGStatusFlags]
-	or MG_WRONG_PREFIX
-	ldh [hMGStatusFlags], a
+Function104f50: ; 104f50 (41:4f50)
+	ld a, [hMGStatusFlags]
+	or $80
+	ld [hMGStatusFlags], a
 	ret
 
-ReceiveIRDataBlock:
-; Receive b bytes of data in three messages:
-; 1. two bytes: MESSAGE_PREFIX and the length b
-; 2. b bytes: the actual data
-; 3. two bytes: a little-endian checksum
-; Then send a one-byte acknowledgement message: the status.
+Function104f57: ; 104f57 (41:4f57)
 	xor a
-	ldh [hMGChecksum + 0], a
-	ldh [hMGChecksum + 1], a
+	ld [hPrintNum5], a
+	ld [hPrintNum6], a
 	push bc
 	push hl
-	ld hl, hMGExchangedWord
-	ld b, 2
-	call ReceiveIRDataMessage
-	ldh a, [hMGExchangedWord + 1]
-	ldh [hMGUnusedMsgLength], a
+	ld hl, hPrintNum2
+	ld b, $2
+	call Function104faf
+	ld a, [hPrintNum3]
+	ld [hPrintNum8], a
 	ld b, a
 	pop hl
 	pop af
 	cp b
-	jp c, ReceivedWrongIRMessagePrefix
-	ldh a, [hMGExchangedWord + 0]
-	cp MESSAGE_PREFIX
-	jp nz, ReceivedWrongIRMessagePrefix
-	call ReceiveIRDataMessage
-	ldh a, [hMGChecksum + 0]
+	jp c, Function104f50
+	ld a, [hPrintNum2]
+	cp $5a
+	jp nz, Function104f50
+	call Function104faf
+	ld a, [hPrintNum5]
 	ld d, a
-	ldh a, [hMGChecksum + 1]
+	ld a, [hPrintNum6]
 	ld e, a
 	push hl
 	push de
-	ld hl, hMGExchangedWord
-	ld b, 2
-	call ReceiveIRDataMessage
+	ld hl, hPrintNum2
+	ld b, $2
+	call Function104faf
 	pop de
-	ld hl, hMGExchangedWord
+	ld hl, hPrintNum2
 	ld a, [hli]
 	xor d
 	ld b, a
 	ld a, [hl]
 	xor e
 	or b
-	call nz, ReceivedWrongIRChecksum
+	call nz, Function104f49
 	push de
-
-	ld d, 61
-	call SendInfraredLEDOff
-
+	ld d, $3d
+	call Function104dd1
 	ld hl, hMGStatusFlags
-	ld b, 1
-	call SendIRDataMessage
-
+	ld b, $1
+	call Function104ed6
 	pop de
 	pop hl
 	ld a, d
-	ldh [hMGChecksum + 0], a
+	ld [hPrintNum5], a
 	ld a, e
-	ldh [hMGChecksum + 1], a
+	ld [hPrintNum6], a
 	ret
 
-ReceiveIRDataMessage:
+Function104faf: ; 104faf (41:4faf)
 	ld c, LOW(rRP)
-
-	ld d, 0
-	call ReceiveInfraredLEDOff
-	jp z, InfraredLEDReceiveTimedOut
-	ld d, 0
-	call ReceiveInfraredLEDOn
-	jp z, InfraredLEDReceiveTimedOut
-	ld d, 0
-	call ReceiveInfraredLEDOff
-	jp z, InfraredLEDReceiveTimedOut
-
+	ld d, $0
+	call Function104db7
+	jp z, Function104f42
+	ld d, $0
+	call Function104da9
+	jp z, Function104f42
+	ld d, $0
+	call Function104db7
+	jp z, Function104f42
 	ld a, b
 	cpl
 	ld b, a
 	xor a
-	ldh [hMGPrevTIMA], a
-
-	call StartSlowIRTimer
-.main_loop
+	ld [hMGJoypadPressed + 2], a
+	call Function104d86
+.asm_104fd2
 	inc b
-	jr z, .done
-	ld a, 8
-	ldh [hMGNumBits], a
-.inner_loop
-	ld d, 0
-.recv_loop
+	jr z, .asm_10501a
+	ld a, $8
+	ld [hPrintNum4], a
+.asm_104fd9
+	ld d, $0
+.asm_104fdb
 	inc d
-	jr z, .recv_done
-	ldh a, [c]
-	bit rRP_RECEIVING, a
-	jr z, .recv_loop
-	ld d, 0
-.recv_done
-.send_loop
+	jr z, .asm_104fe5
+	ld a, [$ff00+c]
+	bit 1, a
+	jr z, .asm_104fdb
+	ld d, $0
+.asm_104fe5
 	inc d
-	jr z, .send_done
-	ldh a, [c]
-	bit rRP_RECEIVING, a
-	jr nz, .send_loop
-.send_done
-	ldh a, [hMGPrevTIMA]
+	jr z, .asm_104fed
+	ld a, [$ff00+c]
+	bit 1, a
+	jr nz, .asm_104fe5
+.asm_104fed
+	ld a, [hMGJoypadPressed + 2]
 	ld d, a
-	ldh a, [rTIMA]
-	ldh [hMGPrevTIMA], a
+	ld a, [rTIMA]
+	ld [hMGJoypadPressed + 2], a
 	sub d
 	cp $12
-	jr c, .zero
+	jr c, .asm_104ffd
 	set 0, e
-	jr .ok
-.zero
+	jr .asm_104fff
+.asm_104ffd
 	res 0, e
-.ok
-	ldh a, [hMGNumBits]
+.asm_104fff
+	ld a, [hPrintNum4]
 	dec a
-	ldh [hMGNumBits], a
-	jr z, .continue
+	ld [hPrintNum4], a
+	jr z, .asm_10500b
 	ld a, e
 	rlca
 	ld e, a
-	jr .inner_loop
-
-.continue
+	jr .asm_104fd9
+.asm_10500b
 	ld a, e
 	ld [hli], a
-	ldh a, [hMGChecksum + 0]
+	ld a, [hPrintNum5]
 	add e
-	ldh [hMGChecksum + 0], a
-	ldh a, [hMGChecksum + 1]
+	ld [hPrintNum5], a
+	ld a, [hPrintNum6]
 	adc 0
-	ldh [hMGChecksum + 1], a
-	jr .main_loop
-
-.done
-	call StartFastIRTimer
+	ld [hPrintNum6], a
+	jr .asm_104fd2
+.asm_10501a
+	call Function104d74
 	xor a
-	ldh [rIF], a
-	ld d, 0
-	call ReceiveInfraredLEDOn
-	jp z, InfraredLEDReceiveTimedOut
-
-	ld d, 16
-	call SendInfraredLEDOff
+	ld [rIF], a
+	ld d, $0
+	call Function104da9
+	jp z, Function104f42
+	ld d, $10
+	call Function104dd1
 	ret
 
-SendEmptyIRDataBlock:
-	ld b, 0
-	jp SendIRDataBlock
+Function10502e: ; 10502e (41:502e)
+	ld b, $0
+	jp Function104e93
 
-ReceiveEmptyIRDataBlock:
-	ld b, 0
-	jp ReceiveIRDataBlock
+Function105033: ; 105033 (41:5033)
+	ld b, $0
+	jp Function104f57
 
-MysteryGift_UpdateJoypad:
+MysteryGift_ReadJoypad: ; 105038 (41:5038)
 ; We can only get four inputs at a time.
 ; We take d-pad first for no particular reason.
 	ld a, R_DPAD
-	ldh [rJOYP], a
+	ld [rJOYP], a
 ; Read twice to give the request time to take.
-	ldh a, [rJOYP]
-	ldh a, [rJOYP]
+	ld a, [rJOYP]
+	ld a, [rJOYP]
 
 ; The Joypad register output is in the lo nybble (inversed).
 ; We make the hi nybble of our new container d-pad input.
@@ -1239,10 +1088,10 @@ MysteryGift_UpdateJoypad:
 ; Buttons make 8 total inputs (A, B, Select, Start).
 ; We can fit this into one byte.
 	ld a, R_BUTTONS
-	ldh [rJOYP], a
+	ld [rJOYP], a
 ; Wait for input to stabilize.
 rept 6
-	ldh a, [rJOYP]
+	ld a, [rJOYP]
 endr
 ; Buttons take the lo nybble.
 	cpl
@@ -1250,26 +1099,25 @@ endr
 	or b
 	ld c, a
 ; To get the delta we xor the last frame's input with the new one.
-	ldh a, [hMGJoypadPressed]
+	ld a, [hMGJoypadPressed]
 	xor c
 ; Released this frame:
 	and c
-	ldh [hMGJoypadReleased], a
+	ld [hMGJoypadReleased], a
 ; Pressed this frame:
 	ld a, c
-	ldh [hMGJoypadPressed], a
+	ld [hMGJoypadPressed], a
 	ld a, $30
 ; Reset the joypad register since we're done with it.
-	ldh [rJOYP], a
+	ld [rJOYP], a
 	ret
 
-CheckAndSetMysteryGiftDecorationAlreadyReceived:
-; Return nz if decoration c was already received; otherwise receive it.
+MysteryGift_CheckAndSetDecorationAlreadyReceived: ; 105069 (41:5069)
 	call GetMysteryGiftBank
-	ld d, 0
+	ld d, $0
 	ld b, CHECK_FLAG
 	ld hl, sMysteryGiftDecorationsReceived
-	lda_predef SmallFarFlagAction
+	predef_id SmallFarFlagAction
 	push hl
 	push bc
 	call Predef
@@ -1286,12 +1134,12 @@ CheckAndSetMysteryGiftDecorationAlreadyReceived:
 	xor a
 	ret
 
-CopyMysteryGiftReceivedDecorationsToPC:
+MysteryGift_CopyReceivedDecosToPC: ; 105091 (41:5091)
 	call GetMysteryGiftBank
-	ld c, 0
+	ld c, $0
 .loop
 	push bc
-	ld d, 0
+	ld d, $0
 	ld b, CHECK_FLAG
 	ld hl, sMysteryGiftDecorationsReceived
 	predef SmallFarFlagAction
@@ -1305,84 +1153,81 @@ CopyMysteryGiftReceivedDecorationsToPC:
 .skip
 	inc c
 	ld a, c
-	cp NUM_NON_TROPHY_DECOS
+	cp TrophyIDs - DecorationIDs
 	jr c, .loop
 	jp CloseSRAM
 
-UnlockMysteryGift:
-; If [sMysteryGiftUnlocked] was -1, this sets both
-; [sMysteryGiftUnlocked] and [sMysteryGiftItem] to 0.
+UnlockMysteryGift: ; 1050b9
 	call GetMysteryGiftBank
 	ld hl, sMysteryGiftUnlocked
 	ld a, [hl]
 	inc a
 	jr nz, .ok
 	ld [hld], a
-	assert sMysteryGiftUnlocked - 1 == sMysteryGiftItem
 	ld [hl], a
 .ok
 	jp CloseSRAM
+; 1050c8
 
-ResetDailyMysteryGiftLimitIfUnlocked:
+Function1050c8: ; 1050c8
 	call GetMysteryGiftBank
 	ld a, [sNumDailyMysteryGiftPartnerIDs]
-	cp -1 ; locked?
-	jr z, .dont_clear
+	cp $ff
+	jr z, .okay
 	xor a
 	ld [sNumDailyMysteryGiftPartnerIDs], a
-.dont_clear
+.okay
 	jp CloseSRAM
+; 1050d9
 
-BackupMysteryGift:
-; Copies [sMysteryGiftItem] to [sBackupMysteryGiftItem],
-; and [sMysteryGiftUnlocked] to [sNumDailyMysteryGiftPartnerIDs].
+
+BackupMysteryGift: ; 1050d9
 	call GetMysteryGiftBank
 	ld hl, sMysteryGiftItem
 	ld de, sBackupMysteryGiftItem
 	ld a, [hli]
 	ld [de], a
 	inc de
-	assert sMysteryGiftItem + 1 == sMysteryGiftUnlocked
-	assert sBackupMysteryGiftItem + 1 == sNumDailyMysteryGiftPartnerIDs
 	ld a, [hl]
 	ld [de], a
 	jp CloseSRAM
+; 1050ea
 
-RestoreMysteryGift:
-; Copies [sBackupMysteryGiftItem] to [sMysteryGiftItem],
-; and [sNumDailyMysteryGiftPartnerIDs] to [sMysteryGiftUnlocked].
+
+RestoreMysteryGift: ; 1050ea (41:50ea)
 	call GetMysteryGiftBank
 	ld hl, sBackupMysteryGiftItem
 	ld de, sMysteryGiftItem
 	ld a, [hli]
 	ld [de], a
 	inc de
-	assert sBackupMysteryGiftItem + 1 == sNumDailyMysteryGiftPartnerIDs
-	assert sMysteryGiftItem + 1 == sMysteryGiftUnlocked
 	ld a, [hl]
 	ld [de], a
 	jp CloseSRAM
 
-ClearMysteryGiftTrainer:
-	ld hl, wMysteryGiftTrainer
+MysteryGift_ClearTrainerData: ; 1050fb (41:50fb)
+	ld hl, wMysteryGiftTrainerData
 	xor a
-	ld b, wMysteryGiftTrainerEnd - wMysteryGiftTrainer
+	ld b, wMysteryGiftTrainerDataEnd - wMysteryGiftTrainerData
 .loop
 	ld [hli], a
 	dec b
 	jr nz, .loop
 	ret
 
-GetMysteryGiftBank:
-	ld a, BANK(sMysteryGiftData)
-	jp OpenSRAM
 
-StagePartyDataForMysteryGift:
+GetMysteryGiftBank: ; 105106
+	ld a, BANK(sBackupMysteryGiftItem)
+	jp GetSRAMBank
+; 10510b
+
+
+StagePartyDataForMysteryGift: ; 10510b (41:510b)
 ; You will be sending this data to your mystery gift partner.
 ; Structure is the same as a trainer with species and moves
 ; defined.
 	ld a, BANK(sPokemonData)
-	call OpenSRAM
+	call GetSRAMBank
 	ld de, wMysteryGiftStaging
 	ld bc, sPokemonData + wPartyMons - wPokemonData
 	ld hl, sPokemonData + wPartySpecies - wPokemonData
@@ -1424,17 +1269,17 @@ StagePartyDataForMysteryGift:
 .party_end
 	ld a, -1
 	ld [de], a
-	ld a, wMysteryGiftTrainerEnd - wMysteryGiftTrainer
-	ld [wUnusedMysteryGiftStagedDataLength], a
+	ld a, $26
+	ld [wca00], a
 	jp CloseSRAM
 
-InitMysteryGiftLayout:
+InitMysteryGiftLayout: ; 105153 (41:5153)
 	call ClearBGPalettes
 	call DisableLCD
 	ld hl, MysteryGiftGFX
 	ld de, vTiles2 tile $00
 	ld a, BANK(MysteryGiftGFX)
-	ld bc, $43 tiles
+	ld bc, MysteryGiftGFX.End - MysteryGiftGFX
 	call FarCopyBytes
 	hlcoord 0, 0
 	ld a, $42
@@ -1519,36 +1364,37 @@ InitMysteryGiftLayout:
 	call SetPalettes
 	ret
 
-.Load5GFX:
-	ld b, 5
+.Load5GFX: ; 10522e (41:522e)
+	ld b,  5
+	jr .gfx_loop
+; 105232 (41:5232)
+
+.Unreferenced_Load6GFX:
+	ld b,  6
 	jr .gfx_loop
 
-.Load6GFX: ; unreferenced
-	ld b, 6
-	jr .gfx_loop
-
-.Load16GFX:
+.Load16GFX: ; 105236 (41:5236)
 	ld b, 16
 
-.gfx_loop
+.gfx_loop ; 105238 (41:5238)
 	ld [hli], a
 	inc a
 	dec b
 	jr nz, .gfx_loop
 	ret
 
-.Load9Column:
-	ld b, 9
+.Load9Column: ; 10523e (41:523e)
+	ld b,  9
 	jr .col_loop
 
-.Load11Column:
+.Load11Column: ; 105242 (41:5242)
 	ld b, 11
 	jr .col_loop
 
-.Load14Column:
+.Load14Column: ; 105246 (41:5246)
 	ld b, 14
 
-.col_loop
+.col_loop ; 105248 (41:5248)
 	ld [hl], a
 	ld de, SCREEN_WIDTH
 	add hl, de
@@ -1556,7 +1402,7 @@ InitMysteryGiftLayout:
 	jr nz, .col_loop
 	ret
 
-.Load16Row:
+.Load16Row: ; 105251 (41:5251)
 	ld b, 16
 .row_loop
 	ld [hli], a
@@ -1564,51 +1410,52 @@ InitMysteryGiftLayout:
 	jr nz, .row_loop
 	ret
 
-MysteryGiftGFX:
+MysteryGiftGFX: ; 105258
 INCBIN "gfx/mystery_gift/mystery_gift.2bpp"
+.End
 
-DoNameCardSwap:
-	call ClearTilemap
+Function105688: ; 105688 (41:5688)
+	call ClearTileMap
 	call ClearSprites
 	call WaitBGMap
-	call InitNameCardLayout
+	call Function1057d7
 	hlcoord 3, 8
-	ld de, .String_PressAToLink_BToCancel_JP
+	ld de, String_PressAToLink_BToCancel_JP
 	call PlaceString
 	call WaitBGMap
-	call StageDataForNameCard
-	call ClearMysteryGiftTrainer
-	ld a, wNameCardDataEnd - wNameCardData
-	ld [wMysteryGiftStagedDataLength], a
-	ldh a, [rIE]
+	call Function10578c
+	call MysteryGift_ClearTrainerData
+	ld a, $24
+	ld [wca02], a
+	ld a, [rIE]
 	push af
-	call ExchangeNameCardData
+	call Function104c2d
 	ld d, a
 	xor a
-	ldh [rIF], a
+	ld [rIF], a
 	pop af
-	ldh [rIE], a
+	ld [rIE], a
 	ld a, d
 	cp $10
-	jp z, .LinkCanceled
-	cp MG_OKAY
-	jp nz, .CommunicationError
-	call .SlideNameCardUpOffScreen
+	jp z, Function105712
+	cp $6c
+	jp nz, Function10571a
+	call Function1056eb
 	ld c, 60
 	call DelayFrames
-	call .ClearScreen
-	ld hl, .NameCardReceivedCardText
+	call Function105777
+	ld hl, Text_ReceivedCard
 	call PrintText
-	ld de, wNameCardData
+	ld de, wMysteryGiftTrainerData
 	farcall Function8ac70
 	ld a, c
-	ld [wTextDecimalByte], a
-	ld hl, .NameCardNotRegisteredCardText
-	jr c, .PrintTextAndExit
-	ld hl, .NameCardListedCardText
-	jr .PrintTextAndExit
+	ld [wd265], a
+	ld hl, Text_CardNotRegistered
+	jr c, PrintTextAndExit_JP
+	ld hl, Text_ListedCardAsNumber
+	jr PrintTextAndExit_JP
 
-.SlideNameCardUpOffScreen:
+Function1056eb: ; 1056eb (41:56eb)
 	ld c, 16
 .loop
 	ld hl, wVirtualOAMSprite00YCoord
@@ -1637,53 +1484,57 @@ endr
 	pop bc
 	jr .loop
 
-.LinkCanceled:
-	call .ClearScreen
-	ld hl, .NameCardLinkCancelledText
-	jr .PrintTextAndExit
+Function105712: ; 105712 (41:5712)
+	call Function105777
+	ld hl, Text_MGLinkCanceled
+	jr PrintTextAndExit_JP
 
-.CommunicationError:
-	call .ClearScreen
-	ld hl, .NameCardCommErrorText
+Function10571a: ; 10571a (41:571a)
+	call Function105777
+	ld hl, Text_MGCommError
 	call PrintText
-	jp DoNameCardSwap
+	jp Function105688
 
-.PrintTextAndExit:
+PrintTextAndExit_JP: ; 105726 (41:5726)
 	call PrintText
 	ld a, LCDC_DEFAULT
-	ldh [rLCDC], a
+	ld [rLCDC], a
 	ret
+; 10572e (41:572e)
 
-.String_PressAToLink_BToCancel_JP:
+String_PressAToLink_BToCancel_JP: ; 10572e
 	db   "エーボタン<WO>おすと"
 	next "つうしん<PKMN>おこなわれるよ！"
 	next "ビーボタン<WO>おすと"
 	next "つうしん<WO>ちゅうし　します"
 	db   "@"
 
-.NameCardReceivedCardText:
-	text_far _NameCardReceivedCardText
-	text_end
+; 10575e
 
-.NameCardListedCardText:
-	text_far _NameCardListedCardText
-	text_end
+Text_ReceivedCard: ; 10575e
+	text_jump UnknownText_0x1c051a
+	db "@"
 
-.NameCardNotRegisteredCardText:
-	text_far _NameCardNotRegisteredCardText
-	text_end
+Text_ListedCardAsNumber: ; 105763
+	text_jump UnknownText_0x1c0531
+	db "@"
 
-.NameCardLinkCancelledText:
-	text_far _NameCardLinkCancelledText
-	text_end
+Text_CardNotRegistered: ; 105768
+	text_jump UnknownText_0x1c0555
+	db "@"
 
-.NameCardCommErrorText:
-	text_far _NameCardLinkCommErrorText
-	text_end
+Text_MGLinkCanceled: ; 10576d
+	text_jump UnknownText_0x1c0573
+	db "@"
 
-.ClearScreen:
+Text_MGCommError: ; 105772
+	text_jump UnknownText_0x1c0591
+	db "@"
+; 105777
+
+Function105777: ; 105777 (41:5777)
 	call ClearSprites
-	call ClearTilemap
+	call ClearTileMap
 	call EnableLCD
 	call WaitBGMap
 	ld b, SCGB_DIPLOMA
@@ -1691,10 +1542,10 @@ endr
 	call SetPalettes
 	ret
 
-StageDataForNameCard:
-	ld de, wMysteryGiftStaging
+Function10578c: ; 10578c (41:578c)
+	ld de, wLinkData
 	ld a, BANK(sPlayerData)
-	call OpenSRAM
+	call GetSRAMBank
 	ld hl, sPlayerData + wPlayerName - wPlayerData
 	ld bc, NAME_LENGTH
 	call CopyBytes
@@ -1706,33 +1557,33 @@ StageDataForNameCard:
 	call CopyBytes
 	call CloseSRAM
 	ld a, BANK(sCrystalData)
-	call OpenSRAM
+	call GetSRAMBank
 	ld a, [sCrystalData + 0]
 	ld [de], a
 	inc de
-	ld a, BANK(s4_a603) ; aka BANK(s4_a007) ; MBC30 bank used by JP Crystal; inaccessible by MBC3
-	call OpenSRAM
-	ld hl, s4_a603 ; address of MBC30 bank
-	ld bc, 8
+	ld a, 4 ; MBC30 bank used by JP Crystal; inaccessible by MBC3
+	call GetSRAMBank
+	ld hl, $a603 ; address of MBC30 bank
+	ld bc, $8
 	call CopyBytes
-	ld hl, s4_a007 ; address of MBC30 bank
-	ld bc, 12
+	ld hl, $a007 ; address of MBC30 bank
+	ld bc, $c
 	call CopyBytes
 	call CloseSRAM
 	ret
 
-InitNameCardLayout:
+Function1057d7: ; 1057d7 (41:57d7)
 	call ClearBGPalettes
 	call DisableLCD
-	ld hl, CardTradeGFX
+	ld hl, MysteryGiftJP_GFX
 	ld de, vTiles2 tile $00
-	ld a, BANK(CardTradeGFX)
-	ld bc, $40 tiles
+	ld a, BANK(MysteryGiftJP_GFX)
+	lb bc, 4, 0
 	call FarCopyBytes
-	ld hl, CardTradeSpriteGFX
+	ld hl, MysteryGiftJP_GFX + $40 tiles
 	ld de, vTiles0 tile $00
-	ld a, BANK(CardTradeSpriteGFX)
-	ld bc, 8 tiles
+	ld a, BANK(MysteryGiftJP_GFX)
+	ld bc, $80
 	call FarCopyBytes
 	hlcoord 0, 0
 	ld a, $3f
@@ -1806,45 +1657,45 @@ InitNameCardLayout:
 	hlcoord 17, 15
 	ld [hl], $3e
 	ld de, wVirtualOAMSprite00
-	ld hl, .NameCardOAMData
+	ld hl, .OAM_data
 	ld bc, 16 * SPRITEOAMSTRUCT_LENGTH
 	call CopyBytes
 	call EnableLCD
 	call WaitBGMap
-	ld b, CRYSTAL_CGB_NAME_CARD
-	farcall GetCrystalCGBLayout
+	ld b, $2
+	farcall GetMysteryGift_MobileAdapterLayout
 	jp SetPalettes
 
-.Load6Row:
+.Load6Row: ; 1058c6 (41:58c6)
 	ld b,  6
 	jr .row_loop
 
-.Load11Row:
+.Load11Row: ; 1058ca (41:58ca)
 	ld b, 11
 	jr .row_loop
 
-.Load12Row:
+.Load12Row: ; 1058ce (41:58ce)
 	ld b, 12
 
-.row_loop
+.row_loop ; 1058d0 (41:58d0)
 	ld [hli], a
 	inc a
 	dec b
 	jr nz, .row_loop
 	ret
 
-.Load9Column:
+.Load9Column: ; 1058d6 (41:58d6)
 	ld b,  9
 	jr .column_loop
 
-.Load11Column:
+.Load11Column: ; 1058da (41:58da)
 	ld b, 11
 	jr .column_loop
 
-.Load14Column:
+.Load14Column: ; 1058de (41:58de)
 	ld b, 14
 
-.column_loop
+.column_loop ; 1058e0 (41:58e0)
 	ld [hl], a
 	ld de, SCREEN_WIDTH
 	add hl, de
@@ -1852,34 +1703,33 @@ InitNameCardLayout:
 	jr nz, .column_loop
 	ret
 
-.Load16Row:
+.Load16Row: ; 1058e9 (41:58e9)
 	ld b, 16
 .row_loop_no_inc
 	ld [hli], a
 	dec b
 	jr nz, .row_loop_no_inc
 	ret
+; 1058f0 (41:58f0)
 
-.NameCardOAMData:
-	dbsprite  6,  2, 4, 1, $00, 0
-	dbsprite  7,  2, 4, 1, $01, 0
-	dbsprite  8,  2, 4, 1, $02, 0
-	dbsprite  9,  2, 4, 1, $03, 0
-	dbsprite  6,  3, 4, 1, $04, 0
-	dbsprite  7,  3, 4, 1, $05, 0
-	dbsprite  8,  3, 4, 1, $06, 0
-	dbsprite  9,  3, 4, 1, $07, 0
-	dbsprite 11,  0, 4, 1, $00, 0
-	dbsprite 12,  0, 4, 1, $01, 0
-	dbsprite 13,  0, 4, 1, $02, 0
-	dbsprite 14,  0, 4, 1, $03, 0
-	dbsprite 11,  1, 4, 1, $04, 0
-	dbsprite 12,  1, 4, 1, $05, 0
-	dbsprite 13,  1, 4, 1, $06, 0
-	dbsprite 14,  1, 4, 1, $07, 0
+.OAM_data: ; 1058f0
+	dsprite  2, 1,  6, 4, $00, 0
+	dsprite  2, 1,  7, 4, $01, 0
+	dsprite  2, 1,  8, 4, $02, 0
+	dsprite  2, 1,  9, 4, $03, 0
+	dsprite  3, 1,  6, 4, $04, 0
+	dsprite  3, 1,  7, 4, $05, 0
+	dsprite  3, 1,  8, 4, $06, 0
+	dsprite  3, 1,  9, 4, $07, 0
+	dsprite  0, 1, 11, 4, $00, 0
+	dsprite  0, 1, 12, 4, $01, 0
+	dsprite  0, 1, 13, 4, $02, 0
+	dsprite  0, 1, 14, 4, $03, 0
+	dsprite  1, 1, 11, 4, $04, 0
+	dsprite  1, 1, 12, 4, $05, 0
+	dsprite  1, 1, 13, 4, $06, 0
+	dsprite  1, 1, 14, 4, $07, 0
 
-CardTradeGFX:
-INCBIN "gfx/mystery_gift/card_trade.2bpp"
-
-CardTradeSpriteGFX:
-INCBIN "gfx/mystery_gift/card_sprite.2bpp"
+; japanese mystery gift gfx
+MysteryGiftJP_GFX: ; 105930
+INCBIN "gfx/mystery_gift/mystery_gift_jp.2bpp"

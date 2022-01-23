@@ -1,5 +1,6 @@
 ; SFX indexes (see audio/sfx_pointers.asm)
 	const_def
+
 	const SFX_DEX_FANFARE_50_79           ; 00
 	const SFX_ITEM                        ; 01
 	const SFX_CAUGHT_MON                  ; 02
@@ -127,7 +128,7 @@
 	const SFX_SWEET_KISS                  ; 7c
 	const SFX_SWEET_KISS_2                ; 7d
 	const SFX_BELLY_DRUM                  ; 7e
-	const SFX_TOXIC                       ; 7f
+	const SFX_UNKNOWN_7F                  ; 7f
 	const SFX_SLUDGE_BOMB                 ; 80
 	const SFX_FORESIGHT                   ; 81
 	const SFX_SPITE                       ; 82
@@ -149,8 +150,8 @@
 	const SFX_FANFARE_2                   ; 92
 	const SFX_REGISTER_PHONE_NUMBER       ; 93
 	const SFX_3RD_PLACE                   ; 94
-	const SFX_GET_EGG_UNUSED              ; 95
-	const SFX_GET_EGG                     ; 96
+	const SFX_GET_EGG_FROM_DAY_CARE_MAN   ; 95
+	const SFX_GET_EGG_FROM_DAY_CARE_LADY  ; 96
 	const SFX_MOVE_DELETED                ; 97
 	const SFX_2ND_PLACE                   ; 98
 	const SFX_1ST_PLACE                   ; 99
@@ -188,9 +189,10 @@
 	const SFX_TRAIN_ARRIVED               ; b9
 	const SFX_STOP_SLOT                   ; ba
 	const SFX_2_BOOPS                     ; bb
-; new to Crystal
 	const SFX_GLASS_TING                  ; bc
 	const SFX_GLASS_TING_2                ; bd
+
+; new to Crystal
 	const SFX_INTRO_UNOWN_1               ; be
 	const SFX_INTRO_UNOWN_2               ; bf
 	const SFX_INTRO_UNOWN_3               ; c0
@@ -204,8 +206,7 @@
 	const SFX_INTRO_SUICUNE_4             ; c8
 	const SFX_GAME_FREAK_PRESENTS         ; c9
 	const SFX_TINGLE                      ; ca
-	const SFX_INTRO_WHOOSH                ; cb
+	const SFX_UNKNOWN_CB                  ; cb
 	const SFX_TWO_PC_BEEPS                ; cc
 	const SFX_4_NOTE_DITTY                ; cd
 	const SFX_TWINKLE                     ; ce
-NUM_SFX EQU const_value

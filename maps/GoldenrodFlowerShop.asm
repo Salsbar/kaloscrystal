@@ -1,11 +1,11 @@
-	object_const_def
+	const_def 2 ; object constants
 	const GOLDENRODFLOWERSHOP_TEACHER
 	const GOLDENRODFLOWERSHOP_FLORIA
 
 GoldenrodFlowerShop_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 0 ; callbacks
 
 FlowerShopTeacherScript:
 	checkevent EVENT_FOUGHT_SUDOWOODO
@@ -20,8 +20,8 @@ FlowerShopTeacherScript:
 	iffalse .NoPlainBadge
 	faceplayer
 	opentext
-	writetext GoldenrodFlowerShopTeacherHeresTheSquirtbottleText
-	promptbutton
+	writetext UnknownText_0x554c2
+	buttonsound
 	verbosegiveitem SQUIRTBOTTLE
 	setevent EVENT_GOT_SQUIRTBOTTLE
 	closetext
@@ -32,19 +32,19 @@ FlowerShopTeacherScript:
 .Lalala:
 	turnobject GOLDENRODFLOWERSHOP_TEACHER, LEFT
 	opentext
-	writetext GoldenrodFlowerShopTeacherLalalaHavePlentyOfWaterText
+	writetext UnknownText_0x5552e
 	waitbutton
 	closetext
 	end
 
 .GotSquirtbottle:
-	jumptextfaceplayer GoldenrodFlowerShopTeacherDontDoAnythingDangerousText
+	jumptextfaceplayer UnknownText_0x5550d
 
 .NoPlainBadge:
-	jumptextfaceplayer GoldenrodFlowerShopTeacherAskWantToBorrowWaterBottleText
+	jumptextfaceplayer UnknownText_0x55463
 
 .HaventMetFloria:
-	jumptextfaceplayer GoldenrodFlowerShopTeacherMySisterWentToSeeWigglyTreeRoute36Text
+	jumptextfaceplayer UnknownText_0x553d4
 
 FlowerShopFloriaScript:
 	faceplayer
@@ -53,7 +53,7 @@ FlowerShopFloriaScript:
 	iftrue .FoughtSudowoodo
 	checkevent EVENT_GOT_SQUIRTBOTTLE
 	iftrue .GotSquirtbottle
-	writetext GoldenrodFlowerShopFloriaWonderIfSisWillLendWaterBottleText
+	writetext UnknownText_0x55561
 	waitbutton
 	closetext
 	setevent EVENT_TALKED_TO_FLORIA_AT_FLOWER_SHOP
@@ -62,29 +62,32 @@ FlowerShopFloriaScript:
 	end
 
 .GotSquirtbottle:
-	writetext GoldenrodFlowerShopFloriaYouBeatWhitneyText
+	writetext UnknownText_0x555e6
 	waitbutton
 	closetext
 	end
 
 .FoughtSudowoodo:
-	writetext GoldenrodFlowerShopFloriaItReallyWasAMonText
+	writetext UnknownText_0x55604
 	waitbutton
 	closetext
 	end
 
-FlowerShopShelf1: ; unreferenced
-	jumpstd PictureBookshelfScript
+FlowerShopShelf1:
+; unused
+	jumpstd picturebookshelf
 
-FlowerShopShelf2: ; unreferenced
-	jumpstd MagazineBookshelfScript
+FlowerShopShelf2:
+; unused
+	jumpstd magazinebookshelf
 
-FlowerShopRadio: ; unreferenced
-	jumpstd Radio2Script
+FlowerShopRadio:
+; unused
+	jumpstd radio2
 
-GoldenrodFlowerShopTeacherMySisterWentToSeeWigglyTreeRoute36Text:
-	text "Have you seen that"
-	line "wiggly tree that's"
+UnknownText_0x553d4:
+	text "Have you seen the"
+	line "wiggly vines"
 
 	para "growing on ROUTE"
 	line "36?"
@@ -99,9 +102,9 @@ GoldenrodFlowerShopTeacherMySisterWentToSeeWigglyTreeRoute36Text:
 	line "it dangerous?"
 	done
 
-GoldenrodFlowerShopTeacherAskWantToBorrowWaterBottleText:
+UnknownText_0x55463:
 	text "Do you want to"
-	line "borrow the water"
+	line "borrow the spray"
 
 	para "bottle too?"
 	line "I don't want you"
@@ -110,46 +113,46 @@ GoldenrodFlowerShopTeacherAskWantToBorrowWaterBottleText:
 	line "dangerous with it."
 	done
 
-GoldenrodFlowerShopTeacherHeresTheSquirtbottleText:
+UnknownText_0x554c2:
 	text "Oh, you're better"
 	line "than WHITNEY…"
 
 	para "You'll be OK,"
 	line "then. Here's the"
-	cont "SQUIRTBOTTLE!"
+	cont "WEED SPRAY!"
 	done
 
-GoldenrodFlowerShopTeacherDontDoAnythingDangerousText:
+UnknownText_0x5550d:
 	text "Don't do anything"
 	line "too dangerous!"
 	done
 
-GoldenrodFlowerShopTeacherLalalaHavePlentyOfWaterText:
+UnknownText_0x5552e:
 	text "Lalala lalalala."
 	line "Have plenty of"
 	cont "water, my lovely!"
 	done
 
-GoldenrodFlowerShopFloriaWonderIfSisWillLendWaterBottleText:
+UnknownText_0x55561:
 	text "When I told my sis"
 	line "about the jiggly"
 
-	para "tree, she told me"
+	para "vines, she told me"
 	line "it's dangerous."
 
 	para "If I beat WHITNEY,"
 	line "I wonder if she'll"
 
-	para "lend me her water"
-	line "bottle…"
+	para "lend me her weed"
+	line "spray bottle…"
 	done
 
-GoldenrodFlowerShopFloriaYouBeatWhitneyText:
+UnknownText_0x555e6:
 	text "Wow, you beat"
 	line "WHITNEY? Cool!"
 	done
 
-GoldenrodFlowerShopFloriaItReallyWasAMonText:
+UnknownText_0x55604:
 	text "So it really was a"
 	line "#MON!"
 	done
@@ -157,14 +160,14 @@ GoldenrodFlowerShopFloriaItReallyWasAMonText:
 GoldenrodFlowerShop_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 2 ; warp events
 	warp_event  2,  7, GOLDENROD_CITY, 6
 	warp_event  3,  7, GOLDENROD_CITY, 6
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 0 ; bg events
 
-	def_object_events
+	db 2 ; object events
 	object_event  2,  4, SPRITE_TEACHER, SPRITEMOVEDATA_STANDING_RIGHT, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, FlowerShopTeacherScript, -1
 	object_event  5,  6, SPRITE_LASS, SPRITEMOVEDATA_WANDER, 1, 1, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_SCRIPT, 0, FlowerShopFloriaScript, EVENT_FLORIA_AT_FLOWER_SHOP

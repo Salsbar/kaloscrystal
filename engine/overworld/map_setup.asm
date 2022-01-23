@@ -1,5 +1,5 @@
-RunMapSetupScript::
-	ldh a, [hMapEntryMethod]
+RunMapSetupScript:: ; 15363
+	ld a, [hMapEntryMethod]
 	and $f
 	dec a
 	ld c, a
@@ -12,13 +12,14 @@ RunMapSetupScript::
 	ld l, a
 	call ReadMapSetupScript
 	ret
+; 15377
 
 INCLUDE "data/maps/setup_scripts.asm"
 
-ReadMapSetupScript:
+ReadMapSetupScript: ; 1541d
 .loop
 	ld a, [hli]
-	cp -1 ; end?
+	cp -1
 	ret z
 
 	push hl
@@ -57,45 +58,101 @@ ReadMapSetupScript:
 
 	pop hl
 	jr .loop
+; 15440
 
-INCLUDE "data/maps/setup_script_pointers.asm"
+MapSetupCommands: ; 15440
+; entries correspond to command indexes in constants/map_setup_constants.asm
+	dba EnableLCD ; 00
+	dba DisableLCD ; 01
+	dba MapSetup_Sound_Off ; 02
+	dba PlayMapMusic ; 03
+	dba RestartMapMusic ; 04
+	dba FadeToMapMusic ; 05
+	dba RotatePalettesRightMapAndMusic ; 06
+	dba EnterMapMusic ; 07
+	dba ForceMapMusic ; 08
+	dba FadeInMusic ; 09
+	dba LoadBlockData ; 0a (callback 1)
+	dba LoadNeighboringBlockData ; 0b
+	dba SaveScreen ; 0c
+	dba BufferScreen ; 0d
+	dba LoadGraphics ; 0e
+	dba LoadTileset ; 0f
+	dba LoadMapTimeOfDay ; 10
+	dba LoadMapPalettes ; 11
+	dba LoadWildMonData ; 12
+	dba RefreshMapSprites ; 13
+	dba HandleNewMap ; 14
+	dba InitCommandQueue ; 15
+	dba LoadObjectsRunCallback_02 ; 16
+	dba LoadSpawnPoint ; 17
+	dba EnterMapConnection ; 18
+	dba LoadWarpData ; 19
+	dba LoadMapAttributes ; 1a
+	dba LoadMapAttributes_SkipPeople ; 1b
+	dba ClearBGPalettes ; 1c
+	dba FadeOutPalettes ; 1d
+	dba FadeInPalettes ; 1e
+	dba GetCoordOfUpperLeftCorner ; 1f
+	dba RestoreFacingAfterWarp ; 20
+	dba SpawnInFacingDown ; 21
+	dba SpawnPlayer ; 22
+	dba RefreshPlayerCoords ; 23
+	dba DelayClearingOldSprites ; 24
+	dba DelayLoadingNewSprites ; 25
+	dba UpdateRoamMons ; 26
+	dba JumpRoamMons ; 27
+	dba FadeOldMapMusic ; 28
+	dba ActivateMapAnims ; 29
+	dba SuspendMapAnims ; 2a
+	dba RetainOldPalettes ; 2b
+	dba DontScrollText ; 2c
+	dba ReturnFromMapSetupScript ; 2d
+; 154ca
 
-EnableTextAcceleration:
+
+DontScrollText: ; 154ca
 	xor a
 	ld [wDisableTextAcceleration], a
 	ret
+; 154cf
 
-ActivateMapAnims:
-	ld a, TRUE
-	ldh [hMapAnims], a
+ActivateMapAnims: ; 154cf
+	ld a, $1
+	ld [hMapAnims], a
 	ret
+; 154d3
 
-SuspendMapAnims:
-	xor a ; FALSE
-	ldh [hMapAnims], a
+SuspendMapAnims: ; 154d3
+	xor a
+	ld [hMapAnims], a
 	ret
+; 154d7
 
-LoadMapObjects:
+LoadObjectsRunCallback_02: ; 154d7
 	ld a, MAPCALLBACK_OBJECTS
 	call RunMapCallback
 	farcall LoadObjectMasks
 	farcall InitializeVisibleSprites
 	ret
+; 154ea (5:54ea)
 
-MapSetup_DummyFunction: ; unreferenced
+; unused
 	ret
+; 154eb
 
-ResetPlayerObjectAction:
+DelayClearingOldSprites: ; 154eb
 	ld hl, wPlayerSpriteSetupFlags
 	set PLAYERSPRITESETUP_RESET_ACTION_F, [hl]
 	ret
+; 154f1
 
-SkipUpdateMapSprites:
+DelayLoadingNewSprites: ; 154f1
 	ld hl, wPlayerSpriteSetupFlags
 	set PLAYERSPRITESETUP_SKIP_RELOAD_GFX_F, [hl]
 	ret
 
-CheckUpdatePlayerSprite:
+CheckReplaceKrisSprite: ; 154f7
 	nop
 	call .CheckBiking
 	jr c, .ok
@@ -106,10 +163,10 @@ CheckUpdatePlayerSprite:
 	ret
 
 .ok
-	call UpdatePlayerSprite
+	call ReplaceKrisSprite
 	ret
 
-.CheckBiking:
+.CheckBiking: ; 1550c (5:550c)
 	and a
 	ld hl, wBikeFlags
 	bit BIKEFLAGS_ALWAYS_ON_BIKE_F, [hl]
@@ -119,7 +176,7 @@ CheckUpdatePlayerSprite:
 	scf
 	ret
 
-.CheckSurfing2:
+.CheckSurfing2: ; 1551a (5:551a)
 	ld a, [wPlayerState]
 	cp PLAYER_NORMAL
 	jr z, .nope
@@ -131,13 +188,13 @@ CheckUpdatePlayerSprite:
 	jr z, .surfing
 	call GetMapEnvironment
 	cp INDOOR
-	jr z, .no_biking
+	jr z, .checkbiking
 	cp ENVIRONMENT_5
-	jr z, .no_biking
+	jr z, .checkbiking
 	cp DUNGEON
-	jr z, .no_biking
+	jr z, .checkbiking
 	jr .nope
-.no_biking
+.checkbiking
 	ld a, [wPlayerState]
 	cp PLAYER_BIKE
 	jr nz, .nope
@@ -151,50 +208,53 @@ CheckUpdatePlayerSprite:
 	and a
 	ret
 
-.CheckSurfing:
+.CheckSurfing: ; 1554e (5:554e)
 	call CheckOnWater
-	jr nz, .nope2
+	jr nz, .ret_nc
 	ld a, [wPlayerState]
 	cp PLAYER_SURF
-	jr z, .is_surfing
+	jr z, ._surfing
 	cp PLAYER_SURF_PIKA
-	jr z, .is_surfing
+	jr z, ._surfing
 	ld a, PLAYER_SURF
 	ld [wPlayerState], a
-.is_surfing
+._surfing
 	scf
 	ret
-
-.nope2
+.ret_nc
 	and a
 	ret
+; 15567
 
-FadeOutMapMusic:
+FadeOldMapMusic: ; 15567
 	ld a, 6
 	call SkipMusic
 	ret
+; 1556d
 
-ApplyMapPalettes:
+RetainOldPalettes: ; 1556d
 	farcall _UpdateTimePals
 	ret
 
-FadeMapMusicAndPalettes:
-	ld e, LOW(MUSIC_NONE)
+RotatePalettesRightMapAndMusic: ; 15574
+	ld e, 0
 	ld a, [wMusicFadeID]
-	ld d, HIGH(MUSIC_NONE)
+	ld d, 0
 	ld a, [wMusicFadeID + 1]
 	ld a, $4
 	ld [wMusicFade], a
 	call RotateThreePalettesRight
 	ret
+; 15587
 
-ForceMapMusic:
+ForceMapMusic: ; 15587
 	ld a, [wPlayerState]
 	cp PLAYER_BIKE
 	jr nz, .notbiking
-	call MinVolume
+	call VolumeOff
 	ld a, $88
 	ld [wMusicFade], a
 .notbiking
 	call TryRestartMapMusic
 	ret
+; 1559a

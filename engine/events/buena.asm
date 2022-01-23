@@ -1,4 +1,4 @@
-BuenasPassword:
+BuenasPassword: ; 8af6b
 	xor a
 	ld [wWhichIndexSet], a
 	ld hl, .MenuHeader
@@ -26,29 +26,34 @@ BuenasPassword:
 	ld a, b
 	ld [wScriptVar], a
 	ret
+; 8afa9
 
-.MenuHeader:
+.MenuHeader: ; 0x8afa9
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 0, 0, 10, 7
 	dw .MenuData
 	db 1 ; default option
+; 0x8afb1
 
 	db 0
 
-.MenuData:
+.MenuData: ; 0x8afb2
 	db STATICMENU_CURSOR | STATICMENU_DISABLE_B ; flags
 	db 0 ; items
 	dw .PasswordIndices
 	dw .PlacePasswordChoices
+; 0x8afb4
 
-.PasswordIndices:
+.PasswordIndices: ; 8afb8
 	db NUM_PASSWORDS_PER_CATEGORY
-for x, NUM_PASSWORDS_PER_CATEGORY
+x = 0
+rept NUM_PASSWORDS_PER_CATEGORY
 	db x
+x = x + 1
 endr
 	db -1
 
-.PlacePasswordChoices:
+.PlacePasswordChoices: ; 8afbd
 	push de
 	ld a, [wBuenasPassword]
 	and $f0
@@ -60,20 +65,21 @@ endr
 	pop hl
 	call PlaceString
 	ret
+; 8afd4
 
-BuenaPrize:
+BuenaPrize: ; 8afd4
 	xor a
 	ld [wMenuScrollPosition], a
 	ld a, $1
 	ld [wMenuSelection], a
 	call Buena_PlacePrizeMenuBox
 	call Buena_DisplayBlueCardBalance
-	ld hl, .BuenaAskWhichPrizeText
+	ld hl, .Text_AskWhichPrize
 	call PrintText
 	jr .okay
 
 .loop
-	ld hl, .BuenaAskWhichPrizeText
+	ld hl, .Text_AskWhichPrize
 	call BuenaPrintText
 
 .okay
@@ -83,17 +89,17 @@ BuenaPrize:
 	call Buena_PrizeMenu
 	jr z, .done
 	ld [wMenuSelectionQuantity], a
-	call Buena_GetPrize
+	call Buena_getprize
 	ld a, [hl]
-	ld [wNamedObjectIndex], a
+	ld [wNamedObjectIndexBuffer], a
 	call GetItemName
-	ld hl, .BuenaIsThatRightText
+	ld hl, .Text_IsThatRight
 	call BuenaPrintText
 	call YesNoBox
 	jr c, .loop
 
 	ld a, [wMenuSelectionQuantity]
-	call Buena_GetPrize
+	call Buena_getprize
 	inc hl
 	ld a, [hld]
 	ld c, a
@@ -105,7 +111,7 @@ BuenaPrize:
 	push hl
 	ld [wCurItem], a
 	ld a, $1
-	ld [wItemQuantityChange], a
+	ld [wItemQuantityChangeBuffer], a
 	ld hl, wNumItems
 	call ReceiveItem
 	pop hl
@@ -119,17 +125,17 @@ BuenaPrize:
 	jr .Purchase
 
 .InsufficientBalance:
-	ld hl, .BuenaNotEnoughPointsText
+	ld hl, .Text_NotEnoughPoints
 	jr .print
 
 .BagFull:
-	ld hl, .BuenaNoRoomText
+	ld hl, .Text_NoRoom
 	jr .print
 
 .Purchase:
 	ld de, SFX_TRANSACTION
 	call PlaySFX
-	ld hl, .BuenaHereYouGoText
+	ld hl, .Text_HereYouGo
 
 .print
 	call BuenaPrintText
@@ -138,50 +144,64 @@ BuenaPrize:
 .done
 	call CloseWindow
 	call CloseWindow
-	ld hl, .BuenaComeAgainText
+	ld hl, .Text_PleaseComeBackAgain
 	call PrintText
 	call JoyWaitAorB
 	call PlayClickSFX
 	ret
+; 8b072
 
-.BuenaAskWhichPrizeText:
-	text_far _BuenaAskWhichPrizeText
-	text_end
+.Text_AskWhichPrize: ; 0x8b072
+	; Which prize would you like?
+	text_jump UnknownText_0x1c589f
+	db "@"
+; 0x8b077
 
-.BuenaIsThatRightText:
-	text_far _BuenaIsThatRightText
-	text_end
+.Text_IsThatRight: ; 0x8b077
+	; ? Is that right?
+	text_jump UnknownText_0x1c58bc
+	db "@"
+; 0x8b07c
 
-.BuenaHereYouGoText:
-	text_far _BuenaHereYouGoText
-	text_end
+.Text_HereYouGo:	; Here you go!
+	text_jump UnknownText_0x1c58d1
+	db "@"
+; 0x8b081
 
-.BuenaNotEnoughPointsText:
-	text_far _BuenaNotEnoughPointsText
-	text_end
+.Text_NotEnoughPoints: ; 0x8b081
+	; You don't have enough points.
+	text_jump UnknownText_0x1c58e0
+	db "@"
+; 0x8b086
 
-.BuenaNoRoomText:
-	text_far _BuenaNoRoomText
-	text_end
+.Text_NoRoom: ; 0x8b086
+	; You have no room for it.
+	text_jump UnknownText_0x1c58ff
+	db "@"
+; 0x8b08b
 
-.BuenaComeAgainText:
-	text_far _BuenaComeAgainText
-	text_end
+.Text_PleaseComeBackAgain: ; 0x8b08b
+	; Oh. Please come back again!
+	text_jump UnknownText_0x1c591a
+	db "@"
+; 0x8b090
 
-Buena_DisplayBlueCardBalance:
+Buena_DisplayBlueCardBalance: ; 8b090
 	ld hl, BlueCardBalanceMenuHeader
 	call LoadMenuHeader
 	ret
+; 8b097
 
-PrintBlueCardBalance:
+PrintBlueCardBalance: ; 8b097
 	ld de, wBlueCardBalance
 	call .DrawBox
 	ret
+; 8b09e
 
-.DrawBox:
+.DrawBox: ; 8b09e
 	push de
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	ld hl, BlueCardBalanceMenuHeader
 	call CopyMenuHeader
 	call MenuBox
@@ -201,31 +221,36 @@ PrintBlueCardBalance:
 	lb bc, 1, 2
 	call PrintNum
 	ret
+; 8b0ca
 
 .Points_string:
 	db "Points@"
+; 8b0d1
 
-BlueCardBalanceMenuHeader:
+BlueCardBalanceMenuHeader: ; 0x8b0d1
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 0, 11, 11, 13
+; 8b0d6
 
-Buena_PlacePrizeMenuBox:
+Buena_PlacePrizeMenuBox: ; 8b0d6
 	ld hl, .MenuHeader
 	call LoadMenuHeader
 	ret
+; 8b0dd
 
-.MenuHeader
+.MenuHeader ; 0x8b0dd
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 0, 0, 17, TEXTBOX_Y - 1
+; 8b0e2
 
-Buena_PrizeMenu:
+Buena_PrizeMenu: ; 8b0e2
 	ld hl, .MenuHeader
 	call CopyMenuHeader
 	ld a, [wMenuSelection]
-	ld [wMenuCursorPosition], a
+	ld [wMenuCursorBuffer], a
 	xor a
 	ld [wWhichIndexSet], a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call InitScrollingMenu
 	call UpdateSprites
 	call ScrollingMenu
@@ -243,52 +268,62 @@ Buena_PrizeMenu:
 .cancel
 	xor a
 	ret
+; 8b113
 
-.MenuHeader:
+.MenuHeader: ; 0x8b113
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 1, 1, 16, 9
 	dw .MenuData
 	db 1 ; default option
+; 0x8b11b
 
 	db 0
 
-.MenuData:
+.MenuData: ; 0x8b11c
 	db SCROLLINGMENU_DISPLAY_ARROWS ; flags
 	db 4, 13 ; rows, columns
-	db SCROLLINGMENU_ITEMS_NORMAL ; item format
-	dba .Prizes
-	dba .PrintPrizeItem
-	dba .PrintPrizePoints
+	db 1 ; spacing
+	dba .indices
+	dba .prizeitem
+	dba .prizepoints
+; 8b129
 
-.Prizes:
+NUM_BUENA_PRIZES EQU 9 ; ((BuenaPrizeItems.End - BuenaPrizeItems) / 2)
+
+.indices ; 8b129
 	db NUM_BUENA_PRIZES
-for x, NUM_BUENA_PRIZES
-	db x + 1
+x = 1
+rept NUM_BUENA_PRIZES
+	db x
+x = x + 1
 endr
 	db -1
+; 8b134
 
-.PrintPrizeItem:
+.prizeitem ; 8b134
 	ld a, [wMenuSelection]
-	call Buena_GetPrize
+	call Buena_getprize
 	ld a, [hl]
 	push de
-	ld [wNamedObjectIndex], a
+	ld [wNamedObjectIndexBuffer], a
 	call GetItemName
 	pop hl
 	call PlaceString
 	ret
+; 8b147
 
-.PrintPrizePoints:
+.prizepoints ; 8b147
 	ld a, [wMenuSelection]
-	call Buena_GetPrize
+	call Buena_getprize
 	inc hl
 	ld a, [hl]
 	ld c, "0"
 	add c
 	ld [de], a
 	ret
+; 8b154
 
-Buena_GetPrize:
+Buena_getprize: ; 8b154
 	dec a
 	ld hl, BuenaPrizeItems
 	ld b, 0
@@ -296,5 +331,6 @@ Buena_GetPrize:
 	add hl, bc
 	add hl, bc
 	ret
+; 8b15e
 
 INCLUDE "data/items/buena_prizes.asm"

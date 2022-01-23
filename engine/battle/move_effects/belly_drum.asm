@@ -1,4 +1,4 @@
-BattleCommand_BellyDrum:
+BattleCommand_BellyDrum: ; 37c1a
 ; bellydrum
 ; This command is buggy because it raises the user's attack
 ; before checking that it has enough HP to use the move.
@@ -17,7 +17,7 @@ BattleCommand_BellyDrum:
 	pop bc
 	callfar SubtractHPFromUser
 	call UpdateUserInParty
-	ld a, MAX_STAT_LEVEL - BASE_STAT_LEVEL - 1
+	ld a, 5
 
 .max_attack_loop
 	push af
@@ -27,8 +27,10 @@ BattleCommand_BellyDrum:
 	jr nz, .max_attack_loop
 
 	ld hl, BellyDrumText
-	jp StdBattleTextbox
+	jp StdBattleTextBox
 
 .failed
 	call AnimateFailedMove
 	jp PrintButItFailed
+
+; 37c55

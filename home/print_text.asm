@@ -1,4 +1,4 @@
-PrintLetterDelay::
+PrintLetterDelay:: ; 313d
 ; Wait before printing the next letter.
 
 ; The text speed setting in wOptions is actually a frame count:
@@ -6,15 +6,15 @@ PrintLetterDelay::
 ; 	mid:  3 frames
 ; 	slow: 5 frames
 
-; wTextboxFlags[!0] and A or B override text speed with a one-frame delay.
-; wOptions[4] and wTextboxFlags[!1] disable the delay.
+; wTextBoxFlags[!0] and A or B override text speed with a one-frame delay.
+; wOptions[4] and wTextBoxFlags[!1] disable the delay.
 
 	ld a, [wOptions]
 	bit NO_TEXT_SCROLL, a
 	ret nz
 
 ; non-scrolling text?
-	ld a, [wTextboxFlags]
+	ld a, [wTextBoxFlags]
 	bit NO_TEXT_DELAY_F, a
 	ret z
 
@@ -31,7 +31,7 @@ PrintLetterDelay::
 	ld [hl], a
 
 ; force fast scroll?
-	ld a, [wTextboxFlags]
+	ld a, [wTextBoxFlags]
 	bit FAST_TEXT_DELAY_F, a
 	jr z, .fast
 
@@ -55,7 +55,7 @@ PrintLetterDelay::
 	jr nz, .wait
 
 ; Wait one frame if holding A or B.
-	ldh a, [hJoyDown]
+	ld a, [hJoyDown]
 	bit A_BUTTON_F, a
 	jr z, .checkb
 	jr .delay
@@ -74,13 +74,14 @@ PrintLetterDelay::
 
 .end
 	pop af
-	ldh [hOAMUpdate], a
+	ld [hOAMUpdate], a
 	pop bc
 	pop de
 	pop hl
 	ret
+; 318c
 
-CopyDataUntil::
+CopyDataUntil:: ; 318c
 ; Copy [hl .. bc) to de.
 
 ; In other words, the source data is
@@ -97,20 +98,23 @@ CopyDataUntil::
 	cp c
 	jr nz, CopyDataUntil
 	ret
+; 0x3198
 
-PrintNum::
+PrintNum:: ; 3198
 	homecall _PrintNum
 	ret
+; 31a4
 
-MobilePrintNum::
+MobilePrintNum:: ; 31a4
 	homecall _MobilePrintNum
 	ret
+; 31b0
 
-FarPrintText::
-	ldh [hTempBank], a
-	ldh a, [hROMBank]
+FarPrintText:: ; 31b0
+	ld [hBuffer], a
+	ld a, [hROMBank]
 	push af
-	ldh a, [hTempBank]
+	ld a, [hBuffer]
 	rst Bankswitch
 
 	call PrintText
@@ -118,20 +122,4 @@ FarPrintText::
 	pop af
 	rst Bankswitch
 	ret
-
-CallPointerAt::
-	ldh a, [hROMBank]
-	push af
-	ld a, [hli]
-	rst Bankswitch
-
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-
-	call _hl_
-
-	pop hl
-	ld a, h
-	rst Bankswitch
-	ret
+; 31be

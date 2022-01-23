@@ -1,29 +1,29 @@
-LoadSGBPokedexGFX:
+LoadSGBPokedexGFX: ; 1ddf1c
 	ld hl, SGBPokedexGFX_LZ
 	ld de, vTiles2 tile $31
 	call Decompress
 	ret
 
-LoadSGBPokedexGFX2:
+LoadSGBPokedexGFX2: ; 1ddf26 (77:5f26)
 	ld hl, SGBPokedexGFX_LZ
 	ld de, vTiles2 tile $31
 	lb bc, BANK(SGBPokedexGFX_LZ), 58
 	call DecompressRequest2bpp
 	ret
 
-SGBPokedexGFX_LZ:
-INCBIN "gfx/pokedex/pokedex_sgb.2bpp.lz"
+SGBPokedexGFX_LZ: ; 1ddf33
+INCBIN "gfx/pokedex/sgb.2bpp.lz"
 
-LoadQuestionMarkPic:
+LoadQuestionMarkPic: ; 1de0d7
 	ld hl, .QuestionMarkLZ
 	ld de, sScratch
 	call Decompress
 	ret
 
-.QuestionMarkLZ:
+.QuestionMarkLZ: ; 1de0e1
 INCBIN "gfx/pokedex/question_mark.2bpp.lz"
 
-DrawPokedexListWindow:
+DrawPokedexListWindow: ; 1de171 (77:6171)
 	ld a, $32
 	hlcoord 0, 17
 	ld bc, 12
@@ -43,7 +43,7 @@ DrawPokedexListWindow:
 	ld [hl], $3f
 	hlcoord 5, 16
 	ld [hl], $40
-	ld a, [wCurDexMode]
+	ld a, [wCurrentDexMode]
 	cp DEXMODE_OLD
 	jr z, .OldMode
 ; scroll bar
@@ -52,7 +52,7 @@ DrawPokedexListWindow:
 	ld a, $51
 	hlcoord 11, 1
 	ld b, SCREEN_HEIGHT - 3
-	call Pokedex_FillColumn2
+	call Bank77_FillColumn
 	ld [hl], $52
 	jr .Done
 
@@ -63,12 +63,12 @@ DrawPokedexListWindow:
 	ld a, $67
 	hlcoord 11, 1
 	ld b, SCREEN_HEIGHT - 3
-	call Pokedex_FillColumn2
+	call Bank77_FillColumn
 	ld [hl], $68
 .Done:
 	ret
 
-DrawPokedexSearchResultsWindow:
+DrawPokedexSearchResultsWindow: ; 1de1d1 (77:61d1)
 	ld a, $34
 	hlcoord 0, 0
 	ld bc, 11
@@ -86,7 +86,7 @@ DrawPokedexSearchResultsWindow:
 	ld a, $67
 	hlcoord 11, 1
 	ld b, SCREEN_HEIGHT / 2
-	call Pokedex_FillColumn2
+	call Bank77_FillColumn
 	ld [hl], $68
 	ld a, $34
 	hlcoord 0, 11
@@ -101,7 +101,7 @@ DrawPokedexSearchResultsWindow:
 	ld a, $67
 	hlcoord 11, 12
 	ld b, 5
-	call Pokedex_FillColumn2
+	call Bank77_FillColumn
 	ld [hl], $68
 	hlcoord 0, 12
 	lb bc, 5, 11
@@ -111,47 +111,46 @@ DrawPokedexSearchResultsWindow:
 	call PlaceString
 	ret
 
-.esults_D
+.esults_D ; 1de23c
 ; (SEARCH R)
 	db   "ESULTS"
 	next ""
 ; (### FOUN)
 	next "D!@"
 
-DrawDexEntryScreenRightEdge:
-	ldh a, [hBGMapAddress]
+DrawDexEntryScreenRightEdge: ; 1de247
+	ld a, [hBGMapAddress]
 	ld l, a
-	ldh a, [hBGMapAddress + 1]
+	ld a, [hBGMapAddress + 1]
 	ld h, a
 	push hl
 	inc hl
 	ld a, l
-	ldh [hBGMapAddress], a
+	ld [hBGMapAddress], a
 	ld a, h
-	ldh [hBGMapAddress + 1], a
+	ld [hBGMapAddress + 1], a
 	hlcoord 19, 0
 	ld [hl], $66
 	hlcoord 19, 1
 	ld a, $67
 	ld b, 15
-	call Pokedex_FillColumn2
+	call Bank77_FillColumn
 	ld [hl], $68
 	hlcoord 19, 17
 	ld [hl], $3c
 	xor a
 	ld b, SCREEN_HEIGHT
-	hlcoord 19, 0, wAttrmap
-	call Pokedex_FillColumn2
+	hlcoord 19, 0, wAttrMap
+	call Bank77_FillColumn
 	call WaitBGMap2
 	pop hl
 	ld a, l
-	ldh [hBGMapAddress], a
+	ld [hBGMapAddress], a
 	ld a, h
-	ldh [hBGMapAddress + 1], a
+	ld [hBGMapAddress + 1], a
 	ret
 
-Pokedex_FillColumn2:
-; A local duplicate of Pokedex_FillColumn.
+Bank77_FillColumn: ; 1de27f
 	push de
 	ld de, SCREEN_WIDTH
 .loop

@@ -1,4 +1,4 @@
-InitCrystalData:
+InitCrystalData: ; 48000
 	ld a, $1
 	ld [wd474], a
 	xor a
@@ -10,23 +10,25 @@ InitCrystalData:
 	ld [wd478], a
 	ld [wd002], a
 	ld [wd003], a
+	; could have done "ld a, [wd479] \ and %11111100", saved four operations
 	ld a, [wd479]
-	res 0, a ; ???
+	res 0, a
 	ld [wd479], a
 	ld a, [wd479]
-	res 1, a ; ???
+	res 1, a
 	ld [wd479], a
 	ret
+; 4802f
 
 INCLUDE "mobile/mobile_12.asm"
 
-InitGender:
+InitGender: ; 48dcb (12:4dcb)
 	call InitGenderScreen
 	call LoadGenderScreenPal
 	call LoadGenderScreenLightBlueTile
 	call WaitBGMap2
 	call SetPalettes
-	ld hl, AreYouABoyOrAreYouAGirlText
+	ld hl, TextJump_AreYouABoyOrAreYouAGirl
 	call PrintText
 	ld hl, .MenuHeader
 	call LoadMenuHeader
@@ -39,29 +41,34 @@ InitGender:
 	ld c, 10
 	call DelayFrames
 	ret
+; 48dfc (12:4dfc)
 
-.MenuHeader:
+.MenuHeader: ; 0x48dfc
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 6, 4, 12, 9
 	dw .MenuData
 	db 1 ; default option
+; 0x48e04
 
-.MenuData:
+.MenuData: ; 0x48e04
 	db STATICMENU_CURSOR | STATICMENU_WRAP | STATICMENU_DISABLE_B ; flags
 	db 2 ; items
 	db "Boy@"
 	db "Girl@"
+; 0x48e0f
 
-AreYouABoyOrAreYouAGirlText:
-	text_far _AreYouABoyOrAreYouAGirlText
-	text_end
+TextJump_AreYouABoyOrAreYouAGirl: ; 0x48e0f
+	; Are you a boy? Or are you a girl?
+	text_jump Text_AreYouABoyOrAreYouAGirl
+	db "@"
+; 0x48e14
 
-InitGenderScreen:
+InitGenderScreen: ; 48e14 (12:4e14)
 	ld a, $10
 	ld [wMusicFade], a
-	ld a, LOW(MUSIC_NONE)
+	ld a, MUSIC_NONE
 	ld [wMusicFadeID], a
-	ld a, HIGH(MUSIC_NONE)
+	ld a, $0
 	ld [wMusicFadeID + 1], a
 	ld c, 8
 	call DelayFrames
@@ -72,13 +79,13 @@ InitGenderScreen:
 	ld bc, SCREEN_HEIGHT * SCREEN_WIDTH
 	ld a, $0
 	call ByteFill
-	hlcoord 0, 0, wAttrmap
+	hlcoord 0, 0, wAttrMap
 	ld bc, SCREEN_HEIGHT * SCREEN_WIDTH
 	xor a
 	call ByteFill
 	ret
 
-LoadGenderScreenPal:
+LoadGenderScreenPal: ; 48e47 (12:4e47)
 	ld hl, .Palette
 	ld de, wBGPals1
 	ld bc, 1 palettes
@@ -86,16 +93,19 @@ LoadGenderScreenPal:
 	call FarCopyWRAM
 	farcall ApplyPals
 	ret
+; 48e5c (12:4e5c)
 
-.Palette:
+.Palette: ; 48e5c
 INCLUDE "gfx/new_game/gender_screen.pal"
+; 48e64
 
-LoadGenderScreenLightBlueTile:
+LoadGenderScreenLightBlueTile: ; 48e64 (12:4e64)
 	ld de, .LightBlueTile
 	ld hl, vTiles2 tile $00
 	lb bc, BANK(.LightBlueTile), 1
 	call Get2bpp
 	ret
+; 48e71 (12:4e71)
 
-.LightBlueTile:
+.LightBlueTile: ; 48e71
 INCBIN "gfx/new_game/gender_screen.2bpp"

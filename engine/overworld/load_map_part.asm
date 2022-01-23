@@ -1,4 +1,4 @@
-_LoadMapPart::
+_LoadMapPart:: ; 4d15b
 	ld hl, wSurroundingTiles
 	ld a, [wMetatileStandingY]
 	and a

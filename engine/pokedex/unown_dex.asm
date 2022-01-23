@@ -1,4 +1,4 @@
-UpdateUnownDex:
+UpdateUnownDex: ; fba18
 	ld a, [wUnownLetter]
 	ld c, a
 	ld b, NUM_UNOWN
@@ -17,13 +17,14 @@ UpdateUnownDex:
 	dec hl
 	ld [hl], c
 	ret
+; fba2e
 
-PrintUnownWord:
+PrintUnownWord: ; fba2e (3e:7a2e)
 	hlcoord 4, 15
 	ld bc, 12
 	ld a, " "
 	call ByteFill
-	ld a, [wDexCurUnownIndex]
+	ld a, [wDexCurrentUnownIndex]
 	ld e, a
 	ld d, 0
 	ld hl, wUnownDex
@@ -45,5 +46,7 @@ PrintUnownWord:
 	inc de
 	ld [hli], a
 	jr .loop
+; fba5a (3e:7a5a)
+
 
 INCLUDE "data/pokemon/unown_words.asm"

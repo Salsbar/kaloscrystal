@@ -1,4 +1,4 @@
-GiveDratini:
+GiveDratini: ; 0x8b170
 ; if wScriptVar is 0 or 1, change the moveset of the last Dratini in the party.
 ;  0: give it a special moveset with Extremespeed.
 ;  1: give it the normal moveset of a level 15 Dratini.
@@ -16,7 +16,7 @@ GiveDratini:
 .CheckForDratini:
 ; start at the end of the party and search backwards for a Dratini
 	ld a, [hl]
-	cp DRATINI
+	cp DEINO
 	jr z, .GiveMoveset
 	ld a, l
 	sub e
@@ -71,20 +71,20 @@ GiveDratini:
 .Movesets:
 .Moveset0:
 ; Dratini does not normally learn Extremespeed. This is a special gift.
-	db WRAP
-	db THUNDER_WAVE
-	db TWISTER
 	db EXTREMESPEED
+	db FOCUS_ENERGY
+	db TWISTER
+	db BITE
 	db 0
 .Moveset1:
 ; This is the normal moveset of a level 15 Dratini
-	db WRAP
-	db LEER
-	db THUNDER_WAVE
+	db TACKLE
+	db FOCUS_ENERGY
 	db TWISTER
+	db BITE
 	db 0
 
-.GetNthPartyMon:
+.GetNthPartyMon: ; 0x8b1ce
 ; inputs:
 ; hl must be set to 0 before calling this function.
 ; a must be set to the number of Pokémon in the party.
@@ -109,3 +109,4 @@ GiveDratini:
 .EmptyParty:
 	scf
 	ret
+; 8b1e1

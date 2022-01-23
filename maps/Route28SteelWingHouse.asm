@@ -1,12 +1,12 @@
-	object_const_def
+	const_def 2 ; object constants
 	const ROUTE28STEELWINGHOUSE_CELEBRITY
 	const ROUTE28STEELWINGHOUSE_FEAROW
 
 Route28SteelWingHouse_MapScripts:
-	def_scene_scripts
+	db 1 ; scene scripts
 	scene_script .DummyScene
 
-	def_callbacks
+	db 0 ; callbacks
 
 .DummyScene:
 	end
@@ -17,8 +17,8 @@ Celebrity:
 	checkevent EVENT_GOT_TM47_STEEL_WING
 	iftrue .AlreadyGotItem
 	writetext CelebrityText1
-	promptbutton
-	verbosegiveitem TM_STEEL_WING
+	buttonsound
+	verbosegiveitem POLKADOT_BOW
 	iffalse .Done
 	setevent EVENT_GOT_TM47_STEEL_WING
 .Done:
@@ -33,13 +33,13 @@ Celebrity:
 CelebritysFearow:
 	opentext
 	writetext CelebritysFearowText
-	cry FEAROW
+	cry BRAVIARY
 	waitbutton
 	closetext
 	end
 
 CelebrityHouseBookshelf:
-	jumpstd MagazineBookshelfScript
+	jumpstd magazinebookshelf
 
 CelebrityText1:
 	text "Oh, dear."
@@ -65,22 +65,22 @@ CelebrityText2:
 	done
 
 CelebritysFearowText:
-	text "FEAROW: Feero!"
+	text "BRAVIARY: Braah!"
 	done
 
 Route28SteelWingHouse_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 2 ; warp events
 	warp_event  2,  7, ROUTE_28, 1
 	warp_event  3,  7, ROUTE_28, 1
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 2 ; bg events
 	bg_event  0,  1, BGEVENT_READ, CelebrityHouseBookshelf
 	bg_event  1,  1, BGEVENT_READ, CelebrityHouseBookshelf
 
-	def_object_events
+	db 2 ; object events
 	object_event  2,  3, SPRITE_COOLTRAINER_F, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_GREEN, OBJECTTYPE_SCRIPT, 0, Celebrity, -1
 	object_event  6,  5, SPRITE_MOLTRES, SPRITEMOVEDATA_POKEMON, 0, 0, -1, -1, PAL_NPC_BROWN, OBJECTTYPE_SCRIPT, 0, CelebritysFearow, -1

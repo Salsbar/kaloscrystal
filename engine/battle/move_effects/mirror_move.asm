@@ -1,4 +1,4 @@
-BattleCommand_MirrorMove:
+BattleCommand_MirrorMove: ; 373c9
 ; mirrormove
 
 	call ClearLastMove
@@ -18,13 +18,13 @@ BattleCommand_MirrorMove:
 	call AnimateFailedMove
 
 	ld hl, MirrorMoveFailedText
-	call StdBattleTextbox
+	call StdBattleTextBox
 	jp EndMoveEffect
 
 .use
 	ld a, b
 	ld [hl], a
-	ld [wNamedObjectIndex], a
+	ld [wd265], a
 
 	push af
 	ld a, BATTLE_VARS_MOVE_ANIM
@@ -40,12 +40,13 @@ BattleCommand_MirrorMove:
 	call CheckUserIsCharging
 	jr nz, .done
 
-	ld a, [wBattleAnimParam]
+	ld a, [wKickCounter]
 	push af
 	call BattleCommand_LowerSub
 	pop af
-	ld [wBattleAnimParam], a
+	ld [wKickCounter], a
 
 .done
 	call BattleCommand_MoveDelay
 	jp ResetTurn
+; 37418

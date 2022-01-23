@@ -1,31 +1,31 @@
 ; Used by CheckSleepingTreeMon
 
 AsleepTreeMonsNite:
-	db CATERPIE
-	db METAPOD
-	db BUTTERFREE
-	db WEEDLE
-	db KAKUNA
-	db BEEDRILL
-	db SPEAROW
-	db EKANS
-	db EXEGGCUTE
-	db LEDYBA
-	db AIPOM
+	db SCATTERBUG
+	db SPEWPA
+	db FLETCHLING
+	db JOLTIK
+	db FERROSEED
+	db EMOLGA
+	db DEDENNE
 	db -1 ; end
 
 AsleepTreeMonsDay:
-	db VENONAT
-	db HOOTHOOT
-	db NOCTOWL
-	db SPINARAK
-	db HERACROSS
+	db SEWADDLE
+	db SWADLOON
+	db VENIPEDE
+	db WHIRLIPEDE
+	db NOIBAT
+	db PURRLOIN
+	db ESPURR
+	db PHANTUMP
+	db TREVENANT
 	db -1 ; end
 
 AsleepTreeMonsMorn:
-	db VENONAT
-	db HOOTHOOT
-	db NOCTOWL
-	db SPINARAK
-	db HERACROSS
+	db NOIBAT
+	db PURRLOIN
+	db ESPURR
+	db PHANTUMP
+	db TREVENANT
 	db -1 ; end

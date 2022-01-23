@@ -1,4 +1,4 @@
-	object_const_def
+	const_def 2 ; object constants
 	const CELADONCITY_FISHER
 	const CELADONCITY_POLIWAG
 	const CELADONCITY_TEACHER1
@@ -10,14 +10,14 @@
 	const CELADONCITY_LASS
 
 CeladonCity_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 1 ; callbacks
 	callback MAPCALLBACK_NEWMAP, .FlyPoint
 
 .FlyPoint:
 	setflag ENGINE_FLYPOINT_CELADON
-	endcallback
+	return
 
 CeladonCityFisherScript:
 	jumptextfaceplayer CeladonCityFisherText
@@ -25,7 +25,7 @@ CeladonCityFisherScript:
 CeladonCityPoliwrath:
 	opentext
 	writetext CeladonCityPoliwrathText
-	cry POLIWRATH
+	cry SEISMITOAD
 	waitbutton
 	closetext
 	end
@@ -70,7 +70,7 @@ CeladonCityTrainerTips:
 	jumptext CeladonCityTrainerTipsText
 
 CeladonCityPokecenterSign:
-	jumpstd PokecenterSignScript
+	jumpstd pokecentersign
 
 CeladonCityHiddenPpUp:
 	hiddenitem PP_UP, EVENT_CELADON_CITY_HIDDEN_PP_UP
@@ -80,20 +80,14 @@ CeladonCityFisherText:
 	line "my partner."
 
 	para "I wonder if it'll"
-	line "ever evolve into a"
-	cont "frog #MON."
+	line "ever evolve?"
 	done
 
 CeladonCityPoliwrathText:
-	text "POLIWRATH: Croak!"
+	text "SEISMITOAD: Croak!"
 	done
 
 CeladonCityTeacher1Text:
-if DEF(_CRYSTAL_AU)
-	text "I lost at the"
-	line "machines."
-	done
-else
 	text "I lost at the slot"
 	line "machines again…"
 
@@ -103,17 +97,16 @@ else
 	para "You should check"
 	line "them out too."
 	done
-endc
 
 CeladonCityGramps1Text:
-	text "GRIMER have been"
+	text "TRUBBISH have been"
 	line "appearing lately."
 
 	para "See that pond out"
 	line "in front of the"
 
-	para "house? GRIMER live"
-	line "there now."
+	para "house? TRUBBISH"
+	line "live there now."
 
 	para "Where did they"
 	line "come from? This is"
@@ -164,7 +157,8 @@ CeladonCityTeacher2Text:
 	line "a sales clerk."
 	done
 
-CeladonCityLassText_Mobile: ; unreferenced
+CeladonCityLassText_Mobile:
+; unused
 	text "I love being"
 	line "surrounded by tall"
 	cont "buildings!"
@@ -217,17 +211,10 @@ CeladonCityMansionSignText:
 	done
 
 CeladonCityGameCornerSignText:
-if DEF(_CRYSTAL_AU)
-	text "The Game Area for"
-	line "Grown-ups--CELADON"
-	cont "GAME CORNER"
-	done
-else
 	text "The Playground for"
 	line "Everybody--CELADON"
 	cont "GAME CORNER"
 	done
-endc
 
 CeladonCityTrainerTipsText:
 	text "TRAINER TIPS"
@@ -247,7 +234,7 @@ CeladonCityTrainerTipsText:
 CeladonCity_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 9 ; warp events
 	warp_event  4,  9, CELADON_DEPT_STORE_1F, 1
 	warp_event 16,  9, CELADON_MANSION_1F, 1
 	warp_event 16,  3, CELADON_MANSION_1F, 3
@@ -258,9 +245,9 @@ CeladonCity_MapEvents:
 	warp_event 10, 29, CELADON_GYM, 1
 	warp_event 25, 29, CELADON_CAFE, 1
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 8 ; bg events
 	bg_event 23, 21, BGEVENT_READ, CeladonCitySign
 	bg_event 11, 31, BGEVENT_READ, CeladonGymSign
 	bg_event  6,  9, BGEVENT_READ, CeladonCityDeptStoreSign
@@ -270,7 +257,7 @@ CeladonCity_MapEvents:
 	bg_event 30,  9, BGEVENT_READ, CeladonCityPokecenterSign
 	bg_event 37, 21, BGEVENT_ITEM, CeladonCityHiddenPpUp
 
-	def_object_events
+	db 9 ; object events
 	object_event 26, 11, SPRITE_FISHER, SPRITEMOVEDATA_STANDING_RIGHT, 0, 0, -1, -1, PAL_NPC_GREEN, OBJECTTYPE_SCRIPT, 0, CeladonCityFisherScript, -1
 	object_event 27, 11, SPRITE_POLIWAG, SPRITEMOVEDATA_POKEMON, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_SCRIPT, 0, CeladonCityPoliwrath, -1
 	object_event 20, 24, SPRITE_TEACHER, SPRITEMOVEDATA_WALK_LEFT_RIGHT, 2, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, CeladonCityTeacher1Script, -1

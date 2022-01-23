@@ -1,19 +1,19 @@
-GetPokeBallWobble:
+GetPokeBallWobble: ; f971 (3:7971)
 ; Returns whether a Poke Ball will wobble in the catch animation.
 ; Whether a Pokemon is caught is determined beforehand.
 
 	push de
 
-	ldh a, [rSVBK]
+	ld a, [rSVBK]
 	ld d, a
 	push de
 
-	ld a, BANK(wThrownBallWobbleCount) ; aka BANK(wFinalCatchRate)
-	ldh [rSVBK], a
+	ld a, BANK(wBuffer2)
+	ld [rSVBK], a
 
-	ld a, [wThrownBallWobbleCount]
+	ld a, [wBuffer2]
 	inc a
-	ld [wThrownBallWobbleCount], a
+	ld [wBuffer2], a
 
 ; Wobble up to 3 times.
 	cp 3 + 1
@@ -25,7 +25,7 @@ GetPokeBallWobble:
 	jr nz, .done
 
 	ld hl, WobbleProbabilities
-	ld a, [wFinalCatchRate]
+	ld a, [wBuffer1]
 	ld b, a
 .loop
 	ld a, [hli]
@@ -54,7 +54,7 @@ GetPokeBallWobble:
 	pop de
 	ld e, a
 	ld a, d
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	ld a, e
 	pop de
 	ret

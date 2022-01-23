@@ -1,60 +1,62 @@
-_BillsPC:
+_BillsPC: ; e3fd
 	call .CheckCanUsePC
 	ret c
 	call .LogIn
 	call .UseBillsPC
 	jp .LogOut
 
-.CheckCanUsePC:
+.CheckCanUsePC: ; e40a (3:640a)
 	ld a, [wPartyCount]
 	and a
 	ret nz
-	ld hl, .PCGottaHavePokemonText
-	call MenuTextboxBackup
+	ld hl, .Text_GottaHavePokemon
+	call MenuTextBoxBackup
 	scf
 	ret
 
-.PCGottaHavePokemonText:
-	text_far _PCGottaHavePokemonText
-	text_end
+.Text_GottaHavePokemon: ; 0xe417
+	; You gotta have #MON to call!
+	text_jump UnknownText_0x1c1006
+	db "@"
 
-.LogIn:
+.LogIn: ; e41c (3:641c)
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call LoadStandardMenuHeader
 	call ClearPCItemScreen
 	ld hl, wOptions
 	ld a, [hl]
 	push af
 	set NO_TEXT_SCROLL, [hl]
-	ld hl, .PCWhatText
+	ld hl, .Text_What
 	call PrintText
 	pop af
 	ld [wOptions], a
 	call LoadFontsBattleExtra
 	ret
 
-.PCWhatText:
-	text_far _PCWhatText
-	text_end
+.Text_What: ; 0xe43a
+	; What?
+	text_jump UnknownText_0x1c1024
+	db "@"
 
-.LogOut:
+.LogOut: ; e43f (3:643f)
 	call CloseSubmenu
 	ret
 
-.UseBillsPC:
+.UseBillsPC: ; e443 (3:6443)
 	ld hl, .MenuHeader
 	call LoadMenuHeader
 	ld a, $1
 .loop
-	ld [wMenuCursorPosition], a
+	ld [wMenuCursorBuffer], a
 	call SetPalettes
 	xor a
 	ld [wWhichIndexSet], a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call DoNthMenu
 	jr c, .cancel
-	ld a, [wMenuCursorPosition]
+	ld a, [wMenuCursorBuffer]
 	push af
 	ld a, [wMenuSelection]
 	ld hl, .Jumptable
@@ -66,34 +68,34 @@ _BillsPC:
 	call CloseWindow
 	ret
 
-.MenuHeader:
+.MenuHeader: ; 0xe46f
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1
 	dw .MenuData
 	db 1 ; default option
 
-.MenuData:
+.MenuData: ; 0xe477
 	db STATICMENU_CURSOR ; flags
 	db 0 ; items
 	dw .items
 	dw PlaceMenuStrings
 	dw .strings
 
-.strings
+.strings ; e47f
 	db "WITHDRAW <PK><MN>@"
 	db "DEPOSIT <PK><MN>@"
 	db "CHANGE BOX@"
 	db "MOVE <PK><MN> W/O MAIL@"
 	db "SEE YA!@"
 
-.Jumptable:
+.Jumptable: ; e4ba (3:64ba)
 	dw BillsPC_WithdrawMenu
 	dw BillsPC_DepositMenu
 	dw BillsPC_ChangeBoxMenu
 	dw BillsPC_MovePKMNMenu
 	dw BillsPC_SeeYa
 
-.items
+.items ; e4c4
 	db 5 ; # items
 	db 0 ; WITHDRAW
 	db 1 ; DEPOSIT
@@ -102,15 +104,15 @@ _BillsPC:
 	db 4 ; SEE YA!
 	db -1
 
-BillsPC_SeeYa:
+BillsPC_SeeYa: ; e4cb
 	scf
 	ret
 
-BillsPC_MovePKMNMenu:
+BillsPC_MovePKMNMenu: ; e4cd
 	call LoadStandardMenuHeader
 	farcall IsAnyMonHoldingMail
 	jr nc, .no_mail
-	ld hl, .PCMonHoldingMailText
+	ld hl, .Text_MonHoldingMail
 	call PrintText
 	jr .quit
 
@@ -126,11 +128,12 @@ BillsPC_MovePKMNMenu:
 	and a
 	ret
 
-.PCMonHoldingMailText:
-	text_far _PCMonHoldingMailText
-	text_end
+.Text_MonHoldingMail: ; 0xe4f9
+	; There is a #MON holding MAIL. Please remove the MAIL.
+	text_jump UnknownText_0x1c102b
+	db "@"
 
-BillsPC_DepositMenu:
+BillsPC_DepositMenu: ; e4fe (3:64fe)
 	call LoadStandardMenuHeader
 	farcall _DepositPKMN
 	call ReturnToMapFromSubmenu
@@ -139,7 +142,7 @@ BillsPC_DepositMenu:
 	and a
 	ret
 
-BillsPC_Deposit_CheckPartySize: ; unreferenced
+Unreferenced_Functione512:
 	ld a, [wPartyCount]
 	and a
 	jr z, .no_mon
@@ -149,26 +152,28 @@ BillsPC_Deposit_CheckPartySize: ; unreferenced
 	ret
 
 .no_mon
-	ld hl, .PCNoSingleMonText
-	call MenuTextboxBackup
+	ld hl, .Text_NoMon
+	call MenuTextBoxBackup
 	scf
 	ret
 
 .only_one_mon
-	ld hl, .PCCantDepositLastMonText
-	call MenuTextboxBackup
+	ld hl, .Text_ItsYourLastMon
+	call MenuTextBoxBackup
 	scf
 	ret
 
-.PCNoSingleMonText:
-	text_far _PCNoSingleMonText
-	text_end
+.Text_NoMon: ; 0xe52e
+	; You don't have a single #MON!
+	text_jump UnknownText_0x1c1062
+	db "@"
 
-.PCCantDepositLastMonText:
-	text_far _PCCantDepositLastMonText
-	text_end
+.Text_ItsYourLastMon: ; 0xe533
+	; You can't deposit your last #MON!
+	text_jump UnknownText_0x1c1080
+	db "@"
 
-CheckCurPartyMonFainted:
+CheckCurPartyMonFainted: ; e538
 	ld hl, wPartyMon1HP
 	ld de, PARTYMON_STRUCT_LENGTH
 	ld b, $0
@@ -197,7 +202,7 @@ CheckCurPartyMonFainted:
 	and a
 	ret
 
-BillsPC_WithdrawMenu:
+BillsPC_WithdrawMenu: ; e559 (3:6559)
 	call LoadStandardMenuHeader
 	farcall _WithdrawPKMN
 	call ReturnToMapFromSubmenu
@@ -206,32 +211,33 @@ BillsPC_WithdrawMenu:
 	and a
 	ret
 
-BillsPC_Withdraw_CheckPartySize: ; unreferenced
+Unreferenced_Functione56d:
 	ld a, [wPartyCount]
 	cp PARTY_LENGTH
-	jr nc, .party_full
+	jr nc, .asm_e576
 	and a
 	ret
 
-.party_full
-	ld hl, PCCantTakeText
-	call MenuTextboxBackup
+.asm_e576
+	ld hl, UnknownText_0xe57e
+	call MenuTextBoxBackup
 	scf
 	ret
 
-PCCantTakeText:
-	text_far _PCCantTakeText
-	text_end
+UnknownText_0xe57e: ; 0xe57e
+	; You can't take any more #MON.
+	text_jump UnknownText_0x1c10a2
+	db "@"
 
-BillsPC_ChangeBoxMenu:
+BillsPC_ChangeBoxMenu: ; e583 (3:6583)
 	farcall _ChangeBox
 	and a
 	ret
 
-ClearPCItemScreen:
+ClearPCItemScreen: ; e58b
 	call DisableSpriteUpdates
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	call ClearBGPalettes
 	call ClearSprites
 	hlcoord 0, 0
@@ -240,15 +246,15 @@ ClearPCItemScreen:
 	call ByteFill
 	hlcoord 0, 0
 	lb bc, 10, 18
-	call Textbox
+	call TextBox
 	hlcoord 0, 12
 	lb bc, 4, 18
-	call Textbox
+	call TextBox
 	call WaitBGMap2
 	call SetPalettes ; load regular palettes?
 	ret
 
-CopyBoxmonToTempMon:
+CopyBoxmonToTempMon: ; e5bb
 	ld a, [wCurPartyMon]
 	ld hl, sBoxMon1Species
 	ld bc, BOXMON_STRUCT_LENGTH
@@ -256,17 +262,17 @@ CopyBoxmonToTempMon:
 	ld de, wTempMonSpecies
 	ld bc, BOXMON_STRUCT_LENGTH
 	ld a, BANK(sBoxMon1Species)
-	call OpenSRAM
+	call GetSRAMBank
 	call CopyBytes
 	call CloseSRAM
 	ret
 
-LoadBoxMonListing: ; unreferenced
+Unreferenced_Functione5d9:
 	ld a, [wCurBox]
 	cp b
 	jr z, .same_box
 	ld a, b
-	ld hl, .BoxAddresses
+	ld hl, .BoxAddrs
 	ld bc, 3
 	call AddNTimes
 	ld a, [hli]
@@ -282,13 +288,13 @@ LoadBoxMonListing: ; unreferenced
 	ld hl, sBoxCount
 
 .okay
-	call OpenSRAM
+	call GetSRAMBank
 	ld a, [hl]
-	ld bc, sBoxMons - sBox
+	ld bc, 1 + MONS_PER_BOX + 1
 	add hl, bc
 	ld b, a
 	ld c, $0
-	ld de, wBoxPartialData
+	ld de, wc608
 	ld a, b
 	and a
 	jr z, .empty_box
@@ -296,7 +302,7 @@ LoadBoxMonListing: ; unreferenced
 	push hl
 	push bc
 	ld a, c
-	ld bc, sBoxMon1Species - sBoxMons
+	ld bc, 0
 	add hl, bc
 	ld bc, BOXMON_STRUCT_LENGTH
 	call AddNTimes
@@ -311,7 +317,7 @@ LoadBoxMonListing: ; unreferenced
 	push hl
 	push bc
 	ld a, c
-	ld bc, sBoxMonNicknames - sBoxMons
+	ld bc, MONS_PER_BOX * (BOXMON_STRUCT_LENGTH + NAME_LENGTH)
 	add hl, bc
 	call SkipNames
 	call CopyBytes
@@ -364,8 +370,7 @@ LoadBoxMonListing: ; unreferenced
 	call CloseSRAM
 	ret
 
-.BoxAddresses:
-	table_width 3, LoadBoxMonListing.BoxAddresses
+.BoxAddrs: ; e66e
 	dba sBox1
 	dba sBox2
 	dba sBox3
@@ -380,4 +385,3 @@ LoadBoxMonListing: ; unreferenced
 	dba sBox12
 	dba sBox13
 	dba sBox14
-	assert_table_length NUM_BOXES

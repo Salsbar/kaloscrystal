@@ -1,15 +1,15 @@
-	object_const_def
+	const_def 2 ; object constants
 	const OAKSLAB_OAK
 	const OAKSLAB_SCIENTIST1
 	const OAKSLAB_SCIENTIST2
 	const OAKSLAB_SCIENTIST3
 
 OaksLab_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 0 ; callbacks
 
-.DummyScene: ; unreferenced
+.DummyScene:
 	end
 
 Oak:
@@ -18,15 +18,26 @@ Oak:
 	checkevent EVENT_OPENED_MT_SILVER
 	iftrue .CheckPokedex
 	checkevent EVENT_TALKED_TO_OAK_IN_KANTO
-	iftrue .CheckBadges
+	iftrue .PrisonBottle
 	writetext OakWelcomeKantoText
-	promptbutton
+	buttonsound
 	setevent EVENT_TALKED_TO_OAK_IN_KANTO
+.PrisonBottle:
+	checkevent EVENT_GOT_PRISON_BOTTLE
+	iftrue .CheckBadges
+	writetext OakPrisonBottleText
+	waitbutton
+	verbosegiveitem GS_BALL
+	iffalse .CheckBadges
+	setevent EVENT_GOT_PRISON_BOTTLE
+	setevent EVENT_FOREST_IS_RESTLESS
+	writetext OakPrisonBottleText2
+	waitbutton
 .CheckBadges:
-	readvar VAR_BADGES
+	checkcode VAR_BADGES
 	ifequal NUM_BADGES, .OpenMtSilver
 	ifequal NUM_JOHTO_BADGES, .Complain
-	sjump .AhGood
+	jump .AhGood
 
 .CheckPokedex:
 	writetext OakLabDexCheckText
@@ -39,19 +50,19 @@ Oak:
 
 .OpenMtSilver:
 	writetext OakOpenMtSilverText
-	promptbutton
+	buttonsound
 	setevent EVENT_OPENED_MT_SILVER
-	sjump .CheckPokedex
+	jump .CheckPokedex
 
 .Complain:
 	writetext OakNoKantoBadgesText
-	promptbutton
-	sjump .CheckPokedex
+	buttonsound
+	jump .CheckPokedex
 
 .AhGood:
 	writetext OakYesKantoBadgesText
-	promptbutton
-	sjump .CheckPokedex
+	buttonsound
+	jump .CheckPokedex
 
 OaksAssistant1Script:
 	jumptextfaceplayer OaksAssistant1Text
@@ -63,7 +74,7 @@ OaksAssistant3Script:
 	jumptextfaceplayer OaksAssistant3Text
 
 OaksLabBookshelf:
-	jumpstd DifficultBookshelfScript
+	jumpstd difficultbookshelf
 
 OaksLabPoster1:
 	jumptext OaksLabPoster1Text
@@ -102,6 +113,24 @@ OakLabGoodbyeText:
 	text "If you're in the"
 	line "area, I hope you"
 	cont "come visit again."
+	done
+	
+OakPrisonBottleText:
+	text "I'd like for you"
+	line "to have this."
+	done
+	
+OakPrisonBottleText2:
+	text "It's an ancient"
+	line "relic from JOHTO."
+	
+	para "It was discovered"
+	line "deep within a"
+	cont "dark forest."
+	
+	para "Perhaps you can"
+	line "discover its"
+	cont "true purpose."
 	done
 
 OakOpenMtSilverText:
@@ -257,13 +286,13 @@ OaksLabPCText:
 OaksLab_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 2 ; warp events
 	warp_event  4, 11, PALLET_TOWN, 3
 	warp_event  5, 11, PALLET_TOWN, 3
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 16 ; bg events
 	bg_event  6,  1, BGEVENT_READ, OaksLabBookshelf
 	bg_event  7,  1, BGEVENT_READ, OaksLabBookshelf
 	bg_event  8,  1, BGEVENT_READ, OaksLabBookshelf
@@ -281,7 +310,7 @@ OaksLab_MapEvents:
 	bg_event  9,  3, BGEVENT_READ, OaksLabTrashcan
 	bg_event  0,  1, BGEVENT_READ, OaksLabPC
 
-	def_object_events
+	db 4 ; object events
 	object_event  4,  2, SPRITE_OAK, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, Oak, -1
 	object_event  1,  8, SPRITE_SCIENTIST, SPRITEMOVEDATA_WALK_LEFT_RIGHT, 1, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_SCRIPT, 0, OaksAssistant1Script, -1
 	object_event  8,  9, SPRITE_SCIENTIST, SPRITEMOVEDATA_WALK_UP_DOWN, 0, 1, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_SCRIPT, 0, OaksAssistant2Script, -1

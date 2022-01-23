@@ -1,37 +1,37 @@
-ChrisNameMenuHeader:
+ChrisNameMenuHeader: ; 882b5
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 0, 0, 10, TEXTBOX_Y - 1
 	dw .MaleNames
-	db 1 ; default option
-	db 0 ; ????
+	db 1 ; ????
+	db 0 ; default option
 
-.MaleNames:
+.MaleNames: ; 882be
 	db STATICMENU_CURSOR | STATICMENU_PLACE_TITLE | STATICMENU_DISABLE_B ; flags
 	db 5 ; items
 	db "NEW NAME@"
-MalePlayerNameArray:
+MalePlayerNameArray: ; 882c9
 	db "CHRIS@"
 	db "MAT@"
 	db "ALLAN@"
 	db "JON@"
-	db 2 ; title indent
+	db 2 ; displacement
 	db " NAME @" ; title
 
-KrisNameMenuHeader:
+KrisNameMenuHeader: ; 882e5
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 0, 0, 10, TEXTBOX_Y - 1
 	dw .FemaleNames
-	db 1 ; default option
-	db 0 ; ????
+	db 1 ; ????
+	db 0 ; default option
 
-.FemaleNames:
+.FemaleNames: ; 882ee
 	db STATICMENU_CURSOR | STATICMENU_PLACE_TITLE | STATICMENU_DISABLE_B ; flags
 	db 5 ; items
 	db "NEW NAME@"
-FemalePlayerNameArray:
+FemalePlayerNameArray: ; 882f9
 	db "KRIS@"
 	db "AMANDA@"
 	db "JUANA@"
 	db "JODI@"
-	db 2 ; title indent
+	db 2 ; displacement
 	db " NAME @" ; title

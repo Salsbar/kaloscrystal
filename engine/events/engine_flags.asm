@@ -1,4 +1,4 @@
-EngineFlagAction::
+EngineFlagAction:: ; 80430
 ; Do action b on engine flag de
 ;
 ;   b = 0: reset flag
@@ -7,21 +7,22 @@ EngineFlagAction::
 ;
 ; Setting/resetting does not return a result.
 
+
 ; 16-bit flag ids are considered invalid, but it's nice
 ; to know that the infrastructure is there.
 
 	ld a, d
-	cp HIGH(NUM_ENGINE_FLAGS)
+	cp 0
 	jr z, .ceiling
 	jr c, .read ; cp 0 can't set carry!
 	jr .invalid
 
-; There are only NUM_ENGINE_FLAGS engine flags, so
+; There are only $a2 engine flags, so
 ; anything beyond that is invalid too.
 
 .ceiling
 	ld a, e
-	cp LOW(NUM_ENGINE_FLAGS)
+	cp NUM_ENGINE_FLAGS
 	jr c, .read
 
 ; Invalid flags are treated as flag 00.
@@ -57,7 +58,7 @@ EngineFlagAction::
 	jr z, .set   ; b = 1
 
 ; Return the given flag in c.
-; check
+.check
 	ld a, [de]
 	and c
 	ld c, a
@@ -79,5 +80,7 @@ EngineFlagAction::
 	and c
 	ld [de], a
 	ret
+; 80462
 
-INCLUDE "data/events/engine_flags.asm"
+
+INCLUDE "data/engine_flags.asm"

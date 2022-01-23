@@ -1,4 +1,4 @@
-GetTrademonFrontpic:
+GetTrademonFrontpic: ; 4d7fd
 	ld a, [wOTTrademonSpecies]
 	ld hl, wOTTrademonDVs
 	ld de, vTiles2
@@ -13,7 +13,7 @@ GetTrademonFrontpic:
 	predef GetAnimatedFrontpic
 	ret
 
-AnimateTrademonFrontpic:
+AnimateTrademonFrontpic: ; 4d81e
 	ld a, [wOTTrademonSpecies]
 	call IsAPokemon
 	ret c
@@ -31,8 +31,5 @@ AnimateTrademonFrontpic:
 	farcall TradeAnim_ShowGetmonFrontpic
 	ld a, [wOTTrademonSpecies]
 	ld [wCurPartySpecies], a
-	hlcoord 7, 2
-	ld d, $0
-	ld e, ANIM_MON_TRADE
-	predef AnimateFrontpic
+	call PlayMonCry
 	ret

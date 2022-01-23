@@ -1,4 +1,4 @@
-ApricornBalls:
+ApricornBalls: ; 24ca0
 	;  apricorn,     ball
 	db RED_APRICORN, LEVEL_BALL
 	db BLU_APRICORN, LURE_BALL
@@ -8,3 +8,4 @@ ApricornBalls:
 	db BLK_APRICORN, HEAVY_BALL
 	db PNK_APRICORN, LOVE_BALL
 	db -1
+; 24caf

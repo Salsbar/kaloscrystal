@@ -1,14 +1,14 @@
-	object_const_def
+	const_def 2 ; object constants
 	const VICTORYROADGATE_OFFICER
 	const VICTORYROADGATE_BLACK_BELT1
 	const VICTORYROADGATE_BLACK_BELT2
 
 VictoryRoadGate_MapScripts:
-	def_scene_scripts
+	db 2 ; scene scripts
 	scene_script .DummyScene0 ; SCENE_DEFAULT
 	scene_script .DummyScene1 ; SCENE_FINISHED
 
-	def_callbacks
+	db 0 ; callbacks
 
 .DummyScene0:
 	end
@@ -18,15 +18,15 @@ VictoryRoadGate_MapScripts:
 
 VictoryRoadGateBadgeCheckScene:
 	turnobject PLAYER, LEFT
-	sjump VictoryRoadGateBadgeCheckScript
+	jump VictoryRoadGateBadgeCheckScript
 
 VictoryRoadGateOfficerScript:
 	faceplayer
 VictoryRoadGateBadgeCheckScript:
 	opentext
 	writetext VictoryRoadGateOfficerText
-	promptbutton
-	readvar VAR_BADGES
+	buttonsound
+	checkcode VAR_BADGES
 	ifgreater NUM_JOHTO_BADGES - 1, .AllEightBadges
 	writetext VictoryRoadGateNotEnoughBadgesText
 	waitbutton
@@ -98,7 +98,7 @@ VictoryRoadGateRightBlackBeltText:
 VictoryRoadGate_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 8 ; warp events
 	warp_event 17,  7, ROUTE_22, 1
 	warp_event 18,  7, ROUTE_22, 1
 	warp_event  9, 17, ROUTE_26, 1
@@ -108,12 +108,12 @@ VictoryRoadGate_MapEvents:
 	warp_event  1,  7, ROUTE_28, 2
 	warp_event  2,  7, ROUTE_28, 2
 
-	def_coord_events
+	db 1 ; coord events
 	coord_event 10, 11, SCENE_DEFAULT, VictoryRoadGateBadgeCheckScene
 
-	def_bg_events
+	db 0 ; bg events
 
-	def_object_events
+	db 3 ; object events
 	object_event  8, 11, SPRITE_OFFICER, SPRITEMOVEDATA_STANDING_RIGHT, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, VictoryRoadGateOfficerScript, -1
 	object_event  7,  5, SPRITE_BLACK_BELT, SPRITEMOVEDATA_STANDING_RIGHT, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, VictoryRoadGateLeftBlackBeltScript, EVENT_OPENED_MT_SILVER
 	object_event 12,  5, SPRITE_BLACK_BELT, SPRITEMOVEDATA_STANDING_LEFT, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, VictoryRoadGateRightBlackBeltScript, EVENT_FOUGHT_SNORLAX

@@ -1,21 +1,22 @@
 ; Audio interfaces.
 
-InitSound::
+MapSetup_Sound_Off:: ; 3b4e
+
 	push hl
 	push de
 	push bc
 	push af
 
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
-	ld a, BANK(_InitSound)
-	ldh [hROMBank], a
+	ld a, BANK(_MapSetup_Sound_Off)
+	ld [hROMBank], a
 	ld [MBC3RomBank], a
 
-	call _InitSound
+	call _MapSetup_Sound_Off
 
 	pop af
-	ldh [hROMBank], a
+	ld [hROMBank], a
 	ld [MBC3RomBank], a
 
 	pop af
@@ -23,23 +24,26 @@ InitSound::
 	pop de
 	pop hl
 	ret
+; 3b6a
 
-UpdateSound::
+
+UpdateSound:: ; 3b6a
+
 	push hl
 	push de
 	push bc
 	push af
 
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 	ld a, BANK(_UpdateSound)
-	ldh [hROMBank], a
+	ld [hROMBank], a
 	ld [MBC3RomBank], a
 
 	call _UpdateSound
 
 	pop af
-	ldh [hROMBank], a
+	ld [hROMBank], a
 	ld [MBC3RomBank], a
 
 	pop af
@@ -47,21 +51,27 @@ UpdateSound::
 	pop de
 	pop hl
 	ret
+; 3b86
 
-_LoadMusicByte::
-; [wCurMusicByte] = [a:de]
-	ldh [hROMBank], a
+
+_LoadMusicByte:: ; 3b86
+; wCurMusicByte = [a:de]
+GLOBAL LoadMusicByte
+
+	ld [hROMBank], a
 	ld [MBC3RomBank], a
 
 	ld a, [de]
 	ld [wCurMusicByte], a
 	ld a, BANK(LoadMusicByte)
 
-	ldh [hROMBank], a
+	ld [hROMBank], a
 	ld [MBC3RomBank], a
 	ret
+; 3b97
 
-PlayMusic::
+
+PlayMusic:: ; 3b97
 ; Play music de.
 
 	push hl
@@ -69,10 +79,10 @@ PlayMusic::
 	push bc
 	push af
 
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
-	ld a, BANK(_PlayMusic) ; aka BANK(_InitSound)
-	ldh [hROMBank], a
+	ld a, BANK(_PlayMusic) ; and BANK(_MapSetup_Sound_Off)
+	ld [hROMBank], a
 	ld [MBC3RomBank], a
 
 	ld a, e
@@ -83,19 +93,21 @@ PlayMusic::
 	jr .end
 
 .nomusic
-	call _InitSound
+	call _MapSetup_Sound_Off
 
 .end
 	pop af
-	ldh [hROMBank], a
+	ld [hROMBank], a
 	ld [MBC3RomBank], a
 	pop af
 	pop bc
 	pop de
 	pop hl
 	ret
+; 3bbc
 
-PlayMusic2::
+
+PlayMusic2:: ; 3bbc
 ; Stop playing music, then play music de.
 
 	push hl
@@ -103,10 +115,10 @@ PlayMusic2::
 	push bc
 	push af
 
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 	ld a, BANK(_PlayMusic)
-	ldh [hROMBank], a
+	ld [hROMBank], a
 	ld [MBC3RomBank], a
 
 	push de
@@ -117,7 +129,7 @@ PlayMusic2::
 	call _PlayMusic
 
 	pop af
-	ldh [hROMBank], a
+	ld [hROMBank], a
 	ld [MBC3RomBank], a
 
 	pop af
@@ -126,7 +138,10 @@ PlayMusic2::
 	pop hl
 	ret
 
-PlayCry::
+; 3be3
+
+
+PlayCry:: ; 3be3
 ; Play cry de.
 
 	push hl
@@ -134,16 +149,16 @@ PlayCry::
 	push bc
 	push af
 
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 
 	; Cries are stuck in one bank.
 	ld a, BANK(PokemonCries)
-	ldh [hROMBank], a
+	ld [hROMBank], a
 	ld [MBC3RomBank], a
 
 	ld hl, PokemonCries
-rept MON_CRY_LENGTH
+rept 6 ; sizeof(mon_cry)
 	add hl, de
 endr
 
@@ -162,13 +177,13 @@ endr
 	ld [wCryLength + 1], a
 
 	ld a, BANK(_PlayCry)
-	ldh [hROMBank], a
+	ld [hROMBank], a
 	ld [MBC3RomBank], a
 
 	call _PlayCry
 
 	pop af
-	ldh [hROMBank], a
+	ld [hROMBank], a
 	ld [MBC3RomBank], a
 
 	pop af
@@ -176,8 +191,10 @@ endr
 	pop de
 	pop hl
 	ret
+; 3c23
 
-PlaySFX::
+
+PlaySFX:: ; 3c23
 ; Play sound effect de.
 ; Sound effects are ordered by priority (highest to lowest)
 
@@ -196,10 +213,10 @@ PlaySFX::
 	jr c, .done
 
 .play
-	ldh a, [hROMBank]
+	ld a, [hROMBank]
 	push af
 	ld a, BANK(_PlaySFX)
-	ldh [hROMBank], a
+	ld [hROMBank], a
 	ld [MBC3RomBank], a
 
 	ld a, e
@@ -207,7 +224,7 @@ PlaySFX::
 	call _PlaySFX
 
 	pop af
-	ldh [hROMBank], a
+	ld [hROMBank], a
 	ld [MBC3RomBank], a
 
 .done
@@ -216,13 +233,17 @@ PlaySFX::
 	pop de
 	pop hl
 	ret
+; 3c4e
 
-WaitPlaySFX::
+
+WaitPlaySFX:: ; 3c4e
 	call WaitSFX
 	call PlaySFX
 	ret
+; 3c55
 
-WaitSFX::
+
+WaitSFX:: ; 3c55
 ; infinite loop until sfx is done playing
 
 	push hl
@@ -243,8 +264,9 @@ WaitSFX::
 
 	pop hl
 	ret
+; 3c74
 
-IsSFXPlaying::
+IsSFXPlaying:: ; 3c74
 ; Return carry if no sound effect is playing.
 ; The inverse of CheckSFX.
 	push hl
@@ -270,33 +292,39 @@ IsSFXPlaying::
 	pop hl
 	and a
 	ret
+; 3c97
 
-MaxVolume::
+MaxVolume:: ; 3c97
 	ld a, MAX_VOLUME
 	ld [wVolume], a
 	ret
+; 3c9d
 
-LowVolume::
-	ld a, $33 ; 50%
+LowVolume:: ; 3c9d
+	ld a, $33 ; 40%
 	ld [wVolume], a
 	ret
+; 3ca3
 
-MinVolume::
+VolumeOff:: ; 3ca3
 	xor a
 	ld [wVolume], a
 	ret
+; 3ca8
 
-FadeOutToMusic:: ; unreferenced
+Unused_FadeOutMusic:: ; 3ca8
 	ld a, 4
 	ld [wMusicFade], a
 	ret
+; 3cae
 
-FadeInToMusic::
+FadeInMusic:: ; 3cae
 	ld a, 4 | (1 << MUSIC_FADE_IN_F)
 	ld [wMusicFade], a
 	ret
+; 3cb4
 
-SkipMusic::
+SkipMusic:: ; 3cb4
 ; Skip a frames of music.
 .loop
 	and a
@@ -304,8 +332,9 @@ SkipMusic::
 	dec a
 	call UpdateSound
 	jr .loop
+; 3cbc
 
-FadeToMapMusic::
+FadeToMapMusic:: ; 3cbc
 	push hl
 	push de
 	push bc
@@ -331,8 +360,9 @@ FadeToMapMusic::
 	pop de
 	pop hl
 	ret
+; 3cdf
 
-PlayMapMusic::
+PlayMapMusic:: ; 3cdf
 	push hl
 	push de
 	push bc
@@ -358,9 +388,9 @@ PlayMapMusic::
 	pop de
 	pop hl
 	ret
+; 3d03
 
-PlayMapMusicBike::
-; If the player's on a bike, play the bike music instead of the map music
+EnterMapMusic:: ; 3d03
 	push hl
 	push de
 	push bc
@@ -389,8 +419,9 @@ PlayMapMusicBike::
 	pop de
 	pop hl
 	ret
+; 3d2f
 
-TryRestartMapMusic::
+TryRestartMapMusic:: ; 3d2f
 	ld a, [wDontPlayMapMusicOnReload]
 	and a
 	jr z, RestartMapMusic
@@ -402,8 +433,9 @@ TryRestartMapMusic::
 	xor a
 	ld [wDontPlayMapMusicOnReload], a
 	ret
+; 3d47
 
-RestartMapMusic::
+RestartMapMusic:: ; 3d47
 	push hl
 	push de
 	push bc
@@ -420,8 +452,9 @@ RestartMapMusic::
 	pop de
 	pop hl
 	ret
+; 3d62
 
-SpecialMapMusic::
+SpecialMapMusic:: ; 3d62
 	ld a, [wPlayerState]
 	cp PLAYER_SURF
 	jr z, .surf
@@ -436,7 +469,7 @@ SpecialMapMusic::
 	and a
 	ret
 
-.bike ; unreferenced
+.bike
 	ld de, MUSIC_BICYCLE
 	scf
 	ret
@@ -460,15 +493,18 @@ SpecialMapMusic::
 	ld de, MUSIC_BUG_CATCHING_CONTEST_RANKING
 	scf
 	ret
+; 3d97
 
-GetMapMusic_MaybeSpecial::
+GetMapMusic_MaybeSpecial:: ; 3d97
 	call SpecialMapMusic
 	ret c
 	call GetMapMusic
 	ret
+; 3d9f
 
-PlaceBCDNumberSprite:: ; unreferenced
-; Places a BCD number at the upper center of the screen.
+Unreferenced_Function3d9f:: ; 3d9f
+; Places a BCD number at the
+; upper center of the screen.
 	ld a, 4 * TILE_WIDTH
 	ld [wVirtualOAMSprite38YCoord], a
 	ld [wVirtualOAMSprite39YCoord], a
@@ -479,7 +515,7 @@ PlaceBCDNumberSprite:: ; unreferenced
 	xor a
 	ld [wVirtualOAMSprite38Attributes], a
 	ld [wVirtualOAMSprite39Attributes], a
-	ld a, [wUnusedBCDNumber]
+	ld a, [wc296]
 	cp 100
 	jr nc, .max
 	add 1
@@ -500,8 +536,9 @@ PlaceBCDNumberSprite:: ; unreferenced
 	ld [wVirtualOAMSprite38TileID], a
 	ld [wVirtualOAMSprite39TileID], a
 	ret
+; 3dde
 
-CheckSFX::
+CheckSFX:: ; 3dde
 ; Return carry if any SFX channels are active.
 	ld a, [wChannel5Flags1]
 	bit 0, a
@@ -520,34 +557,39 @@ CheckSFX::
 .playing
 	scf
 	ret
+; 3dfe
 
-TerminateExpBarSound::
+TerminateExpBarSound:: ; 3dfe
 	xor a
 	ld [wChannel5Flags1], a
-	ld [wPitchSweep], a
-	ldh [rNR10], a
-	ldh [rNR11], a
-	ldh [rNR12], a
-	ldh [rNR13], a
-	ldh [rNR14], a
+	ld [wSoundInput], a
+	ld [rNR10], a
+	ld [rNR11], a
+	ld [rNR12], a
+	ld [rNR13], a
+	ld [rNR14], a
 	ret
+; 3e10
 
-ChannelsOff::
+
+ChannelsOff:: ; 3e10
 ; Quickly turn off music channels
 	xor a
 	ld [wChannel1Flags1], a
 	ld [wChannel2Flags1], a
 	ld [wChannel3Flags1], a
 	ld [wChannel4Flags1], a
-	ld [wPitchSweep], a
+	ld [wSoundInput], a
 	ret
+; 3e21
 
-SFXChannelsOff::
+SFXChannelsOff:: ; 3e21
 ; Quickly turn off sound effect channels
 	xor a
 	ld [wChannel5Flags1], a
 	ld [wChannel6Flags1], a
 	ld [wChannel7Flags1], a
 	ld [wChannel8Flags1], a
-	ld [wPitchSweep], a
+	ld [wSoundInput], a
 	ret
+; 3e32

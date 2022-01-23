@@ -1,4 +1,4 @@
-GetTrainerClassName:
+GetTrainerClassName: ; 3952d
 	ld hl, wRivalName
 	ld a, c
 	cp RIVAL1
@@ -6,7 +6,7 @@ GetTrainerClassName:
 
 	ld [wCurSpecies], a
 	ld a, TRAINER_NAME
-	ld [wNamedObjectType], a
+	ld [wNamedObjectTypeBuffer], a
 	call GetName
 	ld de, wStringBuffer1
 	ret
@@ -19,7 +19,7 @@ GetTrainerClassName:
 	pop de
 	ret
 
-GetOTName:
+GetOTName: ; 39550
 	ld hl, wOTPlayerName
 	ld a, [wLinkMode]
 	and a
@@ -32,7 +32,7 @@ GetOTName:
 
 	ld [wCurSpecies], a
 	ld a, TRAINER_NAME
-	ld [wNamedObjectType], a
+	ld [wNamedObjectTypeBuffer], a
 	call GetName
 	ld hl, wStringBuffer1
 
@@ -44,7 +44,7 @@ GetOTName:
 	pop de
 	ret
 
-GetTrainerAttributes:
+GetTrainerAttributes: ; 3957b
 	ld a, [wTrainerClass]
 	ld c, a
 	call GetOTName
@@ -62,5 +62,3 @@ GetTrainerAttributes:
 	ld a, [hl]
 	ld [wEnemyTrainerBaseReward], a
 	ret
-
-INCLUDE "data/trainers/attributes.asm"

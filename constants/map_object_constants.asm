@@ -1,40 +1,40 @@
 ; object_struct members (see macros/wram.asm)
-rsreset
-OBJECT_SPRITE              rb ; 00
-OBJECT_MAP_OBJECT_INDEX    rb ; 01
-OBJECT_SPRITE_TILE         rb ; 02
-OBJECT_MOVEMENTTYPE        rb ; 03
-OBJECT_FLAGS1              rb ; 04
-OBJECT_FLAGS2              rb ; 05
-OBJECT_PALETTE             rb ; 06
-OBJECT_DIRECTION_WALKING   rb ; 07
-OBJECT_FACING              rb ; 08
-OBJECT_STEP_TYPE           rb ; 09
-OBJECT_STEP_DURATION       rb ; 0a
-OBJECT_ACTION              rb ; 0b
-OBJECT_STEP_FRAME          rb ; 0c
-OBJECT_FACING_STEP         rb ; 0d
-OBJECT_NEXT_TILE           rb ; 0e
-OBJECT_STANDING_TILE       rb ; 0f
-OBJECT_NEXT_MAP_X          rb ; 10
-OBJECT_NEXT_MAP_Y          rb ; 11
-OBJECT_MAP_X               rb ; 12
-OBJECT_MAP_Y               rb ; 13
-OBJECT_INIT_X              rb ; 14
-OBJECT_INIT_Y              rb ; 15
-OBJECT_RADIUS              rb ; 16
-OBJECT_SPRITE_X            rb ; 17
-OBJECT_SPRITE_Y            rb ; 18
-OBJECT_SPRITE_X_OFFSET     rb ; 19
-OBJECT_SPRITE_Y_OFFSET     rb ; 1a
-OBJECT_MOVEMENT_BYTE_INDEX rb ; 1b
-OBJECT_1C                  rb ; 1c
-OBJECT_1D                  rb ; 1d
-OBJECT_1E                  rb ; 1e
-OBJECT_1F                  rb ; 1f
-OBJECT_RANGE               rb ; 20
-                           rb_skip 7
-OBJECT_LENGTH EQU _RS
+	const_def
+	const OBJECT_SPRITE              ; 00
+	const OBJECT_MAP_OBJECT_INDEX    ; 01
+	const OBJECT_SPRITE_TILE         ; 02
+	const OBJECT_MOVEMENTTYPE        ; 03
+	const OBJECT_FLAGS1              ; 04
+	const OBJECT_FLAGS2              ; 05
+	const OBJECT_PALETTE             ; 06
+	const OBJECT_DIRECTION_WALKING   ; 07
+	const OBJECT_FACING              ; 08
+	const OBJECT_STEP_TYPE           ; 09
+	const OBJECT_STEP_DURATION       ; 0a
+	const OBJECT_ACTION              ; 0b
+	const OBJECT_STEP_FRAME          ; 0c
+	const OBJECT_FACING_STEP         ; 0d
+	const OBJECT_NEXT_TILE           ; 0e
+	const OBJECT_STANDING_TILE       ; 0f
+	const OBJECT_NEXT_MAP_X          ; 10
+	const OBJECT_NEXT_MAP_Y          ; 11
+	const OBJECT_MAP_X               ; 12
+	const OBJECT_MAP_Y               ; 13
+	const OBJECT_INIT_X              ; 14
+	const OBJECT_INIT_Y              ; 15
+	const OBJECT_RADIUS              ; 16
+	const OBJECT_SPRITE_X            ; 17
+	const OBJECT_SPRITE_Y            ; 18
+	const OBJECT_SPRITE_X_OFFSET     ; 19
+	const OBJECT_SPRITE_Y_OFFSET     ; 1a
+	const OBJECT_MOVEMENT_BYTE_INDEX ; 1b
+	const OBJECT_1C                  ; 1c
+	const OBJECT_1D                  ; 1d
+	const OBJECT_1E                  ; 1e
+	const OBJECT_1F                  ; 1f
+	const OBJECT_RANGE               ; 20
+	; 21-27 are not used
+OBJECT_STRUCT_LENGTH EQU 40
 NUM_OBJECT_STRUCTS EQU 13 ; see wObjectStructs
 
 ; object_struct OBJECT_FACING values
@@ -70,9 +70,6 @@ EMOTE_OBJECT  EQU 1 << EMOTE_OBJECT_F
 	const OBJ_FLAGS2_2    ; 2
 	const OVERHEAD_F      ; 3
 	const USE_OBP1_F      ; 4
-	const FROZEN_F        ; 5
-	const OBJ_FLAGS2_6    ; 6
-	const OBJ_FLAGS2_7    ; 7
 
 LOW_PRIORITY  EQU 1 << LOW_PRIORITY_F
 HIGH_PRIORITY EQU 1 << HIGH_PRIORITY_F
@@ -97,36 +94,38 @@ RELATIVE_ATTRIBUTES EQU 1 << RELATIVE_ATTRIBUTES_F
 ABSOLUTE_TILE_ID    EQU 1 << ABSOLUTE_TILE_ID_F
 
 ; map_object struct members (see macros/wram.asm)
-rsreset
-MAPOBJECT_OBJECT_STRUCT_ID rb ; 0
-MAPOBJECT_SPRITE           rb ; 1
-MAPOBJECT_Y_COORD          rb ; 2
-MAPOBJECT_X_COORD          rb ; 3
-MAPOBJECT_MOVEMENT         rb ; 4
-MAPOBJECT_RADIUS           rb ; 5
-MAPOBJECT_HOUR             rb ; 6
-MAPOBJECT_TIMEOFDAY        rb ; 7
-MAPOBJECT_COLOR            rb ; 8
-MAPOBJECT_RANGE            rb ; 9
-MAPOBJECT_SCRIPT_POINTER   rw ; a
-MAPOBJECT_EVENT_FLAG       rw ; c
-                           rb_skip 2
-MAPOBJECT_LENGTH EQU _RS
-NUM_OBJECTS EQU 16
-PLAYER_OBJECT EQU 0
+	const_def
+	const MAPOBJECT_OBJECT_STRUCT_ID ; 0
+	const MAPOBJECT_SPRITE ; 1
+	const MAPOBJECT_Y_COORD ; 2
+	const MAPOBJECT_X_COORD ; 3
+	const MAPOBJECT_MOVEMENT ; 4
+	const MAPOBJECT_RADIUS ; 5
+	const MAPOBJECT_HOUR ; 6
+	const MAPOBJECT_TIMEOFDAY ; 7
+	const MAPOBJECT_COLOR ; 8
+	const MAPOBJECT_RANGE ; 9
+	const MAPOBJECT_SCRIPT_POINTER ; a
+	const MAPOBJECT_POINTER_HI ; b
+	const MAPOBJECT_EVENT_FLAG ; c
+	const MAPOBJECT_FLAG_HI ; d
+	const MAPOBJECT_E ; unused
+	const MAPOBJECT_F ; unused
+OBJECT_LENGTH EQU const_value
 
 ; SpriteMovementData struct members (see data/sprites/map_objects.asm)
-rsreset
-SPRITEMOVEATTR_MOVEMENT rb ; 0
-SPRITEMOVEATTR_FACING   rb ; 1
-SPRITEMOVEATTR_ACTION   rb ; 2
-SPRITEMOVEATTR_FLAGS1   rb ; 3
-SPRITEMOVEATTR_FLAGS2   rb ; 4
-SPRITEMOVEATTR_PALFLAGS rb ; 5
-NUM_SPRITEMOVEDATA_FIELDS EQU _RS
+	const_def
+	const SPRITEMOVEATTR_MOVEMENT ; 0
+	const SPRITEMOVEATTR_FACING   ; 1
+	const SPRITEMOVEATTR_ACTION   ; 2
+	const SPRITEMOVEATTR_FLAGS1   ; 3
+	const SPRITEMOVEATTR_FLAGS2   ; 4
+	const SPRITEMOVEATTR_PALFLAGS ; 5
+NUM_SPRITEMOVEDATA_FIELDS EQU const_value
 
 MAPOBJECT_SCREEN_WIDTH  EQU (SCREEN_WIDTH / 2) + 2
 MAPOBJECT_SCREEN_HEIGHT EQU (SCREEN_HEIGHT / 2) + 2
+
 
 ; SpriteMovementData indexes (see data/sprites/map_objects.asm)
 	const_def
@@ -142,8 +141,8 @@ MAPOBJECT_SCREEN_HEIGHT EQU (SCREEN_HEIGHT / 2) + 2
 	const SPRITEMOVEDATA_STANDING_RIGHT       ; 09
 	const SPRITEMOVEDATA_SPINRANDOM_FAST      ; 0a
 	const SPRITEMOVEDATA_PLAYER               ; 0b
-	const SPRITEMOVEDATA_INDEXED_1            ; 0c
-	const SPRITEMOVEDATA_INDEXED_2            ; 0d
+	const SPRITEMOVEDATA_0C                   ; 0c
+	const SPRITEMOVEDATA_0D                   ; 0d
 	const SPRITEMOVEDATA_0E                   ; 0e
 	const SPRITEMOVEDATA_0F                   ; 0f
 	const SPRITEMOVEDATA_10                   ; 10
@@ -169,7 +168,7 @@ MAPOBJECT_SCREEN_HEIGHT EQU (SCREEN_HEIGHT / 2) + 2
 	const SPRITEMOVEDATA_SWIM_WANDER          ; 24
 NUM_SPRITEMOVEDATA EQU const_value
 
-; StepFunction_FromMovement.Pointers indexes (see engine/overworld/map_objects.asm)
+; MapObjectMovementPattern.Pointers indexes (see engine/overworld/map_objects.asm)
 	const_def
 	const SPRITEMOVEFN_00                    ; 00
 	const SPRITEMOVEFN_RANDOM_WALK_Y         ; 01
@@ -179,8 +178,8 @@ NUM_SPRITEMOVEDATA EQU const_value
 	const SPRITEMOVEFN_FAST_RANDOM_SPIN      ; 05
 	const SPRITEMOVEFN_STANDING              ; 06
 	const SPRITEMOVEFN_OBEY_DPAD             ; 07
-	const SPRITEMOVEFN_INDEXED_1             ; 08
-	const SPRITEMOVEFN_INDEXED_2             ; 09
+	const SPRITEMOVEFN_08                    ; 08
+	const SPRITEMOVEFN_09                    ; 09
 	const SPRITEMOVEFN_0A                    ; 0a
 	const SPRITEMOVEFN_0B                    ; 0b
 	const SPRITEMOVEFN_0C                    ; 0c
@@ -199,37 +198,35 @@ NUM_SPRITEMOVEDATA EQU const_value
 	const SPRITEMOVEFN_SPIN_COUNTERCLOCKWISE ; 19
 	const SPRITEMOVEFN_BOULDERDUST           ; 1a
 	const SPRITEMOVEFN_GRASS                 ; 1b
-NUM_SPRITEMOVEFN EQU const_value
 
 ; StepTypesJumptable indexes (see engine/overworld/map_objects.asm)
 	const_def
-	const STEP_TYPE_RESET            ; 00
-	const STEP_TYPE_FROM_MOVEMENT    ; 01
-	const STEP_TYPE_NPC_WALK         ; 02
-	const STEP_TYPE_SLEEP            ; 03
-	const STEP_TYPE_STANDING         ; 04
-	const STEP_TYPE_RESTORE          ; 05
-	const STEP_TYPE_PLAYER_WALK      ; 06
-	const STEP_TYPE_CONTINUE_WALK    ; 07
-	const STEP_TYPE_NPC_JUMP         ; 08
-	const STEP_TYPE_PLAYER_JUMP      ; 09
-	const STEP_TYPE_TURN             ; 0a
-	const STEP_TYPE_BUMP             ; 0b
-	const STEP_TYPE_TELEPORT_FROM    ; 0c
-	const STEP_TYPE_TELEPORT_TO      ; 0d
-	const STEP_TYPE_SKYFALL          ; 0e
-	const STEP_TYPE_STRENGTH_BOULDER ; 0f
-	const STEP_TYPE_GOT_BITE         ; 10
-	const STEP_TYPE_ROCK_SMASH       ; 11
-	const STEP_TYPE_RETURN_DIG       ; 12
-	const STEP_TYPE_TRACKING_OBJECT  ; 13
-	const STEP_TYPE_14               ; 14
-	const STEP_TYPE_SCREENSHAKE      ; 15
-	const STEP_TYPE_16               ; 16
-	const STEP_TYPE_17               ; 17
-	const STEP_TYPE_DELETE           ; 18
-	const STEP_TYPE_SKYFALL_TOP      ; 19
-NUM_STEP_TYPES EQU const_value
+	const STEP_TYPE_00              ; 00
+	const STEP_TYPE_SLEEP           ; 01
+	const STEP_TYPE_NPC_WALK        ; 02
+	const STEP_TYPE_03              ; 03
+	const STEP_TYPE_04              ; 04
+	const STEP_TYPE_05              ; 05
+	const STEP_TYPE_PLAYER_WALK     ; 06
+	const STEP_TYPE_07              ; 07
+	const STEP_TYPE_NPC_JUMP        ; 08
+	const STEP_TYPE_PLAYER_JUMP     ; 09
+	const STEP_TYPE_HALF_STEP       ; 0a
+	const STEP_TYPE_BUMP            ; 0b
+	const STEP_TYPE_TELEPORT_FROM   ; 0c
+	const STEP_TYPE_TELEPORT_TO     ; 0d
+	const STEP_TYPE_SKYFALL         ; 0e
+	const STEP_TYPE_0F              ; 0f
+	const STEP_TYPE_GOT_BITE        ; 10
+	const STEP_TYPE_ROCK_SMASH      ; 11
+	const STEP_TYPE_RETURN_DIG      ; 12
+	const STEP_TYPE_TRACKING_OBJECT ; 13
+	const STEP_TYPE_14              ; 14
+	const STEP_TYPE_15              ; 15
+	const STEP_TYPE_16              ; 16
+	const STEP_TYPE_17              ; 17
+	const STEP_TYPE_18              ; 18
+	const STEP_TYPE_SKYFALL_TOP     ; 19
 
 ; ObjectActionPairPointers indexes (see engine/overworld/map_object_action.asm)
 	const_def
@@ -250,7 +247,6 @@ NUM_STEP_TYPES EQU const_value
 	const OBJECT_ACTION_BOULDER_DUST  ; 0e
 	const OBJECT_ACTION_GRASS_SHAKE   ; 0f
 	const OBJECT_ACTION_SKYFALL       ; 10
-NUM_OBJECT_ACTIONS EQU const_value
 
 ; Facings indexes (see data/sprites/facings.asm)
 	const_def
@@ -286,7 +282,7 @@ NUM_OBJECT_ACTIONS EQU const_value
 	const FACING_BOULDER_DUST_2 ; 1d
 	const FACING_GRASS_1        ; 1e
 	const FACING_GRASS_2        ; 1f
-NUM_FACINGS EQU const_value
+
 
 ; DoPlayerMovement.DoStep arguments (see engine/overworld/player_movement.asm)
 	const_def
@@ -298,4 +294,3 @@ NUM_FACINGS EQU const_value
 	const STEP_TURN          ; 5
 	const STEP_BACK_LEDGE    ; 6
 	const STEP_WALK_IN_PLACE ; 7
-NUM_STEPS EQU const_value

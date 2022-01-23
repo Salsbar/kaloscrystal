@@ -1,4 +1,4 @@
-CheckTime::
+CheckTime:: ; c000
 	ld a, [wTimeOfDay]
 	ld hl, .TimeOfDayTable
 	ld de, 2
@@ -11,7 +11,7 @@ CheckTime::
 	ld c, a
 	ret
 
-.TimeOfDayTable:
+.TimeOfDayTable: ; c012
 	db MORN_F, MORN
 	db DAY_F,  DAY
 	db NITE_F, NITE

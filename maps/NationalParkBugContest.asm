@@ -1,4 +1,4 @@
-	object_const_def
+	const_def 2 ; object constants
 	const NATIONALPARKBUGCONTEST_YOUNGSTER1
 	const NATIONALPARKBUGCONTEST_YOUNGSTER2
 	const NATIONALPARKBUGCONTEST_ROCKER
@@ -13,14 +13,14 @@
 	const NATIONALPARKBUGCONTEST_POKE_BALL2
 
 NationalParkBugContest_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 0 ; callbacks
 
 BugCatchingContestant1AScript:
 	faceplayer
 	opentext
-	writetext BugCatchingContestant1AText
+	writetext UnknownText_0x5c94c
 	waitbutton
 	closetext
 	end
@@ -28,7 +28,7 @@ BugCatchingContestant1AScript:
 BugCatchingContestant2AScript:
 	faceplayer
 	opentext
-	writetext BugCatchingContestant2AText
+	writetext UnknownText_0x5c973
 	waitbutton
 	closetext
 	end
@@ -36,7 +36,7 @@ BugCatchingContestant2AScript:
 BugCatchingContestant3AScript:
 	faceplayer
 	opentext
-	writetext BugCatchingContestant3AText
+	writetext UnknownText_0x5c9a3
 	waitbutton
 	closetext
 	end
@@ -44,7 +44,7 @@ BugCatchingContestant3AScript:
 BugCatchingContestant4AScript:
 	faceplayer
 	opentext
-	writetext BugCatchingContestant4AText
+	writetext UnknownText_0x5c9cc
 	waitbutton
 	closetext
 	end
@@ -52,7 +52,7 @@ BugCatchingContestant4AScript:
 BugCatchingContestant5AScript:
 	faceplayer
 	opentext
-	writetext BugCatchingContestant5AText
+	writetext UnknownText_0x5ca15
 	waitbutton
 	closetext
 	end
@@ -60,7 +60,7 @@ BugCatchingContestant5AScript:
 BugCatchingContestant6AScript:
 	faceplayer
 	opentext
-	writetext BugCatchingContestant6AText
+	writetext UnknownText_0x5ca52
 	waitbutton
 	closetext
 	end
@@ -68,7 +68,7 @@ BugCatchingContestant6AScript:
 BugCatchingContestant7AScript:
 	faceplayer
 	opentext
-	writetext BugCatchingContestant7AText
+	writetext UnknownText_0x5ca8f
 	waitbutton
 	closetext
 	end
@@ -76,7 +76,7 @@ BugCatchingContestant7AScript:
 BugCatchingContestant8AScript:
 	faceplayer
 	opentext
-	writetext BugCatchingContestant8AText
+	writetext UnknownText_0x5cac8
 	waitbutton
 	closetext
 	end
@@ -84,7 +84,7 @@ BugCatchingContestant8AScript:
 BugCatchingContestant9AScript:
 	faceplayer
 	opentext
-	writetext BugCatchingContestant9AText
+	writetext UnknownText_0x5cb25
 	waitbutton
 	closetext
 	end
@@ -92,7 +92,7 @@ BugCatchingContestant9AScript:
 BugCatchingContestant10AScript:
 	faceplayer
 	opentext
-	writetext BugCatchingContestant10AText
+	writetext UnknownText_0x5cb64
 	waitbutton
 	closetext
 	end
@@ -115,25 +115,25 @@ NationalParkBugContestTMDig:
 NationalParkBugContestHiddenFullHeal:
 	hiddenitem FULL_HEAL, EVENT_NATIONAL_PARK_HIDDEN_FULL_HEAL
 
-BugCatchingContestant1AText:
+UnknownText_0x5c94c:
 	text "DON: I'm going to"
 	line "win! Don't bother"
 	cont "me."
 	done
 
-BugCatchingContestant2AText:
-	text "ED: My PARASECT"
+UnknownText_0x5c973:
+	text "ED: My FOONGUS"
 	line "puts #MON to"
 	cont "sleep with SPORE."
 	done
 
-BugCatchingContestant3AText:
+UnknownText_0x5c9a3:
 	text "NICK: I'm raising"
 	line "fast #MON for"
 	cont "battles."
 	done
 
-BugCatchingContestant4AText:
+UnknownText_0x5c9cc:
 	text "WILLIAM: I'm not"
 	line "concerned about"
 	cont "winning."
@@ -142,15 +142,15 @@ BugCatchingContestant4AText:
 	line "for rare #MON."
 	done
 
-BugCatchingContestant5AText:
+UnknownText_0x5ca15:
 	text "BENNY: Ssh! You'll"
-	line "scare off SCYTHER."
+	line "scare off DURANT."
 
 	para "I'll talk to you"
 	line "later."
 	done
 
-BugCatchingContestant6AText:
+UnknownText_0x5ca52:
 	text "BARRY: You should"
 	line "weaken bug #MON"
 
@@ -158,7 +158,7 @@ BugCatchingContestant6AText:
 	line "a BALL."
 	done
 
-BugCatchingContestant7AText:
+UnknownText_0x5ca8f:
 	text "CINDY: I love bug"
 	line "#MON."
 
@@ -166,7 +166,7 @@ BugCatchingContestant7AText:
 	line "like them too."
 	done
 
-BugCatchingContestant8AText:
+UnknownText_0x5cac8:
 	text "JOSH: I've been"
 	line "collecting bug"
 
@@ -177,7 +177,7 @@ BugCatchingContestant8AText:
 	line "going to lose!"
 	done
 
-BugCatchingContestant9AText:
+UnknownText_0x5cb25:
 	text "SAMUEL: If you've"
 	line "got the time to"
 
@@ -185,7 +185,7 @@ BugCatchingContestant9AText:
 	line "bug #MON."
 	done
 
-BugCatchingContestant10AText:
+UnknownText_0x5cb64:
 	text "KIPP: I've studied"
 	line "about bug #MON"
 	cont "a lot."
@@ -221,21 +221,21 @@ NationalParkBugContestTrainerTipsText:
 NationalParkBugContest_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 4 ; warp events
 	warp_event 33, 18, ROUTE_36_NATIONAL_PARK_GATE, 1
 	warp_event 33, 19, ROUTE_36_NATIONAL_PARK_GATE, 1
 	warp_event 10, 47, ROUTE_35_NATIONAL_PARK_GATE, 1
 	warp_event 11, 47, ROUTE_35_NATIONAL_PARK_GATE, 1
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 4 ; bg events
 	bg_event 14, 44, BGEVENT_READ, NationalParkBugContestRelaxationSquareSign
 	bg_event 27, 31, BGEVENT_READ, NationalParkBugContestBattleNoticeSign
 	bg_event  6, 47, BGEVENT_ITEM, NationalParkBugContestHiddenFullHeal
 	bg_event 12,  4, BGEVENT_READ, NationalParkBugContestTrainerTipsSign
 
-	def_object_events
+	db 12 ; object events
 	object_event 19, 29, SPRITE_YOUNGSTER, SPRITEMOVEDATA_WANDER, 2, 2, -1, -1, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, BugCatchingContestant1AScript, EVENT_BUG_CATCHING_CONTESTANT_1A
 	object_event 28, 22, SPRITE_YOUNGSTER, SPRITEMOVEDATA_WANDER, 2, 2, -1, -1, PAL_NPC_GREEN, OBJECTTYPE_SCRIPT, 0, BugCatchingContestant2AScript, EVENT_BUG_CATCHING_CONTESTANT_2A
 	object_event  9, 18, SPRITE_ROCKER, SPRITEMOVEDATA_STANDING_UP, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_SCRIPT, 0, BugCatchingContestant3AScript, EVENT_BUG_CATCHING_CONTESTANT_3A

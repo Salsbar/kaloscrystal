@@ -1,4 +1,4 @@
-BattleCommand_Mimic:
+BattleCommand_Mimic: ; 36f46
 ; mimic
 
 	call ClearLastMove
@@ -7,7 +7,7 @@ BattleCommand_Mimic:
 	and a
 	jr nz, .fail
 	ld hl, wBattleMonMoves
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
 	jr z, .player_turn
 	ld hl, wEnemyMonMoves
@@ -37,14 +37,16 @@ BattleCommand_Mimic:
 	ld a, BATTLE_VARS_LAST_COUNTER_MOVE_OPP
 	call GetBattleVar
 	ld [hl], a
-	ld [wNamedObjectIndex], a
+	ld [wNamedObjectIndexBuffer], a
 	ld bc, wBattleMonPP - wBattleMonMoves
 	add hl, bc
 	ld [hl], 5
 	call GetMoveName
 	call AnimateCurrentMove
-	ld hl, MimicLearnedMoveText
-	jp StdBattleTextbox
+	ld hl, LearnedMoveText
+	jp StdBattleTextBox
 
 .fail
 	jp FailMimic
+
+; 36f9d

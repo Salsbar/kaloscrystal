@@ -1,4 +1,4 @@
-Elevator::
+Elevator:: ; 1342d
 	call .LoadPointer
 	call .FindCurrentFloor
 	jr c, .quit
@@ -15,8 +15,9 @@ Elevator::
 .quit
 	scf
 	ret
+; 1344a
 
-.LoadPointer:
+.LoadPointer: ; 1344a
 	ld a, b
 	ld [wElevatorPointerBank], a
 	ld a, e
@@ -25,10 +26,11 @@ Elevator::
 	ld [wElevatorPointer + 1], a
 	call .LoadFloors
 	ret
+; 1345a
 
-.LoadFloors:
-	ld de, wCurElevatorCount
-	ld bc, wElevatorDataEnd - wElevatorData
+.LoadFloors: ; 1345a
+	ld de, wCurElevator
+	ld bc, 4
 	ld hl, wElevatorPointer
 	ld a, [hli]
 	ld h, [hl]
@@ -38,7 +40,6 @@ Elevator::
 	inc hl
 	ld [de], a
 	inc de
-	assert wCurElevatorCount + 1 == wCurElevatorFloors
 .loop
 	ld a, [wElevatorPointerBank]
 	call GetFarByte
@@ -48,8 +49,9 @@ Elevator::
 	cp -1
 	jr nz, .loop
 	ret
+; 1347d
 
-.FindCurrentFloor:
+.FindCurrentFloor: ; 1347d
 	ld hl, wElevatorPointer
 	ld a, [hli]
 	ld h, [hl]
@@ -96,8 +98,9 @@ Elevator::
 .fail
 	scf
 	ret
+; 134c0
 
-Elevator_GoToFloor:
+Elevator_GoToFloor: ; 134c0
 	push af
 	ld hl, wElevatorPointer
 	ld a, [hli]
@@ -105,18 +108,19 @@ Elevator_GoToFloor:
 	ld l, a
 	inc hl
 	pop af
-	ld bc, wElevatorDataEnd - wElevatorData
+	ld bc, 4
 	call AddNTimes
 	inc hl
 	ld de, wBackupWarpNumber
 	ld a, [wElevatorPointerBank]
-	ld bc, wElevatorDataEnd - wElevatorData - 1
+	ld bc, 3
 	call FarCopyBytes
 	ret
+; 134dd
 
-Elevator_AskWhichFloor:
+Elevator_AskWhichFloor: ; 134dd
 	call LoadStandardMenuHeader
-	ld hl, AskFloorElevatorText
+	ld hl, Elevator_WhichFloorText
 	call PrintText
 	call Elevator_GetCurrentFloorText
 	ld hl, Elevator_MenuHeader
@@ -137,12 +141,16 @@ Elevator_AskWhichFloor:
 .cancel
 	scf
 	ret
+; 1350d
 
-AskFloorElevatorText:
-	text_far _AskFloorElevatorText
-	text_end
+Elevator_WhichFloorText: ; 0x1350d
+	; Which floor?
+	text_jump UnknownText_0x1bd2bc
+	db "@"
+; 0x13512
 
-Elevator_GetCurrentFloorText:
+
+Elevator_GetCurrentFloorText: ; 13512
 	ld hl, wOptions
 	ld a, [hl]
 	push af
@@ -150,7 +158,7 @@ Elevator_GetCurrentFloorText:
 	hlcoord 0, 0
 	ld b, 4
 	ld c, 8
-	call Textbox
+	call TextBox
 	hlcoord 1, 2
 	ld de, Elevator_CurrentFloorText
 	call PlaceString
@@ -159,11 +167,14 @@ Elevator_GetCurrentFloorText:
 	pop af
 	ld [wOptions], a
 	ret
+; 13537
 
-Elevator_CurrentFloorText:
+Elevator_CurrentFloorText: ; 13537
 	db "Now on:@"
+; 1353f
 
-Elevator_GetCurrentFloorString:
+
+Elevator_GetCurrentFloorString: ; 1353f
 	push hl
 	ld a, [wElevatorOriginFloor]
 	ld e, a
@@ -174,33 +185,37 @@ Elevator_GetCurrentFloorString:
 	pop de
 	call GetFloorString
 	ret
+; 13550
 
-Elevator_MenuHeader:
+Elevator_MenuHeader: ; 0x13550
 	db MENU_BACKUP_TILES ; flags
 	menu_coords 12, 1, 18, 9
 	dw Elevator_MenuData
 	db 1 ; default option
+; 0x13558
 
-Elevator_MenuData:
+Elevator_MenuData: ; 0x13558
 	db SCROLLINGMENU_DISPLAY_ARROWS ; flags
 	db 4, 0 ; rows, columns
-	db SCROLLINGMENU_ITEMS_NORMAL ; item format
-	dbw 0, wCurElevatorCount
+	db 1 ; horizontal spacing
+	dbw 0, wCurElevator
 	dba GetElevatorFloorStrings
 	dba NULL
 	dba NULL
+; 13568
 
-GetElevatorFloorStrings:
+GetElevatorFloorStrings: ; 13568
 	ld a, [wMenuSelection]
-GetFloorString:
+GetFloorString: ; 1356b
 	push de
 	call FloorToString
 	ld d, h
 	ld e, l
 	pop hl
 	jp PlaceString
+; 13575
 
-FloorToString:
+FloorToString: ; 13575
 	push de
 	ld e, a
 	ld d, 0
@@ -212,5 +227,6 @@ FloorToString:
 	ld l, a
 	pop de
 	ret
+; 13583
 
 INCLUDE "data/events/elevator_floors.asm"

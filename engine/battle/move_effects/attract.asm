@@ -1,4 +1,4 @@
-BattleCommand_Attract:
+BattleCommand_Attract: ; 377ce
 ; attract
 	ld a, [wAttackMissed]
 	and a
@@ -17,12 +17,14 @@ BattleCommand_Attract:
 
 ; 'fell in love!'
 	ld hl, FellInLoveText
-	jp StdBattleTextbox
+	jp StdBattleTextBox
 
 .failed
 	jp FailMove
+; 377f5
 
-CheckOppositeGender:
+
+CheckOppositeGender: ; 377f5
 	ld a, MON_SPECIES
 	call BattlePartyAttr
 	ld a, [hl]
@@ -74,3 +76,4 @@ CheckOppositeGender:
 .genderless_samegender
 	scf
 	ret
+; 3784b

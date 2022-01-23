@@ -1,16 +1,18 @@
-DummyPredef35:
+DummyPredef35: ; 8c000
 DummyPredef36:
 	ret
 
-UpdateTimeOfDayPal::
+UpdateTimeOfDayPal:: ; 8c001
 	call UpdateTime
 	ld a, [wTimeOfDay]
 	ld [wCurTimeOfDay], a
 	call GetTimePalette
 	ld [wTimeOfDayPal], a
 	ret
+; 8c011
 
-_TimeOfDayPals::
+
+_TimeOfDayPals:: ; 8c011
 ; return carry if pals are changed
 
 ; forced pals?
@@ -43,11 +45,11 @@ _TimeOfDayPals::
 	ld hl, wBGPals1 palette PAL_BG_TEXT
 
 ; save wram bank
-	ldh a, [rSVBK]
+	ld a, [rSVBK]
 	ld b, a
 
 	ld a, BANK(wBGPals1)
-	ldh [rSVBK], a
+	ld [rSVBK], a
 
 ; push palette
 	ld c, NUM_PAL_COLORS
@@ -62,21 +64,23 @@ _TimeOfDayPals::
 
 ; restore wram bank
 	ld a, b
-	ldh [rSVBK], a
+	ld [rSVBK], a
+
 
 ; update sgb pals
 	ld b, SCGB_MAPPALS
 	call GetSGBLayout
 
+
 ; restore bg palette 7
 	ld hl, wOBPals1 - 1 ; last byte in wBGPals1
 
 ; save wram bank
-	ldh a, [rSVBK]
+	ld a, [rSVBK]
 	ld d, a
 
 	ld a, BANK(wOBPals1)
-	ldh [rSVBK], a
+	ld [rSVBK], a
 
 ; pop palette
 	ld e, NUM_PAL_COLORS
@@ -91,7 +95,7 @@ _TimeOfDayPals::
 
 ; restore wram bank
 	ld a, d
-	ldh [rSVBK], a
+	ld [rSVBK], a
 
 ; update palettes
 	call _UpdateTimePals
@@ -105,34 +109,39 @@ _TimeOfDayPals::
 ; no change occurred
 	and a
 	ret
+; 8c070
 
-_UpdateTimePals::
+
+_UpdateTimePals:: ; 8c070
 	ld c, $9 ; normal
 	call GetTimePalFade
 	call DmgToCgbTimePals
 	ret
+; 8c079
 
-FadeInPalettes::
+FadeInPalettes:: ; 8c079
 	ld c, $12
 	call GetTimePalFade
 	ld b, $4
 	call ConvertTimePalsDecHL
 	ret
+; 8c084
 
-FadeOutPalettes::
+FadeOutPalettes:: ; 8c084
 	call FillWhiteBGColor
 	ld c, $9
 	call GetTimePalFade
 	ld b, $4
 	call ConvertTimePalsIncHL
 	ret
+; 8c092
 
-BattleTowerFade:
+BattleTowerFade: ; 8c092
 	call FillWhiteBGColor
 	ld c, $9
 	call GetTimePalFade
 	ld b, $4
-.loop
+.asm_8c09c
 	call DmgToCgbTimePals
 	inc hl
 	inc hl
@@ -140,28 +149,32 @@ BattleTowerFade:
 	ld c, $7
 	call DelayFrames
 	dec b
-	jr nz, .loop
+	jr nz, .asm_8c09c
 	ret
+; 8c0ab
 
-FadeInQuickly:
+FadeInQuickly: ; 8c0ab
 	ld c, $0
 	call GetTimePalFade
 	ld b, $4
 	call ConvertTimePalsIncHL
 	ret
+; 8c0b6
 
-FadeBlackQuickly:
+FadeBlackQuickly: ; 8c0b6
 	ld c, $9
 	call GetTimePalFade
 	ld b, $4
 	call ConvertTimePalsDecHL
 	ret
+; 8c0c1
 
-FillWhiteBGColor:
-	ldh a, [rSVBK]
+
+FillWhiteBGColor: ; 8c0c1
+	ld a, [rSVBK]
 	push af
 	ld a, BANK(wBGPals1)
-	ldh [rSVBK], a
+	ld [rSVBK], a
 
 	ld hl, wBGPals1
 	ld a, [hli]
@@ -182,84 +195,97 @@ endr
 	jr nz, .loop
 
 	pop af
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	ret
+; 8c0e5
 
-ReplaceTimeOfDayPals:
+ReplaceTimeOfDayPals: ; 8c0e5
 	ld hl, .BrightnessLevels
 	ld a, [wMapTimeOfDay]
-	cp PALETTE_DARK
-	jr z, .NeedsFlash
-	maskbits NUM_MAP_PALETTES
+	cp $4 ; Dark cave, needs Flash
+	jr z, .DarkCave
+	and $7
 	add l
 	ld l, a
-	ld a, 0
+	ld a, $0
 	adc h
 	ld h, a
 	ld a, [hl]
 	ld [wTimeOfDayPalset], a
 	ret
 
-.NeedsFlash:
+.DarkCave:
 	ld a, [wStatusFlags]
 	bit STATUSFLAGS_FLASH_F, a
 	jr nz, .UsedFlash
-	ld a, DARKNESS_PALSET
+	ld a, %11111111 ; 3, 3, 3, 3
 	ld [wTimeOfDayPalset], a
 	ret
 
 .UsedFlash:
-	ld a, (NITE_F << 6) | (NITE_F << 4) | (NITE_F << 2) | NITE_F
+	ld a, %10101010 ; 2, 2, 2, 2
 	ld [wTimeOfDayPalset], a
 	ret
+; 8c10f (23:410f)
 
-.BrightnessLevels:
-; actual palettes used when time is
-; DARKNESS_F, NITE_F, DAY_F, MORN_F
-	dc DARKNESS_F, NITE_F,     DAY_F,      MORN_F     ; PALETTE_AUTO
-	dc DAY_F,      DAY_F,      DAY_F,      DAY_F      ; PALETTE_DAY
-	dc NITE_F,     NITE_F,     NITE_F,     NITE_F     ; PALETTE_NITE
-	dc MORN_F,     MORN_F,     MORN_F,     MORN_F     ; PALETTE_MORN
-	dc DARKNESS_F, DARKNESS_F, DARKNESS_F, DARKNESS_F ; PALETTE_DARK
-	dc DARKNESS_F, NITE_F,     DAY_F,      MORN_F
-	dc DARKNESS_F, NITE_F,     DAY_F,      MORN_F
-	dc DARKNESS_F, NITE_F,     DAY_F,      MORN_F
+.BrightnessLevels: ; 8c10f
+	dc 3, 2, 1, 0
+	dc 1, 1, 1, 1
+	dc 2, 2, 2, 2
+	dc 0, 0, 0, 0
+	dc 3, 3, 3, 3
+	dc 3, 2, 1, 0
+	dc 3, 2, 1, 0
+	dc 3, 2, 1, 0
+; 8c117
 
-GetTimePalette:
-	jumptable .TimePalettes, wTimeOfDay
+GetTimePalette: ; 8c117
+	ld a, [wTimeOfDay]
+	ld e, a
+	ld d, 0
+	ld hl, .TimePalettes
+	add hl, de
+	add hl, de
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	jp hl
+; 8c126
 
 .TimePalettes:
-	dw .MorningPalette  ; MORN_F
-	dw .DayPalette      ; DAY_F
-	dw .NitePalette     ; NITE_F
-	dw .DarknessPalette ; DARKNESS_F
+	dw .MorningPalette
+	dw .DayPalette
+	dw .NitePalette
+	dw .DarknessPalette
 
 .MorningPalette:
 	ld a, [wTimeOfDayPalset]
-	and %00000011
+	and %00000011 ; 0
 	ret
 
 .DayPalette:
 	ld a, [wTimeOfDayPalset]
-	and %00001100
+	and %00001100 ; 1
 	srl a
 	srl a
 	ret
 
 .NitePalette:
 	ld a, [wTimeOfDayPalset]
-	and %00110000
+	and %00110000 ; 2
 	swap a
 	ret
 
 .DarknessPalette:
 	ld a, [wTimeOfDayPalset]
-	and %11000000
+	and %11000000 ; 3
 	rlca
 	rlca
 	ret
+; 8c14e
 
-DmgToCgbTimePals:
+
+DmgToCgbTimePals: ; 8c14e
 	push hl
 	push de
 	ld a, [hli]
@@ -272,8 +298,9 @@ DmgToCgbTimePals:
 	pop de
 	pop hl
 	ret
+; 8c15e
 
-ConvertTimePalsIncHL:
+ConvertTimePalsIncHL: ; 8c15e
 .loop
 	call DmgToCgbTimePals
 	inc hl
@@ -284,8 +311,9 @@ ConvertTimePalsIncHL:
 	dec b
 	jr nz, .loop
 	ret
+; 8c16d
 
-ConvertTimePalsDecHL:
+ConvertTimePalsDecHL: ; 8c16d
 .loop
 	call DmgToCgbTimePals
 	dec hl
@@ -296,10 +324,12 @@ ConvertTimePalsDecHL:
 	dec b
 	jr nz, .loop
 	ret
+; 8c17c
 
-GetTimePalFade:
+
+GetTimePalFade: ; 8c17c
 ; check cgb
-	ldh a, [hCGB]
+	ld a, [hCGB]
 	and a
 	jr nz, .cgb
 
@@ -312,7 +342,7 @@ GetTimePalFade:
 ; get fade table
 	push bc
 	ld c, a
-	ld b, 0
+	ld b, $0
 	ld hl, .dmgfades
 	add hl, bc
 	add hl, bc
@@ -322,13 +352,13 @@ GetTimePalFade:
 	pop bc
 
 ; get place in fade table
-	ld b, 0
+	ld b, $0
 	add hl, bc
 	ret
 
 .cgb
 	ld hl, .cgbfade
-	ld b, 0
+	ld b, $0
 	add hl, bc
 	ret
 
@@ -339,46 +369,47 @@ GetTimePalFade:
 	dw .darkness
 
 .morn
-	dc 3,3,3,3, 3,3,3,3, 3,3,3,3
-	dc 3,3,3,2, 3,3,3,2, 3,3,3,2
-	dc 3,3,2,1, 3,2,1,0, 3,2,1,0
-	dc 3,2,1,0, 3,1,0,0, 3,1,0,0
-	dc 2,1,0,0, 2,0,0,0, 2,0,0,0
-	dc 1,0,0,0, 1,0,0,0, 1,0,0,0
-	dc 0,0,0,0, 0,0,0,0, 0,0,0,0
+	db %11111111, %11111111, %11111111
+	db %11111110, %11111110, %11111110
+	db %11111001, %11100100, %11100100
+	db %11100100, %11010000, %11010000
+	db %10010000, %10000000, %10000000
+	db %01000000, %01000000, %01000000
+	db %00000000, %00000000, %00000000
 
 .day
-	dc 3,3,3,3, 3,3,3,3, 3,3,3,3
-	dc 3,3,3,2, 3,3,3,2, 3,3,3,2
-	dc 3,3,2,1, 3,2,1,0, 3,2,1,0
-	dc 3,2,1,0, 3,1,0,0, 3,1,0,0
-	dc 2,1,0,0, 2,0,0,0, 2,0,0,0
-	dc 1,0,0,0, 1,0,0,0, 1,0,0,0
-	dc 0,0,0,0, 0,0,0,0, 0,0,0,0
+	db %11111111, %11111111, %11111111
+	db %11111110, %11111110, %11111110
+	db %11111001, %11100100, %11100100
+	db %11100100, %11010000, %11010000
+	db %10010000, %10000000, %10000000
+	db %01000000, %01000000, %01000000
+	db %00000000, %00000000, %00000000
 
 .nite
-	dc 3,3,3,3, 3,3,3,3, 3,3,3,3
-	dc 3,3,3,2, 3,3,3,2, 3,3,3,2
-	dc 3,3,2,1, 3,2,1,0, 3,2,1,0
-	dc 3,2,2,1, 3,1,0,0, 3,1,0,0
-	dc 2,1,0,0, 2,0,0,0, 2,0,0,0
-	dc 1,0,0,0, 1,0,0,0, 1,0,0,0
-	dc 0,0,0,0, 0,0,0,0, 0,0,0,0
+	db %11111111, %11111111, %11111111
+	db %11111110, %11111110, %11111110
+	db %11111001, %11100100, %11100100
+	db %11101001, %11010000, %11010000
+	db %10010000, %10000000, %10000000
+	db %01000000, %01000000, %01000000
+	db %00000000, %00000000, %00000000
 
 .darkness
-	dc 3,3,3,3, 3,3,3,3, 3,3,3,3
-	dc 3,3,3,2, 3,3,3,2, 3,3,3,3
-	dc 3,3,3,2, 3,2,1,0, 3,3,3,3
-	dc 3,3,3,1, 3,1,0,0, 3,3,3,3
-	dc 3,3,3,1, 2,0,0,0, 3,3,3,3
-	dc 0,0,0,0, 1,0,0,0, 0,0,0,0
-	dc 0,0,0,0, 0,0,0,0, 0,0,0,0
+	db %11111111, %11111111, %11111111
+	db %11111110, %11111110, %11111111
+	db %11111110, %11100100, %11111111
+	db %11111101, %11010000, %11111111
+	db %11111101, %10000000, %11111111
+	db %00000000, %01000000, %00000000
+	db %00000000, %00000000, %00000000
 
 .cgbfade
-	dc 3,3,3,3, 3,3,3,3, 3,3,3,3
-	dc 3,3,3,2, 3,3,3,2, 3,3,3,2
-	dc 3,3,2,1, 3,3,2,1, 3,3,2,1
-	dc 3,2,1,0, 3,2,1,0, 3,2,1,0
-	dc 2,1,0,0, 2,1,0,0, 2,1,0,0
-	dc 1,0,0,0, 1,0,0,0, 1,0,0,0
-	dc 0,0,0,0, 0,0,0,0, 0,0,0,0
+	db %11111111, %11111111, %11111111
+	db %11111110, %11111110, %11111110
+	db %11111001, %11111001, %11111001
+	db %11100100, %11100100, %11100100
+	db %10010000, %10010000, %10010000
+	db %01000000, %01000000, %01000000
+	db %00000000, %00000000, %00000000
+; 8c20f

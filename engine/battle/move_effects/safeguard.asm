@@ -1,9 +1,9 @@
-BattleCommand_Safeguard:
+BattleCommand_Safeguard: ; 37939
 ; safeguard
 
 	ld hl, wPlayerScreens
 	ld de, wPlayerSafeguardCount
-	ldh a, [hBattleTurn]
+	ld a, [hBattleTurn]
 	and a
 	jr z, .ok
 	ld hl, wEnemyScreens
@@ -16,8 +16,10 @@ BattleCommand_Safeguard:
 	ld [de], a
 	call AnimateCurrentMove
 	ld hl, CoveredByVeilText
-	jp StdBattleTextbox
+	jp StdBattleTextBox
 
 .failed
 	call AnimateFailedMove
 	jp PrintButItFailed
+
+; 37962

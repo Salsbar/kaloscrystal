@@ -1,16 +1,16 @@
-	object_const_def
+	const_def 2 ; object constants
 	const MRPOKEMONSHOUSE_GENTLEMAN
 	const MRPOKEMONSHOUSE_OAK
 
 MrPokemonsHouse_MapScripts:
-	def_scene_scripts
+	db 2 ; scene scripts
 	scene_script .MeetMrPokemon ; SCENE_DEFAULT
 	scene_script .DummyScene ; SCENE_FINISHED
 
-	def_callbacks
+	db 0 ; callbacks
 
 .MeetMrPokemon:
-	sdefer .MrPokemonEvent
+	priorityjump .MrPokemonEvent
 	end
 
 .DummyScene:
@@ -26,7 +26,7 @@ MrPokemonsHouse_MapScripts:
 	applymovement PLAYER, MrPokemonsHouse_PlayerWalksToMrPokemon
 	opentext
 	writetext MrPokemonIntroText2
-	promptbutton
+	buttonsound
 	waitsfx
 	giveitem MYSTERY_EGG
 	writetext MrPokemonsHouse_GotEggText
@@ -36,16 +36,16 @@ MrPokemonsHouse_MapScripts:
 	setevent EVENT_GOT_MYSTERY_EGG_FROM_MR_POKEMON
 	blackoutmod CHERRYGROVE_CITY
 	writetext MrPokemonIntroText3
-	promptbutton
+	buttonsound
 	turnobject MRPOKEMONSHOUSE_GENTLEMAN, RIGHT
 	writetext MrPokemonIntroText4
-	promptbutton
+	buttonsound
 	turnobject MRPOKEMONSHOUSE_GENTLEMAN, DOWN
 	turnobject MRPOKEMONSHOUSE_OAK, LEFT
 	writetext MrPokemonIntroText5
 	waitbutton
 	closetext
-	sjump MrPokemonsHouse_OakScript
+	jump MrPokemonsHouse_OakScript
 
 MrPokemonsHouse_MrPokemonScript:
 	faceplayer
@@ -72,7 +72,7 @@ MrPokemonsHouse_MrPokemonScript:
 	verbosegiveitem EXP_SHARE
 	iffalse .full
 	takeitem RED_SCALE
-	sjump .AlwaysNewDiscoveries
+	jump .AlwaysNewDiscoveries
 
 .refused
 	writetext MrPokemonText_Disappointed
@@ -87,7 +87,7 @@ MrPokemonsHouse_OakScript:
 	turnobject PLAYER, RIGHT
 	opentext
 	writetext MrPokemonsHouse_OakText1
-	promptbutton
+	buttonsound
 	waitsfx
 	writetext MrPokemonsHouse_GetDexText
 	playsound SFX_ITEM
@@ -329,7 +329,8 @@ MrPokemonsHouse_OakText2:
 MrPokemonText_GimmeTheScale:
 	text "Hm? That SCALE!"
 	line "What's that?"
-	cont "A red GYARADOS?"
+	cont "A strange colored"
+	cont "EELEKTRIK?"
 
 	para "That's rare! "
 	line "I, I want it…"
@@ -373,19 +374,19 @@ MrPokemonsHouse_StrangeCoinsText:
 MrPokemonsHouse_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 2 ; warp events
 	warp_event  2,  7, ROUTE_30, 2
 	warp_event  3,  7, ROUTE_30, 2
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 5 ; bg events
 	bg_event  0,  1, BGEVENT_READ, MrPokemonsHouse_ForeignMagazines
 	bg_event  1,  1, BGEVENT_READ, MrPokemonsHouse_ForeignMagazines
 	bg_event  6,  1, BGEVENT_READ, MrPokemonsHouse_BrokenComputer
 	bg_event  7,  1, BGEVENT_READ, MrPokemonsHouse_BrokenComputer
 	bg_event  6,  4, BGEVENT_READ, MrPokemonsHouse_StrangeCoins
 
-	def_object_events
+	db 2 ; object events
 	object_event  3,  5, SPRITE_GENTLEMAN, SPRITEMOVEDATA_STANDING_RIGHT, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, MrPokemonsHouse_MrPokemonScript, -1
 	object_event  6,  5, SPRITE_OAK, SPRITEMOVEDATA_STANDING_UP, 0, 0, -1, -1, 0, OBJECTTYPE_SCRIPT, 0, ObjectEvent, EVENT_MR_POKEMONS_HOUSE_OAK

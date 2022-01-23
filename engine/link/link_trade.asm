@@ -1,30 +1,30 @@
 LinkCommsBorderGFX:
 INCBIN "gfx/trade/border_tiles.2bpp"
+; 16d421
 
-__LoadTradeScreenBorderGFX:
+__LoadTradeScreenBorder: ; 16d421
 	ld de, LinkCommsBorderGFX
 	ld hl, vTiles2
 	lb bc, BANK(LinkCommsBorderGFX), 70
 	call Get2bpp
 	ret
+; 16d42e
 
-LoadMobileTradeBorderTilemap:
-	ld hl, MobileTradeBorderTilemap
+Function16d42e: ; 16d42e
+	ld hl, Tilemap_MobileTradeBorderFullscreen
 	decoord 0, 0
 	ld bc, SCREEN_WIDTH * SCREEN_HEIGHT
 	call CopyBytes
 	ret
+; 16d43b
 
-TestMobileTradeBorderTilemap: ; unreferenced
-; Loads the mobile trade border graphics and tilemap,
-; with a placeholder SCGB_DIPLOMA layout, and exits
-; after pressing A or B. Possibly used for testing.
+Function16d43b: ; 16d43b
 	call LoadStandardMenuHeader
 	call ClearBGPalettes
-	call ClearTilemap
+	call ClearTileMap
 	call ClearSprites
-	farcall __LoadTradeScreenBorderGFX ; useless to farcall
-	farcall LoadMobileTradeBorderTilemap ; useless to farcall
+	farcall __LoadTradeScreenBorder ; useless to farcall
+	farcall Function16d42e ; useless to farcall
 	ld b, SCGB_DIPLOMA
 	call GetSGBLayout
 	call SetPalettes
@@ -32,17 +32,18 @@ TestMobileTradeBorderTilemap: ; unreferenced
 	call JoyWaitAorB
 	call Call_ExitMenu
 	ret
+; 16d465
 
-MobileTradeBorderTilemap:
-INCBIN "gfx/trade/border_mobile.tilemap"
+Tilemap_MobileTradeBorderFullscreen:
+INCBIN "gfx/trade/border_mobile_fullscreen.tilemap"
 
-CableTradeBorderTopTilemap:
+Tilemap_CableTradeBorderTop:
 INCBIN "gfx/trade/border_cable_top.tilemap"
 
-CableTradeBorderBottomTilemap:
+Tilemap_CableTradeBorderBottom:
 INCBIN "gfx/trade/border_cable_bottom.tilemap"
 
-_LinkTextbox:
+_LinkTextbox: ; 16d61d
 	ld h, d
 	ld l, e
 	push bc
@@ -51,7 +52,7 @@ _LinkTextbox:
 	pop hl
 	pop bc
 
-	ld de, wAttrmap - wTilemap
+	ld de, wAttrMap - wTileMap
 	add hl, de
 	inc b
 	inc b
@@ -72,8 +73,9 @@ _LinkTextbox:
 	dec b
 	jr nz, .row
 	ret
+; 16d640
 
-.PlaceBorder
+.PlaceBorder ; 16d640
 	push hl
 	ld a, $30
 	ld [hli], a
@@ -103,68 +105,79 @@ _LinkTextbox:
 	call .PlaceRow
 	ld [hl], $37
 	ret
+; 16d66d
 
-.PlaceRow
+.PlaceRow ; 16d66d
 	ld d, c
 .row_loop
 	ld [hli], a
 	dec d
 	jr nz, .row_loop
 	ret
+; 16d673
 
-InitTradeSpeciesList:
-	call _LoadTradeScreenBorderGFX
-	call LoadCableTradeBorderTilemap
+InitTradeSpeciesList: ; 16d673
+	call _LoadTradeScreenBorder
+	call Function16d6ae
 	farcall InitMG_Mobile_LinkTradePalMap
 	farcall PlaceTradePartnerNamesAndParty
 	hlcoord 10, 17
-	ld de, .CancelString
+	ld de, .CANCEL
 	call PlaceString
 	ret
+; 16d68f
 
-.CancelString:
+.CANCEL: ; 16d68f
 	db "CANCEL@"
+; 16d696
 
-_LoadTradeScreenBorderGFX:
-	call __LoadTradeScreenBorderGFX
+_LoadTradeScreenBorder: ; 16d696
+	call __LoadTradeScreenBorder
 	ret
+; 16d69a
 
-LinkComms_LoadPleaseWaitTextboxBorderGFX:
+
+LinkComms_LoadPleaseWaitTextboxBorderGFX: ; 16d69a
 	ld de, LinkCommsBorderGFX + $30 tiles
 	ld hl, vTiles2 tile $76
 	lb bc, BANK(LinkCommsBorderGFX), 8
 	call Get2bpp
 	ret
+; 16d6a7
 
-LoadTradeRoomBGPals:
-	farcall _LoadTradeRoomBGPals
+LoadTradeRoomBGPals_: ; 16d6a7
+	farcall LoadTradeRoomBGPals
 	ret
+; 16d6ae
 
-LoadCableTradeBorderTilemap:
-	call LoadMobileTradeBorderTilemap
-	ld hl, CableTradeBorderTopTilemap
+Function16d6ae: ; 16d6ae
+	call Function16d42e
+	ld hl, Tilemap_CableTradeBorderTop
 	decoord 0, 0
 	ld bc, 2 * SCREEN_WIDTH
 	call CopyBytes
-	ld hl, CableTradeBorderBottomTilemap
+	ld hl, Tilemap_CableTradeBorderBottom
 	decoord 0, 16
 	ld bc, 2 * SCREEN_WIDTH
 	call CopyBytes
 	ret
+; 16d6ca
 
-LinkTextbox:
+LinkTextbox: ; 16d6ca
 	call _LinkTextbox
 	ret
+; 16d6ce
 
-PrintWaitingTextAndSyncAndExchangeNybble:
+Function16d6ce: ; 16d6ce
 	call LoadStandardMenuHeader
-	call .PrintWaitingText
+	call Function16d6e1
 	farcall WaitLinkTransfer
 	call Call_ExitMenu
 	call WaitBGMap2
 	ret
+; 16d6e1
 
-.PrintWaitingText:
+Function16d6e1: ; 16d6e1
 	hlcoord 4, 10
 	ld b, 1
 	ld c, 10
@@ -176,22 +189,25 @@ PrintWaitingTextAndSyncAndExchangeNybble:
 	call WaitBGMap2
 	ld c, 50
 	jp DelayFrames
+; 16d701
 
-.Waiting:
+.Waiting: ; 16d701
 	db "WAITING..!@"
+; 16d70c
 
-LinkTradeMenu:
+LinkTradeMenu: ; 16d70c
 	call .MenuAction
 	call .GetJoypad
 	ret
+; 16d713
 
-.GetJoypad:
+.GetJoypad: ; 16d713
 	push bc
 	push af
-	ldh a, [hJoyLast]
+	ld a, [hJoyLast]
 	and D_PAD
 	ld b, a
-	ldh a, [hJoyPressed]
+	ld a, [hJoyPressed]
 	and BUTTONS
 	or b
 	ld b, a
@@ -200,15 +216,16 @@ LinkTradeMenu:
 	pop bc
 	ld d, a
 	ret
+; 16d725
 
-.MenuAction:
+.MenuAction: ; 16d725
 	ld hl, w2DMenuFlags2
 	res 7, [hl]
-	ldh a, [hBGMapMode]
+	ld a, [hBGMapMode]
 	push af
 	call .loop
 	pop af
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	ret
 
 .loop
@@ -229,21 +246,22 @@ LinkTradeMenu:
 
 .done
 	ret
+; 16d759
 
-.UpdateBGMapAndOAM:
-	ldh a, [hOAMUpdate]
+.UpdateBGMapAndOAM: ; 16d759
+	ld a, [hOAMUpdate]
 	push af
 	ld a, $1
-	ldh [hOAMUpdate], a
+	ld [hOAMUpdate], a
 	call WaitBGMap
 	pop af
-	ldh [hOAMUpdate], a
+	ld [hOAMUpdate], a
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	ret
 
 .loop2
-	call UpdateTimeAndPals
+	call RTC
 	call .TryAnims
 	ret c
 	ld a, [w2DMenuFlags1]
@@ -251,8 +269,9 @@ LinkTradeMenu:
 	jr z, .loop2
 	and a
 	ret
+; 16d77a
 
-.UpdateCursor:
+.UpdateCursor: ; 16d77a
 	ld hl, wCursorCurrentTile
 	ld a, [hli]
 	ld h, [hl]
@@ -327,8 +346,9 @@ LinkTradeMenu:
 	ld a, h
 	ld [wCursorCurrentTile + 1], a
 	ret
+; 16d7e7
 
-.TryAnims:
+.TryAnims: ; 16d7e7
 	ld a, [w2DMenuFlags1]
 	bit 6, a
 	jr z, .skip_anims
@@ -340,3 +360,4 @@ LinkTradeMenu:
 	ret z
 	scf
 	ret
+; 16d7fe

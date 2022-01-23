@@ -1,12 +1,12 @@
-	object_const_def
+	const_def 2 ; object constants
 	const SEAFOAMGYM_BLAINE
-	const SEAFOAMGYM_GYM_GUIDE
+	const SEAFOAMGYM_GYM_GUY
 
 SeafoamGym_MapScripts:
-	def_scene_scripts
+	db 1 ; scene scripts
 	scene_script .DummyScene
 
-	def_callbacks
+	db 0 ; callbacks
 
 .DummyScene:
 	end
@@ -16,51 +16,65 @@ SeafoamGymBlaineScript:
 	opentext
 	checkflag ENGINE_VOLCANOBADGE
 	iftrue .FightDone
-	writetext BlaineIntroText
+	writetext UnknownText_0x1ab548
 	waitbutton
 	closetext
-	winlosstext BlaineWinLossText, 0
+	winlosstext UnknownText_0x1ab646, 0
 	loadtrainer BLAINE, BLAINE1
 	startbattle
 	iftrue .ReturnAfterBattle
-	appear SEAFOAMGYM_GYM_GUIDE
+	appear SEAFOAMGYM_GYM_GUY
 .ReturnAfterBattle:
 	reloadmapafterbattle
 	setevent EVENT_BEAT_BLAINE
 	opentext
-	writetext ReceivedVolcanoBadgeText
+	writetext UnknownText_0x1ab683
 	playsound SFX_GET_BADGE
 	waitsfx
 	setflag ENGINE_VOLCANOBADGE
-	writetext BlaineAfterBattleText
+	writetext VolcanicAshText
 	waitbutton
+	verbosegiveitem VOLCANIC_ASH
+	iffalse .notdone
+	setevent EVENT_GOT_VOLCANIC_ASH
+	writetext UnknownText_0x1ab69d
+	waitbutton
+.notdone
 	closetext
 	end
 
 .FightDone:
-	writetext BlaineFightDoneText
+	checkevent EVENT_GOT_VOLCANIC_ASH
+	iftrue .GotAsh
+	writetext VolcanicAshText
+	waitbutton
+	verbosegiveitem VOLCANIC_ASH
+	iffalse .notdone
+	setevent EVENT_GOT_VOLCANIC_ASH
+.GotAsh
+	writetext UnknownText_0x1ab71c
 	waitbutton
 	closetext
 	end
 
-SeafoamGymGuideScript:
+SeafoamGymGuyScript:
 	faceplayer
 	opentext
-	checkevent EVENT_TALKED_TO_SEAFOAM_GYM_GUIDE_ONCE
-	iftrue .TalkedToSeafoamGymGuideScript
-	writetext SeafoamGymGuideWinText
+	checkevent EVENT_TALKED_TO_SEAFOAM_GYM_GUY_ONCE
+	iftrue .TalkedToSeafoamGymGuyScript
+	writetext SeafoamGymGuyWinText
 	waitbutton
 	closetext
-	setevent EVENT_TALKED_TO_SEAFOAM_GYM_GUIDE_ONCE
+	setevent EVENT_TALKED_TO_SEAFOAM_GYM_GUY_ONCE
 	end
 
-.TalkedToSeafoamGymGuideScript:
-	writetext SeafoamGymGuideWinText2
+.TalkedToSeafoamGymGuyScript:
+	writetext SeafoamGymGuyWinText2
 	waitbutton
 	closetext
 	end
 
-BlaineIntroText:
+UnknownText_0x1ab548:
 	text "BLAINE: Waaah!"
 
 	para "My GYM in CINNABAR"
@@ -88,7 +102,7 @@ BlaineIntroText:
 	line "have BURN HEAL!"
 	done
 
-BlaineWinLossText:
+UnknownText_0x1ab646:
 	text "BLAINE: Awesome."
 	line "I've burned out…"
 
@@ -96,12 +110,12 @@ BlaineWinLossText:
 	line "VOLCANOBADGE!"
 	done
 
-ReceivedVolcanoBadgeText:
+UnknownText_0x1ab683:
 	text "<PLAYER> received"
 	line "VOLCANOBADGE."
 	done
 
-BlaineAfterBattleText:
+UnknownText_0x1ab69d:
 	text "BLAINE: I did lose"
 	line "this time, but I'm"
 
@@ -115,7 +129,20 @@ BlaineAfterBattleText:
 	line "a rematch."
 	done
 
-BlaineFightDoneText:
+VolcanicAshText:
+	text "BLAINE: You're a"
+	line "strong trainer."
+
+	para "You may even be"
+	line "able to face the"
+	cont "volcano's spirit."
+	
+	para "Here, take this"
+	line "with you back to"
+	cont "CINNABAR ISLAND."
+	done
+
+UnknownText_0x1ab71c:
 	text "BLAINE: My fire"
 	line "#MON will be"
 
@@ -123,7 +150,7 @@ BlaineFightDoneText:
 	line "Just you watch!"
 	done
 
-SeafoamGymGuideWinText:
+SeafoamGymGuyWinText:
 	text "Yo!"
 
 	para "… Huh? It's over"
@@ -144,7 +171,7 @@ SeafoamGymGuideWinText:
 	line "I knew you'd win!"
 	done
 
-SeafoamGymGuideWinText2:
+SeafoamGymGuyWinText2:
 	text "A #MON GYM can"
 	line "be anywhere as"
 
@@ -158,13 +185,13 @@ SeafoamGymGuideWinText2:
 SeafoamGym_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 1 ; warp events
 	warp_event  5,  5, ROUTE_20, 1
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 0 ; bg events
 
-	def_object_events
+	db 2 ; object events
 	object_event  5,  2, SPRITE_BLAINE, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_BROWN, OBJECTTYPE_SCRIPT, 0, SeafoamGymBlaineScript, -1
-	object_event  6,  5, SPRITE_GYM_GUIDE, SPRITEMOVEDATA_STANDING_UP, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_SCRIPT, 0, SeafoamGymGuideScript, EVENT_SEAFOAM_GYM_GYM_GUIDE
+	object_event  6,  5, SPRITE_GYM_GUY, SPRITEMOVEDATA_STANDING_UP, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_SCRIPT, 0, SeafoamGymGuyScript, EVENT_SEAFOAM_GYM_GYM_GUY

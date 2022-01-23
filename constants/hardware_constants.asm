@@ -1,6 +1,5 @@
-; Graciously derived from:
-; https://gbdev.io/pandocs/
-; https://github.com/gbdev/hardware.inc
+; Graciously aped from:
+; http://nocash.emubase.de/pandocs.htm
 ; http://gameboy.mongenel.com/dmg/asmmemmap.html
 
 ; memory map
@@ -33,9 +32,9 @@ RTC_M  EQU $09 ; Minutes   0-59 (0-3Bh)
 RTC_H  EQU $0a ; Hours     0-23 (0-17h)
 RTC_DL EQU $0b ; Lower 8 bits of Day Counter (0-FFh)
 RTC_DH EQU $0c ; Upper 1 bit of Day Counter, Carry Bit, Halt Flag
-               ; Bit 0  Most significant bit of Day Counter (Bit 8)
-               ; Bit 6  Halt (0=Active, 1=Stop Timer)
-               ; Bit 7  Day Counter Carry Bit (1=Counter Overflow)
+        ; Bit 0  Most significant bit of Day Counter (Bit 8)
+        ; Bit 6  Halt (0=Active, 1=Stop Timer)
+        ; Bit 7  Day Counter Carry Bit (1=Counter Overflow)
 
 ; interrupt flags
 VBLANK   EQU 0
@@ -43,7 +42,6 @@ LCD_STAT EQU 1
 TIMER    EQU 2
 SERIAL   EQU 3
 JOYPAD   EQU 4
-IE_DEFAULT EQU (1 << SERIAL) | (1 << TIMER) | (1 << LCD_STAT) | (1 << VBLANK)
 
 ; OAM attribute flags
 OAM_TILE_BANK EQU 3
@@ -60,6 +58,10 @@ X_FLIP       EQU 1 << OAM_X_FLIP    ; $20
 Y_FLIP       EQU 1 << OAM_Y_FLIP    ; $40
 PRIORITY     EQU 1 << OAM_PRIORITY  ; $80
 
+; Other useful constants
+LCDC_DEFAULT EQU %11100011
+LY_VBLANK    EQU 144
+
 ; Hardware registers
 rJOYP       EQU $ff00 ; Joypad (R/W)
 rSB         EQU $ff01 ; Serial transfer data (R/W)
@@ -72,10 +74,10 @@ rTIMA       EQU $ff05 ; Timer counter (R/W)
 rTMA        EQU $ff06 ; Timer Modulo (R/W)
 rTAC        EQU $ff07 ; Timer Control (R/W)
 rTAC_ON        EQU 2
-rTAC_4096_HZ   EQU %00
-rTAC_262144_HZ EQU %01
-rTAC_65536_HZ  EQU %10
-rTAC_16384_HZ  EQU %11
+rTAC_4096_HZ   EQU 0
+rTAC_262144_HZ EQU 1
+rTAC_65536_HZ  EQU 2
+rTAC_16384_HZ  EQU 3
 rIF         EQU $ff0f ; Interrupt Flag (R/W)
 rNR10       EQU $ff10 ; Channel 1 Sweep register (R/W)
 rNR11       EQU $ff11 ; Channel 1 Sound length/Wave pattern duty (R/W)
@@ -117,20 +119,14 @@ rWave_d     EQU $ff3d
 rWave_e     EQU $ff3e
 rWave_f     EQU $ff3f
 rLCDC       EQU $ff40 ; LCD Control (R/W)
-rLCDC_BG_PRIORITY    EQU 0 ; 0=Off, 1=On
 rLCDC_SPRITES_ENABLE EQU 1 ; 0=Off, 1=On
 rLCDC_SPRITE_SIZE    EQU 2 ; 0=8x8, 1=8x16
-rLCDC_BG_TILEMAP     EQU 3 ; 0=9800-9BFF, 1=9C00-9FFF
-rLCDC_TILE_DATA      EQU 4 ; 0=8800-97FF, 1=8000-8FFF
-rLCDC_WINDOW_ENABLE  EQU 5 ; 0=Off, 1=On
 rLCDC_WINDOW_TILEMAP EQU 6 ; 0=9800-9BFF, 1=9C00-9FFF
 rLCDC_ENABLE         EQU 7 ; 0=Off, 1=On
-LCDC_DEFAULT EQU (1 << rLCDC_ENABLE) | (1 << rLCDC_WINDOW_TILEMAP) | (1 << rLCDC_WINDOW_ENABLE) | (1 << rLCDC_SPRITES_ENABLE) | (1 << rLCDC_BG_PRIORITY)
 rSTAT       EQU $ff41 ; LCDC Status (R/W)
 rSCY        EQU $ff42 ; Scroll Y (R/W)
 rSCX        EQU $ff43 ; Scroll X (R/W)
 rLY         EQU $ff44 ; LCDC Y-Coordinate (R)
-LY_VBLANK EQU 144
 rLYC        EQU $ff45 ; LY Compare (R/W)
 rDMA        EQU $ff46 ; DMA Transfer and Start Address (W)
 rBGP        EQU $ff47 ; BG Palette Data (R/W) - Non CGB Mode Only
@@ -148,9 +144,6 @@ rHDMA3      EQU $ff53 ; CGB Mode Only - New DMA Destination, High
 rHDMA4      EQU $ff54 ; CGB Mode Only - New DMA Destination, Low
 rHDMA5      EQU $ff55 ; CGB Mode Only - New DMA Length/Mode/Start
 rRP         EQU $ff56 ; CGB Mode Only - Infrared Communications Port
-rRP_LED_ON EQU 0
-rRP_RECEIVING EQU 1
-rRP_ENABLE_READ_MASK EQU %11000000
 rBGPI       EQU $ff68 ; CGB Mode Only - Background Palette Index
 rBGPI_AUTO_INCREMENT EQU 7 ; increment rBGPI after write to rBGPD
 rBGPD       EQU $ff69 ; CGB Mode Only - Background Palette Data

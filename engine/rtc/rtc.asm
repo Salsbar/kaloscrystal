@@ -1,4 +1,4 @@
-StopRTC: ; unreferenced
+Unreferenced_StopRTC:
 	ld a, SRAM_ENABLE
 	ld [MBC3SRamEnable], a
 	call LatchClock
@@ -9,8 +9,9 @@ StopRTC: ; unreferenced
 	ld [MBC3RTC], a
 	call CloseSRAM
 	ret
+; 14019
 
-StartRTC:
+StartRTC: ; 14019
 	ld a, SRAM_ENABLE
 	ld [MBC3SRamEnable], a
 	call LatchClock
@@ -21,10 +22,11 @@ StartRTC:
 	ld [MBC3RTC], a
 	call CloseSRAM
 	ret
+; 14032
 
-GetTimeOfDay::
+GetTimeOfDay:: ; 14032
 ; get time of day based on the current hour
-	ldh a, [hHours] ; hour
+	ld a, [hHours] ; hour
 	ld hl, TimesOfDay
 
 .check
@@ -44,8 +46,9 @@ GetTimeOfDay::
 	ld a, [hl]
 	ld [wTimeOfDay], a
 	ret
+; 14044
 
-TimesOfDay:
+TimesOfDay: ; 14044
 ; hours for the time of day
 ; 0400-0959 morn | 1000-1759 day | 1800-0359 nite
 	db MORN_HOUR, NITE_F
@@ -53,32 +56,35 @@ TimesOfDay:
 	db NITE_HOUR, DAY_F
 	db MAX_HOUR,  NITE_F
 	db -1, MORN_F
+; 1404e
 
-BetaTimesOfDay: ; unreferenced
+Unreferenced_1404e:
 	db 20, NITE_F
 	db 40, MORN_F
 	db 60, DAY_F
 	db -1, MORN_F
+; 14056
 
-StageRTCTimeForSave:
+StageRTCTimeForSave: ; 14056
 	call UpdateTime
 	ld hl, wRTC
 	ld a, [wCurDay]
 	ld [hli], a
-	ldh a, [hHours]
+	ld a, [hHours]
 	ld [hli], a
-	ldh a, [hMinutes]
+	ld a, [hMinutes]
 	ld [hli], a
-	ldh a, [hSeconds]
+	ld a, [hSeconds]
 	ld [hli], a
 	ret
+; 1406a
 
-SaveRTC:
-	ld a, SRAM_ENABLE
+SaveRTC: ; 1406a
+	ld a, $a
 	ld [MBC3SRamEnable], a
 	call LatchClock
 	ld hl, MBC3RTC
-	ld a, RTC_DH
+	ld a, $c
 	ld [MBC3SRamBank], a
 	res 7, [hl]
 	ld a, BANK(sRTCStatusFlags)
@@ -87,10 +93,11 @@ SaveRTC:
 	ld [sRTCStatusFlags], a
 	call CloseSRAM
 	ret
+; 14089
 
-StartClock::
+StartClock:: ; 14089
 	call GetClock
-	call _FixDays
+	call Function1409b
 	call FixDays
 	jr nc, .skip_set
 	; bit 5: Day count exceeds 139
@@ -100,8 +107,9 @@ StartClock::
 .skip_set
 	call StartRTC
 	ret
+; 1409b
 
-_FixDays:
+Function1409b: ; 1409b
 	ld hl, hRTCDayHi
 	bit 7, [hl]
 	jr nz, .set_bit_7
@@ -115,8 +123,9 @@ _FixDays:
 	ld a, %10000000
 	call RecordRTCStatus ; set bit 7 on sRTCStatusFlags
 	ret
+; 140ae
 
-ClockContinue:
+Function140ae: ; 140ae
 	call CheckRTCStatus
 	ld c, a
 	and %11000000 ; Day count exceeded 255 or 16383
@@ -136,22 +145,24 @@ ClockContinue:
 .time_overflow
 	farcall ClearDailyTimers
 	farcall Function170923
-	ld a, BANK(s5_aa8c) ; aka BANK(s5_b2fa)
-	call OpenSRAM
-	ld a, [s5_aa8c]
+; mobile
+	ld a, 5 ; MBC30 bank used by JP Crystal; inaccessible by MBC3
+	call GetSRAMBank
+	ld a, [$aa8c] ; address of MBC30 bank
 	inc a
-	ld [s5_aa8c], a
-	ld a, [s5_b2fa]
+	ld [$aa8c], a ; address of MBC30 bank
+	ld a, [$b2fa] ; address of MBC30 bank
 	inc a
-	ld [s5_b2fa], a
+	ld [$b2fa], a ; address of MBC30 bank
 	call CloseSRAM
 	ret
 
 .dont_update
 	xor a
 	ret
+; 140ed
 
-_InitTime::
+_InitTime:: ; 140ed
 	call GetClock
 	call FixDays
 	ld hl, hRTCSeconds
@@ -195,3 +206,4 @@ _InitTime::
 .okay_days
 	ld [de], a
 	ret
+; 1412a

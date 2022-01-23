@@ -1,5 +1,5 @@
-CheckPartyFullAfterContest:
-	ld a, [wContestMonSpecies]
+CheckPartyFullAfterContest: ; 4d9e5
+	ld a, [wContestMon]
 	and a
 	jp z, .DidntCatchAnything
 	ld [wCurPartySpecies], a
@@ -14,7 +14,7 @@ CheckPartyFullAfterContest:
 	ld c, a
 	ld b, 0
 	add hl, bc
-	ld a, [wContestMonSpecies]
+	ld a, [wContestMon]
 	ld [hli], a
 	ld [wCurSpecies], a
 	ld a, -1
@@ -31,14 +31,14 @@ CheckPartyFullAfterContest:
 	call CopyBytes
 	ld a, [wPartyCount]
 	dec a
-	ld hl, wPartyMonOTs
+	ld hl, wPartyMonOT
 	call SkipNames
 	ld d, h
 	ld e, l
 	ld hl, wPlayerName
 	call CopyBytes
 	ld a, [wCurPartySpecies]
-	ld [wNamedObjectIndex], a
+	ld [wd265], a
 	call GetPokemonName
 	ld hl, wStringBuffer1
 	ld de, wMonOrItemNameBuffer
@@ -76,18 +76,18 @@ CheckPartyFullAfterContest:
 	call GetPartyLocation
 	ld a, [hl]
 	and CAUGHT_GENDER_MASK
-	ld b, LANDMARK_NATIONAL_PARK
+	ld b, NATIONAL_PARK
 	or b
 	ld [hl], a
 	xor a
-	ld [wContestMonSpecies], a
+	ld [wContestMon], a
 	and a ; BUGCONTEST_CAUGHT_MON
 	ld [wScriptVar], a
 	ret
 
-.TryAddToBox:
+.TryAddToBox: ; 4daa3
 	ld a, BANK(sBoxCount)
-	call OpenSRAM
+	call GetSRAMBank
 	ld hl, sBoxCount
 	ld a, [hl]
 	cp MONS_PER_BOX
@@ -105,7 +105,7 @@ CheckPartyFullAfterContest:
 	call CopyBytes
 	callfar InsertPokemonIntoBox
 	ld a, [wCurPartySpecies]
-	ld [wNamedObjectIndex], a
+	ld [wd265], a
 	call GetPokemonName
 	call GiveANickname_YesNo
 	ld hl, wStringBuffer1
@@ -118,7 +118,7 @@ CheckPartyFullAfterContest:
 
 .Box_SkipNickname:
 	ld a, BANK(sBoxMonNicknames)
-	call OpenSRAM
+	call GetSRAMBank
 	ld de, sBoxMonNicknames
 	ld bc, MON_NAME_LENGTH
 	call CopyBytes
@@ -126,17 +126,17 @@ CheckPartyFullAfterContest:
 
 .BoxFull:
 	ld a, BANK(sBoxMon1Level)
-	call OpenSRAM
+	call GetSRAMBank
 	ld a, [sBoxMon1Level]
 	ld [wCurPartyLevel], a
 	call CloseSRAM
 	call SetBoxMonCaughtData
 	ld a, BANK(sBoxMon1CaughtLocation)
-	call OpenSRAM
+	call GetSRAMBank
 	ld hl, sBoxMon1CaughtLocation
 	ld a, [hl]
 	and CAUGHT_GENDER_MASK
-	ld b, LANDMARK_NATIONAL_PARK
+	ld b, NATIONAL_PARK
 	or b
 	ld [hl], a
 	call CloseSRAM
@@ -146,26 +146,27 @@ CheckPartyFullAfterContest:
 	ld [wScriptVar], a
 	ret
 
-.DidntCatchAnything:
+.DidntCatchAnything: ; 4db35
 	ld a, BUGCONTEST_NO_CATCH
 	ld [wScriptVar], a
 	ret
 
-GiveANickname_YesNo:
-	ld hl, CaughtAskNicknameText
+GiveANickname_YesNo: ; 4db3b
+	ld hl, TextJump_GiveANickname
 	call PrintText
 	jp YesNoBox
 
-CaughtAskNicknameText:
-	text_far _CaughtAskNicknameText
-	text_end
+TextJump_GiveANickname: ; 0x4db44
+	; Give a nickname to the @  you received?
+	text_jump UnknownText_0x1c12fc
+	db "@"
 
-SetCaughtData:
+SetCaughtData: ; 4db49
 	ld a, [wPartyCount]
 	dec a
 	ld hl, wPartyMon1CaughtLevel
 	call GetPartyLocation
-SetBoxmonOrEggmonCaughtData:
+SetBoxmonOrEggmonCaughtData: ; 4db53
 	ld a, [wTimeOfDay]
 	inc a
 	rrca
@@ -198,41 +199,41 @@ SetBoxmonOrEggmonCaughtData:
 	ld [hl], a
 	ret
 
-SetBoxMonCaughtData:
+SetBoxMonCaughtData: ; 4db83
 	ld a, BANK(sBoxMon1CaughtLevel)
-	call OpenSRAM
+	call GetSRAMBank
 	ld hl, sBoxMon1CaughtLevel
 	call SetBoxmonOrEggmonCaughtData
 	call CloseSRAM
 	ret
 
-SetGiftBoxMonCaughtData:
+SetGiftBoxMonCaughtData: ; 4db92
 	push bc
 	ld a, BANK(sBoxMon1CaughtLevel)
-	call OpenSRAM
+	call GetSRAMBank
 	ld hl, sBoxMon1CaughtLevel
 	pop bc
 	call SetGiftMonCaughtData
 	call CloseSRAM
 	ret
 
-SetGiftPartyMonCaughtData:
+SetGiftPartyMonCaughtData: ; 4dba3
 	ld a, [wPartyCount]
 	dec a
 	ld hl, wPartyMon1CaughtLevel
 	push bc
 	call GetPartyLocation
 	pop bc
-SetGiftMonCaughtData:
+SetGiftMonCaughtData: ; 4dbaf
 	xor a
 	ld [hli], a
-	ld a, LANDMARK_GIFT
+	ld a, GIFT_LOCATION
 	rrc b
 	or b
 	ld [hl], a
 	ret
 
-SetEggMonCaughtData:
+SetEggMonCaughtData: ; 4dbb8 (13:5bb8)
 	ld a, [wCurPartyMon]
 	ld hl, wPartyMon1CaughtLevel
 	call GetPartyLocation

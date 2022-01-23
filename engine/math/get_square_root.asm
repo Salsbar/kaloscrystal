@@ -1,6 +1,6 @@
 NUM_SQUARE_ROOTS EQU 255
 
-GetSquareRoot:
+GetSquareRoot: ; 13b87
 ; Return the square root of de in b.
 
 ; Rather than calculating the result, we take the index of the
@@ -24,7 +24,9 @@ GetSquareRoot:
 	jr c, .loop
 	ret
 
-.Squares:
-for x, 1, NUM_SQUARE_ROOTS + 1
-	dw x**2
+.Squares: ; 13b98
+x = 1
+rept NUM_SQUARE_ROOTS
+	dw x * x
+x = x + 1
 endr

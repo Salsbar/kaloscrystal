@@ -1,4 +1,4 @@
-ReadTrainerParty:
+ReadTrainerParty: ; 39771
 	ld a, [wInBattleTowerBattle]
 	bit 0, a
 	ret nz
@@ -14,7 +14,7 @@ ReadTrainerParty:
 	ld [hl], a
 
 	ld hl, wOTPartyMons
-	ld bc, PARTYMON_STRUCT_LENGTH * PARTY_LENGTH
+	ld bc, wOTPartyMonsEnd - wOTPartyMons
 	xor a
 	call ByteFill
 
@@ -74,20 +74,22 @@ ReadTrainerParty:
 
 .cal2
 	ld a, BANK(sMysteryGiftTrainer)
-	call OpenSRAM
+	call GetSRAMBank
 	ld de, sMysteryGiftTrainer
 	call TrainerType2
 	call CloseSRAM
 	jr .done
+; 397e3
 
-TrainerTypes:
+TrainerTypes: ; 397e3
 ; entries correspond to TRAINERTYPE_* constants
 	dw TrainerType1 ; level, species
 	dw TrainerType2 ; level, species, moves
 	dw TrainerType3 ; level, species, item
 	dw TrainerType4 ; level, species, item, moves
+; 397eb
 
-TrainerType1:
+TrainerType1: ; 397eb
 ; normal (level, species)
 	ld h, d
 	ld l, e
@@ -105,8 +107,9 @@ TrainerType1:
 	predef TryAddMonToParty
 	pop hl
 	jr .loop
+; 39806
 
-TrainerType2:
+TrainerType2: ; 39806
 ; moves
 	ld h, d
 	ld l, e
@@ -181,8 +184,9 @@ TrainerType2:
 
 	pop hl
 	jr .loop
+; 39871
 
-TrainerType3:
+TrainerType3: ; 39871
 ; item
 	ld h, d
 	ld l, e
@@ -209,8 +213,9 @@ TrainerType3:
 	ld a, [hli]
 	ld [de], a
 	jr .loop
+; 3989d (e:589d)
 
-TrainerType4:
+TrainerType4: ; 3989d
 ; item + moves
 	ld h, d
 	ld l, e
@@ -300,28 +305,30 @@ TrainerType4:
 
 	pop hl
 	jr .loop
+; 3991b
 
-ComputeTrainerReward:
+ComputeTrainerReward: ; 3991b (e:591b)
 	ld hl, hProduct
 	xor a
 	ld [hli], a
-	ld [hli], a ; hMultiplicand + 0
-	ld [hli], a ; hMultiplicand + 1
+	ld [hli], a
+	ld [hli], a
 	ld a, [wEnemyTrainerBaseReward]
-	ld [hli], a ; hMultiplicand + 2
+	ld [hli], a
 	ld a, [wCurPartyLevel]
-	ld [hl], a ; hMultiplier
+	ld [hl], a
 	call Multiply
 	ld hl, wBattleReward
 	xor a
 	ld [hli], a
-	ldh a, [hProduct + 2]
+	ld a, [hProduct + 2]
 	ld [hli], a
-	ldh a, [hProduct + 3]
+	ld a, [hProduct + 3]
 	ld [hl], a
 	ret
 
-Battle_GetTrainerName::
+
+Battle_GetTrainerName:: ; 39939
 	ld a, [wInBattleTowerBattle]
 	bit 0, a
 	ld hl, wOTPlayerName
@@ -332,20 +339,20 @@ Battle_GetTrainerName::
 	ld a, [wOtherTrainerClass]
 	ld c, a
 
-GetTrainerName::
+GetTrainerName:: ; 3994c
 	ld a, c
 	cp CAL
 	jr nz, .not_cal2
 
 	ld a, BANK(sMysteryGiftTrainerHouseFlag)
-	call OpenSRAM
+	call GetSRAMBank
 	ld a, [sMysteryGiftTrainerHouseFlag]
 	and a
 	call CloseSRAM
 	jr z, .not_cal2
 
 	ld a, BANK(sMysteryGiftPartnerName)
-	call OpenSRAM
+	call GetSRAMBank
 	ld hl, sMysteryGiftPartnerName
 	call CopyTrainerName
 	jp CloseSRAM
@@ -372,20 +379,20 @@ GetTrainerName::
 	jr nz, .skip
 	jr .loop
 
-CopyTrainerName:
+CopyTrainerName: ; 39984
 	ld de, wStringBuffer1
 	push de
 	ld bc, NAME_LENGTH
 	call CopyBytes
 	pop de
 	ret
+; 39990
 
-IncompleteCopyNameFunction: ; unreferenced
-; Copy of CopyTrainerName but without "call CopyBytes"
+Function39990: ; 39990
+; This function is useless.
 	ld de, wStringBuffer1
 	push de
 	ld bc, NAME_LENGTH
 	pop de
 	ret
-
-INCLUDE "data/trainers/parties.asm"
+; 39999

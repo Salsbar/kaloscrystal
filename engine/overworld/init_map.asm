@@ -1,43 +1,42 @@
-ReanchorBGMap_NoOAMUpdate::
+ReanchorBGMap_NoOAMUpdate:: ; 6454
 	call DelayFrame
-	ldh a, [hOAMUpdate]
+	ld a, [hOAMUpdate]
 	push af
 
 	ld a, $1
-	ldh [hOAMUpdate], a
-	ldh a, [hBGMapMode]
+	ld [hOAMUpdate], a
+	ld a, [hBGMapMode]
 	push af
 	xor a
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 
 	call .ReanchorBGMap
 
 	pop af
-	ldh [hBGMapMode], a
+	ld [hBGMapMode], a
 	pop af
-	ldh [hOAMUpdate], a
-
+	ld [hOAMUpdate], a
 	ld hl, wVramState
 	set 6, [hl]
 	ret
 
 .ReanchorBGMap:
 	xor a
-	ldh [hLCDCPointer], a
-	ldh [hBGMapMode], a
+	ld [hLCDCPointer], a
+	ld [hBGMapMode], a
 	ld a, $90
-	ldh [hWY], a
+	ld [hWY], a
 	call OverworldTextModeSwitch
 	ld a, HIGH(vBGMap1)
 	call .LoadBGMapAddrIntoHRAM
-	call _OpenAndCloseMenu_HDMATransferTilemapAndAttrmap
+	call _OpenAndCloseMenu_HDMATransferTileMapAndAttrMap
 	farcall LoadOW_BGPal7
 	farcall ApplyPals
-	ld a, TRUE
-	ldh [hCGBPalUpdate], a
+	ld a, $1
+	ld [hCGBPalUpdate], a
 	xor a
-	ldh [hBGMapMode], a
-	ldh [hWY], a
+	ld [hBGMapMode], a
+	ld [hWY], a
 	farcall HDMATransfer_FillBGMap0WithBlack ; no need to farcall
 	ld a, HIGH(vBGMap0)
 	call .LoadBGMapAddrIntoHRAM
@@ -46,59 +45,59 @@ ReanchorBGMap_NoOAMUpdate::
 	ld a, HIGH(vBGMap0)
 	ld [wBGMapAnchor + 1], a
 	xor a
-	ldh [hSCX], a
-	ldh [hSCY], a
+	ld [hSCX], a
+	ld [hSCY], a
 	call ApplyBGMapAnchorToObjects
 	ret
 
-.LoadBGMapAddrIntoHRAM:
-	ldh [hBGMapAddress + 1], a
+.LoadBGMapAddrIntoHRAM: ; 64b9
+	ld [hBGMapAddress + 1], a
 	xor a
-	ldh [hBGMapAddress], a
+	ld [hBGMapAddress], a
 	ret
 
-LoadFonts_NoOAMUpdate::
-	ldh a, [hOAMUpdate]
+LoadFonts_NoOAMUpdate:: ; 64bf
+	ld a, [hOAMUpdate]
 	push af
 	ld a, $1
-	ldh [hOAMUpdate], a
+	ld [hOAMUpdate], a
 
 	call .LoadGFX
 
 	pop af
-	ldh [hOAMUpdate], a
+	ld [hOAMUpdate], a
 	ret
 
 .LoadGFX:
 	call LoadFontsExtra
 	ld a, $90
-	ldh [hWY], a
+	ld [hWY], a
 	call SafeUpdateSprites
 	call LoadStandardFont
 	ret
 
-HDMATransfer_FillBGMap0WithBlack:
-	ldh a, [rSVBK]
+HDMATransfer_FillBGMap0WithBlack: ; 64db
+	ld a, [rSVBK]
 	push af
 	ld a, BANK(wDecompressScratch)
-	ldh [rSVBK], a
+	ld [rSVBK], a
 
 	ld a, "■"
 	ld hl, wDecompressScratch
-	ld bc, wScratchAttrmap - wDecompressScratch
+	ld bc, wScratchAttrMap - wDecompressScratch
 	call ByteFill
 	ld a, HIGH(wDecompressScratch)
-	ldh [rHDMA1], a
+	ld [rHDMA1], a
 	ld a, LOW(wDecompressScratch)
-	ldh [rHDMA2], a
-	ld a, HIGH(vBGMap0 - VRAM_Begin)
-	ldh [rHDMA3], a
-	ld a, LOW(vBGMap0 - VRAM_Begin)
-	ldh [rHDMA4], a
+	ld [rHDMA2], a
+	ld a, HIGH(vBGMap0 % $8000)
+	ld [rHDMA3], a
+	ld a, LOW(vBGMap0 % $8000)
+	ld [rHDMA4], a
 	ld a, $3f
-	ldh [hDMATransfer], a
+	ld [hDMATransfer], a
 	call DelayFrame
 
 	pop af
-	ldh [rSVBK], a
+	ld [rSVBK], a
 	ret

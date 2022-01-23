@@ -1,4 +1,4 @@
-AskRememberPassword:
+AskRememberPassword: ; 4ae12
 	call .DoMenu
 	ld a, $0
 	jr c, .okay
@@ -8,7 +8,7 @@ AskRememberPassword:
 	ld [wScriptVar], a
 	ret
 
-.DoMenu:
+.DoMenu: ; 4ae1f
 	lb bc, 14, 7
 	push bc
 	ld hl, YesNoMenuHeader
@@ -42,17 +42,17 @@ AskRememberPassword:
 	scf
 	ret
 
-Buena_ExitMenu:
-	ldh a, [hOAMUpdate]
+Buena_ExitMenu: ; 4ae5e
+	ld a, [hOAMUpdate]
 	push af
 	call ExitMenu
 	call UpdateSprites
 	xor a
-	ldh [hOAMUpdate], a
+	ld [hOAMUpdate], a
 	call DelayFrame
 	ld a, $1
-	ldh [hOAMUpdate], a
+	ld [hOAMUpdate], a
 	call ApplyTilemap
 	pop af
-	ldh [hOAMUpdate], a
+	ld [hOAMUpdate], a
 	ret

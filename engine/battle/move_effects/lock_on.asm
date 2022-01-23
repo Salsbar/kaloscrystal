@@ -1,4 +1,4 @@
-BattleCommand_LockOn:
+BattleCommand_LockOn: ; 35a53
 ; lockon
 
 	call CheckSubstituteOpp
@@ -14,8 +14,10 @@ BattleCommand_LockOn:
 	call AnimateCurrentMove
 
 	ld hl, TookAimText
-	jp StdBattleTextbox
+	jp StdBattleTextBox
 
 .fail
 	call AnimateFailedMove
 	jp PrintDidntAffect
+
+; 35a74

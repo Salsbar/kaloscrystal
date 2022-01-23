@@ -1,12 +1,10 @@
-PrintFiveDigitNumber: ; unreferenced
-; Debug function?
-; Input: bc = value, de = destination
+Unreferenced_Function1dd6a9: ; 1dd6a9
 	ld a, b
 	ld b, c
 	ld c, a
-	push bc ; de points to this on the stack for PrintNum
+	push bc
 	push de
-	ld hl, sp+2
+	ld hl, sp+$2
 	ld d, h
 	ld e, l
 	pop hl
@@ -15,7 +13,7 @@ PrintFiveDigitNumber: ; unreferenced
 	pop bc
 	ret
 
-PrintHoursMins:
+PrintHoursMins: ; 1dd6bb (77:56bb)
 ; Hours in b, minutes in c
 	ld a, b
 	cp 12
@@ -32,7 +30,7 @@ PrintHoursMins:
 	ld b, a
 ; Crazy stuff happening with the stack
 	push bc
-	ld hl, sp+1
+	ld hl, sp+$1
 	push de
 	push hl
 	pop de
@@ -44,7 +42,7 @@ PrintHoursMins:
 	inc hl
 	ld d, h
 	ld e, l
-	ld hl, sp+0
+	ld hl, sp+$0
 	push de
 	push hl
 	pop de
@@ -61,5 +59,5 @@ PrintHoursMins:
 	call PlaceString
 	ret
 
-String_AM: db "AM@"
-String_PM: db "PM@"
+String_AM: db "AM@" ; 1dd6fc
+String_PM: db "PM@" ; 1dd6ff

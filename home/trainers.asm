@@ -1,25 +1,27 @@
-CheckTrainerBattle::
-	ldh a, [hROMBank]
+CheckTrainerBattle2:: ; 3600
+	ld a, [hROMBank]
 	push af
 
 	call SwitchToMapScriptsBank
-	call _CheckTrainerBattle
+	call CheckTrainerBattle
 
 	pop bc
 	ld a, b
 	rst Bankswitch
 	ret
+; 360d
 
-_CheckTrainerBattle::
+CheckTrainerBattle:: ; 360d
 ; Check if any trainer on the map sees the player and wants to battle.
 
 ; Skip the player object.
 	ld a, 1
-	ld de, wMap1Object
+	ld de, wMapObjects + OBJECT_LENGTH
 
 .loop
 
 ; Start a battle if the object:
+
 	push af
 	push de
 
@@ -35,7 +37,7 @@ _CheckTrainerBattle::
 	add hl, de
 	ld a, [hl]
 	and $f
-	cp OBJECTTYPE_TRAINER
+	cp $2
 	jr nz, .next
 
 ; Is visible on the map
@@ -78,7 +80,7 @@ _CheckTrainerBattle::
 
 .next
 	pop de
-	ld hl, MAPOBJECT_LENGTH
+	ld hl, OBJECT_LENGTH
 	add hl, de
 	ld d, h
 	ld e, l
@@ -93,50 +95,54 @@ _CheckTrainerBattle::
 .startbattle
 	pop de
 	pop af
-	ldh [hLastTalked], a
+	ld [hLastTalked], a
 	ld a, b
-	ld [wSeenTrainerDistance], a
+	ld [wEngineBuffer2], a
 	ld a, c
-	ld [wSeenTrainerDirection], a
+	ld [wEngineBuffer3], a
 	jr LoadTrainer_continue
+; 3674
 
-TalkToTrainer::
+TalkToTrainer:: ; 3674
 	ld a, 1
-	ld [wSeenTrainerDistance], a
+	ld [wEngineBuffer2], a
 	ld a, -1
-	ld [wSeenTrainerDirection], a
+	ld [wEngineBuffer3], a
 
-LoadTrainer_continue::
+LoadTrainer_continue:: ; 367e
 	call GetMapScriptsBank
-	ld [wSeenTrainerBank], a
+	ld [wEngineBuffer1], a
 
-	ldh a, [hLastTalked]
+	ld a, [hLastTalked]
 	call GetMapObject
 
 	ld hl, MAPOBJECT_SCRIPT_POINTER
 	add hl, bc
-	ld a, [wSeenTrainerBank]
-	call GetFarWord
+	ld a, [wEngineBuffer1]
+	call GetFarHalfword
 	ld de, wTempTrainer
 	ld bc, wTempTrainerEnd - wTempTrainer
-	ld a, [wSeenTrainerBank]
+	ld a, [wEngineBuffer1]
 	call FarCopyBytes
 	xor a
 	ld [wRunningTrainerBattleScript], a
 	scf
 	ret
+; 36a5
 
-FacingPlayerDistance_bc::
+FacingPlayerDistance_bc:: ; 36a5
+
 	push de
 	call FacingPlayerDistance
 	ld b, d
 	ld c, e
 	pop de
 	ret
+; 36ad
 
-FacingPlayerDistance::
+FacingPlayerDistance:: ; 36ad
 ; Return carry if the sprite at bc is facing the player,
-; its distance in d, and its direction in e.
+; and its distance in d.
 
 	ld hl, OBJECT_NEXT_MAP_X ; x
 	add hl, bc
@@ -202,8 +208,9 @@ FacingPlayerDistance::
 .NotFacing:
 	and a
 	ret
+; 36f5
 
-CheckTrainerFlag:: ; unreferenced
+CheckTrainerFlag:: ; 36f5
 	push bc
 	ld hl, OBJECT_MAP_OBJECT_INDEX
 	add hl, bc
@@ -215,7 +222,7 @@ CheckTrainerFlag:: ; unreferenced
 	ld h, [hl]
 	ld l, a
 	call GetMapScriptsBank
-	call GetFarWord
+	call GetFarHalfword
 	ld d, h
 	ld e, l
 	push de
@@ -226,12 +233,12 @@ CheckTrainerFlag:: ; unreferenced
 	and a
 	pop bc
 	ret
+; 3718
 
-PrintWinLossText::
+PrintWinLossText:: ; 3718
 	ld a, [wBattleType]
 	cp BATTLETYPE_CANLOSE
-	; code was probably dummied out here
-	jr .canlose
+	jr .canlose ; ??????????
 
 ; unused
 	ld hl, wWinTextPointer
@@ -253,3 +260,4 @@ PrintWinLossText::
 	call WaitBGMap
 	call WaitPressAorB_BlinkCursor
 	ret
+; 3741

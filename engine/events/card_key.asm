@@ -1,4 +1,4 @@
-_CardKey:
+_CardKey: ; 50779
 ; Are we even in the right map to use this?
 	ld a, [wMapGroup]
 	cp GROUP_RADIO_TOWER_3F
@@ -31,7 +31,9 @@ _CardKey:
 	ld a, FALSE
 	ld [wItemEffectSucceeded], a
 	ret
+; 507af
 
-.CardKeyScript:
+.CardKeyScript: ; 0x507af
 	closetext
-	farsjump CardKeySlotScript
+	farjump CardKeySlotScript
+; 0x507b4

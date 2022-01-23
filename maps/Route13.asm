@@ -1,4 +1,4 @@
-	object_const_def
+	const_def 2 ; object constants
 	const ROUTE13_YOUNGSTER1
 	const ROUTE13_YOUNGSTER2
 	const ROUTE13_POKEFAN_M1
@@ -6,9 +6,9 @@
 	const ROUTE13_POKEFAN_M3
 
 Route13_MapScripts:
-	def_scene_scripts
+	db 0 ; scene scripts
 
-	def_callbacks
+	db 0 ; callbacks
 
 TrainerPokefanmAlex:
 	trainer POKEFANM, ALEX, EVENT_BEAT_POKEFANM_ALEX, PokefanmAlexSeenText, PokefanmAlexBeatenText, 0, .Script
@@ -96,18 +96,18 @@ PokefanmAlexAfterBattleText:
 PokefanmJoshuaSeenText:
 	text "Nihihi! Would you"
 	line "like to battle my"
-	cont "PIKACHU gang?"
+	cont "BLITZLE gang?"
 	done
 
 PokefanmJoshuaBeatenText:
-	text "PI-PIKACHU!"
+	text "B-BLITZLE!"
 	done
 
 PokefanmJoshuaAfterBattleText:
 	text "You look like you"
 	line "have many #MON,"
 
-	para "but PIKACHU is"
+	para "but BLITZLE is"
 	line "still the best."
 	done
 
@@ -149,7 +149,7 @@ BirdKeeperBretAfterBattleText:
 HikerKennySeenText:
 	text "I should go to"
 	line "ROCK TUNNEL to get"
-	cont "myself an ONIX."
+	cont "myself a GOLETT."
 	done
 
 HikerKennyBeatenText:
@@ -192,17 +192,17 @@ Route13DirectionsSignText:
 Route13_MapEvents:
 	db 0, 0 ; filler
 
-	def_warp_events
+	db 0 ; warp events
 
-	def_coord_events
+	db 0 ; coord events
 
-	def_bg_events
+	db 4 ; bg events
 	bg_event 29, 13, BGEVENT_READ, Route13TrainerTips
 	bg_event 41, 11, BGEVENT_READ, Route13Sign
 	bg_event 17, 13, BGEVENT_READ, Route13DirectionsSign
 	bg_event 30, 13, BGEVENT_ITEM, Route13HiddenCalcium
 
-	def_object_events
+	db 5 ; object events
 	object_event 42,  6, SPRITE_YOUNGSTER, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_TRAINER, 2, TrainerBirdKeeperPerry, -1
 	object_event 43,  6, SPRITE_YOUNGSTER, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_BLUE, OBJECTTYPE_TRAINER, 2, TrainerBirdKeeperBret, -1
 	object_event 32,  8, SPRITE_POKEFAN_M, SPRITEMOVEDATA_STANDING_LEFT, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_TRAINER, 3, TrainerPokefanmJoshua, -1
