@@ -230,7 +230,7 @@ MoveDescriptions:: ; 2cb52
 	dw PursuitDescription
 	dw RapidSpinDescription
 	dw SweetScentDescription
-	dw MeteorMashDescription
+	dw FlashCannonDescription
 	dw MetalClawDescription
 	dw VitalThrowDescription
 	dw AquaJetDescription
@@ -1185,9 +1185,9 @@ SweetScentDescription:
 	db   "Reduces the foe's"
 	next "evasiveness.@"
 
-MeteorMashDescription:
+FlashCannonDescription:
 	db   "An attack that may"
-	next "up user's ATTACK.@"
+	next "lower SPCL.DEF.@"
 
 MetalClawDescription:
 	db   "An attack that may"

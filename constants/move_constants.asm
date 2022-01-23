@@ -236,7 +236,7 @@
 	const PURSUIT      ; e4
 	const RAPID_SPIN   ; e5
 	const SWEET_SCENT  ; e6
-	const METEOR_MASH  ; e7
+	const FLASH_CANNON ; e7
 	const METAL_CLAW   ; e8
 	const VITAL_THROW  ; e9
 	const AQUA_JET     ; ea

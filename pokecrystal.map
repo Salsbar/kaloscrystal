@@ -7006,7 +7006,7 @@ ROM Bank #11:
            $6A74 = PursuitDescription
            $6A94 = RapidSpinDescription
            $6AB2 = SweetScentDescription
-           $6AD0 = MeteorMashDescription
+           $6AD0 = FlashCannonDescription
            $6AF4 = MetalClawDescription
            $6B18 = VitalThrowDescription
            $6B3D = AquaJetDescription
@@ -22390,7 +22390,7 @@ ROM Bank #50:
            $6C82 = BattleAnim_Pursuit
            $6CC5 = BattleAnim_RapidSpin
            $6CF5 = BattleAnim_SweetScent
-           $4983 = BattleAnim_MeteorMash
+           $4983 = BattleAnim_FlashCannon
            $6D43 = BattleAnim_MetalClaw
            $6D6A = BattleAnim_VitalThrow
            $4629 = BattleAnim_AquaJet

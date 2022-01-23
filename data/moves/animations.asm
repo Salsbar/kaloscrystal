@@ -231,7 +231,7 @@ BattleAnimations:: ; c906f
 	dw BattleAnim_Pursuit
 	dw BattleAnim_RapidSpin
 	dw BattleAnim_SweetScent
-	dw BattleAnim_MeteorMash
+	dw BattleAnim_FlashCannon
 	dw BattleAnim_MetalClaw
 	dw BattleAnim_VitalThrow
 	dw BattleAnim_AquaJet
@@ -1133,24 +1133,18 @@ BattleAnim_NastyPlot: ; c95c3
 	anim_ret
 ; c95d5
 
-BattleAnim_MeteorMash: ; c95c3
+BattleAnim_FlashCannon: ; c95c3
 	anim_1gfx ANIM_GFX_REFLECT
 	anim_obp0 $0
 	anim_sound 0, 0, SFX_RAGE
-	anim_call BattleAnim_FollowEnemyFeet_0
-	anim_call BattleAnim_IronTail_branch_cbc43
-	anim_wait 4
-	anim_bgp $1b
-	anim_obp0 $0
-	anim_1gfx ANIM_GFX_HIT
-	anim_resetobp0
-	anim_bgeffect ANIM_BG_26, $0, $1, $0
-	anim_wait 16
-	anim_sound 0, 1, SFX_MEGA_KICK
-	anim_obj ANIM_OBJ_00, 136, 48, $0
-	anim_wait 16
-	anim_incbgeffect ANIM_BG_26
-	anim_call BattleAnim_ShowMon_0
+	anim_1gfx ANIM_GFX_BEAM
+	anim_bgeffect ANIM_BG_06, $0, $2, $0
+	anim_bgeffect ANIM_BG_ALTERNATE_HUES, $0, $2, $0
+	anim_wait 64
+	anim_call BattleAnim_AuroraBeam_branch_cbb39
+	anim_wait 48
+	anim_incobj  5
+	anim_wait 64
 	anim_ret
 ; c95d5
 

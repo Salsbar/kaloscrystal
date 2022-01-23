@@ -251,7 +251,6 @@ PurrloinEvosAttacks:
 	db 7, PURSUIT
 	db 10, SAND_ATTACK
 	db 12, FURY_SWIPES
-	db 15, THIEF
 	db 21, FAINT_ATTACK
 	db 30, SLASH
 	db 37, NIGHT_SLASH
@@ -265,7 +264,6 @@ LiepardEvosAttacks:
 	db 7, PURSUIT
 	db 10, SAND_ATTACK
 	db 12, FURY_SWIPES
-	db 15, THIEF
 	db 22, FAINT_ATTACK
 	db 34, SLASH
 	db 43, NIGHT_SLASH
@@ -1206,7 +1204,6 @@ ZoruaEvosAttacks:
 	db 10, FURY_SWIPES
 	db 15, FAINT_ATTACK
 	db 18, SCARY_FACE
-	db 23, THIEF
 	db 27, SCREECH
 	db 31, AGILITY
 	db 36, NIGHT_DAZE
@@ -1222,7 +1219,6 @@ ZoroarkEvosAttacks:
 	db 10, FURY_SWIPES
 	db 15, FAINT_ATTACK
 	db 18, SCARY_FACE
-	db 23, THIEF
 	db 27, SCREECH
 	db 30, NIGHT_SLASH
 	db 35, AGILITY
@@ -2155,7 +2151,6 @@ VullabyEvosAttacks:
 	db 1, GUST
 	db 1, LEER
 	db 10, FURY_ATTACK
-	db 14, THIEF
 	db 19, SWORDS_DANCE
 	db 28, FAINT_ATTACK
 	db 33, MIRROR_MOVE
@@ -2170,7 +2165,6 @@ MandibuzzEvosAttacks:
 	db 1, GUST
 	db 1, LEER
 	db 10, FURY_ATTACK
-	db 14, THIEF
 	db 19, SWORDS_DANCE
 	db 28, FAINT_ATTACK
 	db 33, MIRROR_MOVE
@@ -2307,7 +2301,7 @@ CobalionEvosAttacks:
 	db 40, IRON_HEAD
 	db 45, SACRED_SWORD
 	db 50, SWORDS_DANCE
-	db 55, METEOR_MASH
+	db 55, FLASH_CANNON
 	db 0 ; no more level-up moves
 
 TerrakionEvosAttacks:

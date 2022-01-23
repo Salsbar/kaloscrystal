@@ -231,7 +231,7 @@ ENDM
 	add_tm ENDURE       ; d3
 	add_tm FRUSTRATION  ; d4
 	add_tm SOLARBEAM    ; d5
-	add_tm METEOR_MASH  ; d6
+	add_tm FLASH_CANNON ; d6
 	add_tm DRAGON_CLAW  ; d7
 	add_tm THUNDER      ; d8
 	add_tm EARTHQUAKE   ; d9
