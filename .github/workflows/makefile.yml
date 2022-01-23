@@ -34,4 +34,5 @@ jobs:
         name: kaloscrystal
         path: |
           kaloscrystal.gbc
+          *.gbc
         retention-days: 1
