@@ -229,7 +229,7 @@ MoveNames::
 	db "PURSUIT@"
 	db "RAPID SPIN@"
 	db "SWEET SCENT@"
-	db "METEOR MASH@"
+	db "FLASH CANNON@"
 	db "METAL CLAW@"
 	db "VITAL THROW@"
 	db "AQUA JET@"

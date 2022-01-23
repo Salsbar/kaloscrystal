@@ -150,7 +150,7 @@ Text_ReceivedTM09:
 Jasmine_IronTailSpeech:
 	text "…You could use"
 	line "that TM to teach"
-	cont "METEOR MASH."
+	cont "FLASH CANNON."
 	done
 
 Jasmine_GoodLuck:
