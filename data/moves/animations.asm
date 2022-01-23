@@ -1136,7 +1136,14 @@ BattleAnim_NastyPlot: ; c95c3
 BattleAnim_FlashCannon: ; c95c3
 	anim_1gfx ANIM_GFX_REFLECT
 	anim_obp0 $0
-	anim_sound 0, 0, SFX_RAGE
+	anim_1gfx ANIM_GFX_OBJECTS
+	anim_bgeffect ANIM_BG_07, $0, $2, $0
+	anim_obj ANIM_OBJ_PROTECT, 80, 80, $0
+	anim_obj ANIM_OBJ_PROTECT, 80, 80, $d
+	anim_obj ANIM_OBJ_PROTECT, 80, 80, $1a
+	anim_obj ANIM_OBJ_PROTECT, 80, 80, $27
+	anim_obj ANIM_OBJ_PROTECT, 80, 80, $34
+	anim_sound 0, 0, SFX_PROTECT
 	anim_1gfx ANIM_GFX_BEAM
 	anim_bgeffect ANIM_BG_06, $0, $2, $0
 	anim_bgeffect ANIM_BG_ALTERNATE_HUES, $0, $2, $0
