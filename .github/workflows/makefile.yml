@@ -28,11 +28,13 @@ jobs:
     - name: build
       run: virtualenv venv -p python27 && source venv/bin/activate && 
            make;
-           mv pokecrystal.gbc kaloscrystal.gbc
+           mv pokecrystal.gbc kaloscrystal.gbc;
+           make crystal11;
+           mv pokecrystal11.gbc kaloscrystal11.gbc
     - uses: actions/upload-artifact@v2
       with:
         name: kaloscrystal
         path: |
           kaloscrystal.gbc
-          *.gbc
+          kaloscrystal11.gbc
         retention-days: 1
