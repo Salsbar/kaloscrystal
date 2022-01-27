@@ -150,6 +150,5 @@ MoveEffectsPointers: ; 271f4
 	dw Fly
 	dw DefenseCurl
 	dw QuiverDance
-	dw NobleRoar
 	dw ShiftGear
 	dw FlyingPressM

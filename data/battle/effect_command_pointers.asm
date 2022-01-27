@@ -169,7 +169,6 @@ BattleCommandPointers: ; 3fd28
 	dw BattleCommand_StartLoop ; 35197
 	dw BattleCommand_Curl ; 365a7
 	dw BattleCommand_QuiverDance ; 365a7
-	dw BattleCommand_NobleRoar ; 365a7
 	dw BattleCommand_ShiftGear ; 365a7
 	dw BattleCommand_FlyingPress ; 365a7
 ; 3fe86

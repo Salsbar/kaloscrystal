@@ -139,7 +139,7 @@
 	const BOOMBURST    ; 83
 	const SACRED_SWORD ; 84
 	const AMNESIA      ; 85
-	const NOBLE_ROAR   ; 86
+	const PARAB_CHARGE ; 86
 	const HURRICANE    ; 87
 	const HI_JUMP_KICK ; 88
 	const GLARE        ; 89
@@ -257,6 +257,7 @@
 	const ROCK_SMASH   ; f9
 	const WHIRLPOOL    ; fa
 	const NASTY_PLOT   ; fb
+
 NUM_ATTACKS EQU const_value + -1
 
 	const MOVE_OR_ANIM_FC ; fc

@@ -6136,7 +6136,7 @@ ROM Bank #9:
            $76FE = Fly
            $799A = DefenseCurl
            $79A5 = QuiverDance
-           $79AA = NobleRoar
+           $79AA = ParanCharge
            $79B0 = ShiftGear
            $79B5 = FlyingPressM
            $71EE = MoveEffectsPointers
@@ -6909,7 +6909,7 @@ ROM Bank #11:
            $5DCF = BoomburstDescription
            $5DEF = SacredSwordDescription
            $5E0B = AmnesiaDescription
-           $5E2E = NobleRoarDescription
+           $5E2E = ParabChargeDescription
            $5E4B = HurricaneDescription
            $5E6F = HiJumpKickDescription
            $5E8B = GlareDescription
@@ -7575,7 +7575,7 @@ ROM Bank #13:
            $65B6 = BattleCommand_QuiverDance.go
            $65C9 = BattleCommand_QuiverDance.raise
            $65E9 = BattleCommand_QuiverDance.cantraise
-           $6608 = BattleCommand_NobleRoar.go
+           $6608 = BattleCommand_ParabCharge.go
            $62D3 = LowerStat
            $618A = BattleCommand_StatDownMessage
            $6788 = BattleCommand_ForceSwitch.fail
@@ -7954,7 +7954,7 @@ ROM Bank #13:
            $51B0 = BattleCommand_StartLoop
            $6348 = BattleCommand_Curl
            $65A5 = BattleCommand_QuiverDance
-           $65F7 = BattleCommand_NobleRoar
+           $65F7 = BattleCommand_ParabCharge
            $71DF = BattleCommand_ShiftGear
            $56AE = BattleCommand_FlyingPress
     SLACK: $051F bytes
@@ -22293,7 +22293,7 @@ ROM Bank #50:
            $4BAC = BattleAnim_Boomburst
            $470B = BattleAnim_SacredSword
            $583C = BattleAnim_Amnesia
-           $4BCB = BattleAnim_NobleRoar
+           $4BCB = BattleAnim_ParabCharge
            $47F1 = BattleAnim_Hurricane
            $4D7B = BattleAnim_HiJumpKick
            $5EFE = BattleAnim_Glare
@@ -22478,9 +22478,9 @@ ROM Bank #50:
            $7179 = BattleAnim_HyperBeam_branch_cbb39
            $4C9A = BattleAnim_Tailslap_branch_c961b
            $4BB3 = BattleAnim_Boomburst.loop
-           $4BD6 = BattleAnim_NobleRoar.loop2
+           $4BD6 = BattleAnim_ParabCharge.loop2
            $71FC = BattleAnim_Growl_branch_cbbbc
-           $4C10 = BattleAnim_NobleRoar.loop
+           $4C10 = BattleAnim_ParabCharge.loop
            $4C8A = BattleAnim_Doubleslap_branch_c961b
            $4CC0 = BattleAnim_CometPunch_branch_c9641
            $4CDD = BattleAnim_MegaPunch.loop

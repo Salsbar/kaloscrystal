@@ -170,7 +170,6 @@ ENDM
 	command startloop               ; ae
 	command curl                    ; af
 	command quiverdance                    ; af
-	command nobleroar                    ; af
 	command shiftgear                    ; af
 	command flyingpress                    ; af
 

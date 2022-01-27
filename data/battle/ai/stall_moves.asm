@@ -31,7 +31,6 @@ StallMoves: ; 39348
 	db SHIFT_GEAR
 	db ACID_ARMOR
 	db SHARPEN
-	db NOBLE_ROAR
 	db SUBSTITUTE
 	db FLAME_WHEEL
 	db -1 ; end

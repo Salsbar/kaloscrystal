@@ -2772,7 +2772,6 @@ LitleoEvosAttacks:
 	db 1, LEER
 	db 5, EMBER
 	db 11, HEADBUTT
-	db 15, NOBLE_ROAR
 	db 20, TAKE_DOWN
 	db 23, FLAME_WHEEL
 	db 28, BODY_SLAM
@@ -2787,7 +2786,6 @@ PyroarEvosAttacks:
 	db 1, LEER
 	db 5, EMBER
 	db 11, HEADBUTT
-	db 15, NOBLE_ROAR
 	db 20, TAKE_DOWN
 	db 23, FLAME_WHEEL
 	db 28, BODY_SLAM
@@ -3218,7 +3216,7 @@ HelioptileEvosAttacks:
 	db 10, MUD_SLAP
 	db 14, QUICK_ATTACK
 	db 17, RAZOR_WIND
-	db 25, SPARK
+	db 25, PARAB_CHARGE
 	db 31, THUNDER_WAVE
 	db 35, MUD_SHOT
 	db 40, THUNDERBOLT
@@ -3345,7 +3343,7 @@ DedenneEvosAttacks:
 	db 1, TAIL_WHIP
 	db 7, THUNDERSHOCK
 	db 14, CHARM
-	db 18, DRAININGKISS
+	db 17, PARAB_CHARGE
 	db 23, THUNDER_WAVE
 	db 28, REST
 	db 30, SNORE

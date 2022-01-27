@@ -5403,8 +5403,6 @@ INCLUDE "engine/battle/move_effects/teleport.asm"
 
 INCLUDE "engine/battle/move_effects/quiver_dance.asm"
 
-INCLUDE "engine/battle/move_effects/noble_roar.asm"
-
 
 SetBattleDraw: ; 36804
 	ld a, [wBattleResult]

@@ -133,7 +133,7 @@ MoveDescriptions:: ; 2cb52
 	dw BoomburstDescription
 	dw SacredSwordDescription
 	dw AmnesiaDescription
-	dw NobleRoarDescription
+	dw ParabChargeDescription
 	dw HurricaneDescription
 	dw HiJumpKickDescription
 	dw GlareDescription
@@ -797,9 +797,9 @@ AmnesiaDescription:
 	db   "Sharply raises the"
 	next "user's SPCL.DEF.@"
 
-NobleRoarDescription:
-	db   "Reduces ATTACK"
-	next "and SPCL.ATK.@"
+ParabChargeDescription:
+	db   "Steals 1/2 of the"
+	next "damage inflicted.@"
 
 HurricaneDescription:
 	db   "An attack that may"

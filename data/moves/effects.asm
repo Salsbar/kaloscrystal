@@ -1948,14 +1948,6 @@ QuiverDance:
 	quiverdance
 	endmove
 	
-NobleRoar:
-	checkobedience
-	usedmovetext
-	doturn
-	checkhit
-	nobleroar
-	endmove
-	
 ShiftGear:
 	checkobedience
 	usedmovetext

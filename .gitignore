@@ -38,3 +38,4 @@ Thumbs.db
 
 # GB patch files
 *.ips
+.github/webhook.sh
