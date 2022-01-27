@@ -132,7 +132,7 @@ MoveNames::
 	db "BOOMBURST@"
 	db "SACRED SWORD@"
 	db "AMNESIA@"
-	db "PARAB.CHARGE@"
+	db "PARAB CHARGE@"
 	db "HURRICANE@"
 	db "HI JUMP KICK@"
 	db "GLARE@"
